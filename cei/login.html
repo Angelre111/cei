@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inicio de Sesión - Centro La Paragua</title>
+    <!-- Enlace a Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Configuración de la fuente Inter y paleta de colores amigable -->
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-image: url(img/descarga\ \(1\)_upscayl_3x_digital-art-4x.png); 
+            background-size: cover;
+            background-repeat: no-repeat;
+            
+            
+        }
+        /* Colores personalizados del Home Page, ajustados a un estilo infantil */
+        .color-paragua-primary { background-color: #EC4899; /* Rosa Coral/Fucsia (Infantil) */ }
+        .text-paragua-primary { color: #EC4899; }
+        .color-paragua-secondary { background-color: #f59e0b; /* Amarillo sol (Acento) */ }
+
+        /* Estilo para inputs enfocados - Usando un verde suave/menta */
+        .input-focus:focus {
+            border-color: #10B981; /* Verde menta */
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.5); /* Sombra verde pastel */
+            outline: none;
+        }
+    </style>
+    <!-- Iconos Phosphor Icons -->
+    <script src="https://unpkg.com/phosphor-icons"></script>
+</head>
+<body class="antialiased min-h-screen flex items-center justify-center p-4">
+
+    <!-- Contenedor Central del Formulario -->
+    <div class="max-w-md w-full bg-white rounded-3xl p-8 sm:p-10 shadow-2xl transition-all duration-500 transform hover:shadow-3xl">
+
+        <!-- Encabezado y Logo -->
+        <div class="text-center mb-8">
+            <a href="#" class="flex items-center justify-center space-x-2 text-3xl font-extrabold text-gray-800 mb-2">
+                <!-- CAMBIO: Icono en Amarillo Sol para un toque infantil -->
+                <i class="ph-drop text-4xl text-yellow-500"></i>
+                <span>La Paragua</span>
+            </a>
+            <h1 class="text-3xl font-bold text-gray-900 mt-4">Bienvenido de Nuevo</h1>
+            <p class="text-gray-500 mt-2">Accede a la plataforma privada para padres y personal.</p>
+        </div>
+
+        <!-- Mensaje de Estado (Para simular alertas sin usar alert()) -->
+        <div id="message-box" class="hidden p-3 rounded-lg text-sm mb-6 font-medium text-center transition-opacity duration-300">
+            <!-- El contenido se inyecta con JavaScript -->
+        </div>
+
+        <!-- Formulario de Inicio de Sesión -->
+        <form id="login-form" class="space-y-6">
+
+            <!-- Campo Email/Usuario -->
+            <div>
+                <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Correo Electrónico / Usuario</label>
+                <div class="relative">
+                    <i class="ph-envelope text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2"></i>
+                    <input type="text" id="email" name="email" required
+                           class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl input-focus transition duration-200"
+                           placeholder="ejemplo@laparagua.edu.ve">
+                </div>
+            </div>
+
+            <!-- Campo Contraseña -->
+            <div>
+                <label for="password" class="block text-sm font-medium text-gray-700 mb-1">Contraseña</label>
+                <div class="relative">
+                    <i class="ph-lock-key text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2"></i>
+                    <input type="password" id="password" name="password" required
+                           class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl input-focus transition duration-200"
+                           placeholder="••••••••">
+                </div>
+            </div>
+
+            <!-- Recordarme y Olvidé Contraseña -->
+            <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                    <!-- CAMBIO: Checkbox en color Rosa -->
+                    <input id="remember-me" name="remember-me" type="checkbox"
+                           class="h-4 w-4 text-pink-600 border-gray-300 rounded focus:ring-pink-500">
+                    <label for="remember-me" class="ml-2 block text-sm text-gray-900">
+                        Recordarme
+                    </label>
+                </div>
+
+                <!-- CAMBIO: Enlace de contraseña en color Rosa -->
+                <a href="#" class="text-sm font-medium text-pink-600 hover:text-pink-800 transition duration-200">
+                    ¿Olvidaste tu contraseña?
+                </a>
+            </div>
+
+            <!-- Botón de Inicio de Sesión -->
+            <div>
+                <button type="submit"
+                        class="w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-xl shadow-lg text-lg font-semibold text-white color-paragua-primary hover:bg-pink-600 transition duration-300 transform hover:scale-[1.01]">
+                    <i class="ph-sign-in mr-2 text-xl"></i> Iniciar Sesión
+                </button>
+            </div>
+        </form>
+
+        <!-- Enlace de Registro (Opcional) -->
+        <div class="mt-6 text-center">
+            <p class="text-sm text-gray-600">
+                ¿Aún no tienes cuenta?
+                <!-- CAMBIO: Enlace de registro en color Rosa -->
+                <a href="#" class="font-medium text-pink-600 hover:text-pink-800 transition duration-200">
+                    Contacta a Admisiones
+                </a>
+            </p>
+        </div>
+    </div>
+
+    <!-- JavaScript para Simular el Login -->
+    <script>
+        document.getElementById('login-form').addEventListener('submit', function(event) {
+            // Prevenir el envío real del formulario
+            event.preventDefault();
+
+            const emailInput = document.getElementById('email').value;
+            const passwordInput = document.getElementById('password').value;
+            const messageBox = document.getElementById('message-box');
+
+            // Limpiar mensaje anterior
+            messageBox.classList.add('hidden', 'opacity-0');
+            messageBox.className = 'hidden p-3 rounded-lg text-sm mb-6 font-medium text-center transition-opacity duration-300';
+
+            // Simulación de validación
+            if (emailInput === "" || passwordInput === "") {
+                showMessage('Por favor, ingresa tu usuario y contraseña.', 'bg-yellow-100 text-yellow-800');
+            } else if (passwordInput.length < 6) {
+                showMessage('La contraseña debe tener al menos 6 caracteres.', 'bg-red-100 text-red-800');
+            } else {
+                // Simulación de éxito
+                showMessage('Inicio de sesión exitoso. Redirigiendo...', 'bg-green-100 text-green-800');
+                // En una aplicación real, aquí se haría un fetch() al servidor y una redirección
+
+                // Simulación de redirección después de 2 segundos
+                setTimeout(() => {
+                    // window.location.href = '/dashboard'; // Ejemplo de redirección real
+                    console.log("Simulación de redirección completada.");
+                }, 2000);
+            }
+        });
+
+        function showMessage(message, classes) {
+            const messageBox = document.getElementById('message-box');
+            messageBox.innerHTML = message;
+            messageBox.classList.remove('hidden', 'opacity-0');
+            // Añadir las clases de color
+            classes.split(' ').forEach(cls => messageBox.classList.add(cls));
+            // Mostrar con una transición suave
+            setTimeout(() => {
+                messageBox.classList.remove('opacity-0');
+            }, 10);
+        }
+    </script>
+
+</body>
+</html>

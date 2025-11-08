@@ -1,0 +1,19 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f7f9fc; /* Fondo muy claro */
+        }
+        /* Colores personalizados para el centro infantil */
+        .color-paragua-primary { background-color: #3b82f6; /* Azul brillante */ }
+        .text-paragua-primary { color: #3b82f6; }
+        .color-paragua-secondary { background-color: #f59e0b; /* Amarillo sol */ }
+        .text-paragua-secondary { color: #f59e0b; }
+        .color-paragua-light { background-color: #93c5fd; /* Azul pastel */ }
+
+        /* Estilos específicos para el carrusel */
+        .carousel-item {
+            display: none;
+        }
+        .carousel-item.active {
+            display: block;
+        }
