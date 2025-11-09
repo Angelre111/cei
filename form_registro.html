@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro - Centro La Paragua</title>
+    <!-- Enlace a Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Configuración de la fuente Inter y paleta de colores amigable -->
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-image: url(img/descarga\ \(1\)_upscayl_3x_digital-art-4x.png); 
+            background-size: cover;
+            background-repeat: no-repeat;
+            
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            
+        }
+        /* Colores personalizados del Home Page, ajustados a un estilo infantil */
+        .color-paragua-primary { background-color: #EC4899; /* Rosa Coral/Fucsia (Infantil) */ }
+        .text-paragua-primary { color: #EC4899; }
+        .color-paragua-secondary { background-color: #f59e0b; /* Amarillo sol (Acento) */ }
+
+        /* Estilo para inputs enfocados - Usando un verde suave/menta */
+        .input-focus:focus {
+            border-color: #10B981; /* Verde menta */
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.5); /* Sombra verde pastel */
+            outline: none;
+        }
+
+        /* Estilos para el contenedor del formulario para asegurar legibilidad */
+        .form-container {
+            background-color: rgba(255, 255, 255, 0.9); /* Fondo blanco semitransparente */
+            backdrop-filter: blur(5px); /* Efecto de desenfoque para el fondo detrás del formulario */
+        }
+    </style>
+    <!-- Iconos Phosphor Icons -->
+    <script src="https://unpkg.com/phosphor-icons"></script>
+</head>
+<body class="antialiased">
+
+    <!-- Contenedor Central del Formulario -->
+    <div class="form-container max-w-lg w-full rounded-3xl p-8 sm:p-10 shadow-2xl transition-all duration-500 transform hover:shadow-3xl">
+
+        <!-- Encabezado y Logo -->
+        <div class="text-center mb-8">
+            <a href="index.html" class="flex items-center justify-center space-x-2 text-3xl font-extrabold text-gray-800 mb-2">
+                <i class="ph-drop text-4xl text-yellow-500"></i>
+                <span>La Paragua</span>
+            </a>
+            <h1 class="text-2xl font-bold text-gray-900 mt-4">Crea tu Cuenta de Padre/Representante</h1>
+            
+            <!-- Mensaje Personalizado -->
+            <p class="text-lg text-pink-600 mt-2 font-semibold flex items-center justify-center">
+                <i class="ph-star-fill text-xl mr-2"></i> ¡Bienvenido! Regístrate para iniciar el proceso de Preinscripción.
+            </p>
+        </div>
+
+        <!-- Mensaje de Estado (Para simular alertas sin usar alert()) -->
+        <div id="message-box" class="hidden p-3 rounded-lg text-sm mb-6 font-medium text-center transition-opacity duration-300">
+            <!-- El contenido se inyecta con JavaScript -->
+        </div>
+
+        <!-- Formulario de Registro -->
+        <form id="register-form" class="space-y-4">
+            
+            <!-- Campo Nombre Completo -->
+            <div>
+                <label for="name" class="block text-sm font-medium text-gray-700 mb-1">Nombre Completo del Representante</label>
+                <div class="relative">
+                    <i class="ph-user-circle text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2"></i>
+                    <input type="text" id="name" name="name" required
+                           class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl input-focus transition duration-200"
+                           placeholder="Ej: Ana María Rodríguez">
+                </div>
+            </div>
+
+            <!-- Campo Correo Electrónico -->
+            <div>
+                <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Correo Electrónico</label>
+                <div class="relative">
+                    <i class="ph-envelope text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2"></i>
+                    <input type="email" id="email" name="email" required
+                           class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl input-focus transition duration-200"
+                           placeholder="ejemplo@correo.com">
+                </div>
+            </div>
+
+            <!-- Campo Teléfono -->
+            <div>
+                <label for="phone" class="block text-sm font-medium text-gray-700 mb-1">Número de Teléfono</label>
+                <div class="relative">
+                    <i class="ph-phone text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2"></i>
+                    <input type="tel" id="phone" name="phone" required
+                           class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl input-focus transition duration-200"
+                           placeholder="Ej: 0412-1234567">
+                </div>
+            </div>
+
+            <!-- Campo Contraseña -->
+            <div>
+                <label for="password" class="block text-sm font-medium text-gray-700 mb-1">Contraseña</label>
+                <div class="relative">
+                    <i class="ph-lock-key text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2"></i>
+                    <input type="password" id="password" name="password" required
+                           class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl input-focus transition duration-200"
+                           placeholder="Mínimo 8 caracteres">
+                </div>
+            </div>
+
+            <!-- Campo Confirmar Contraseña -->
+            <div>
+                <label for="confirm-password" class="block text-sm font-medium text-gray-700 mb-1">Confirmar Contraseña</label>
+                <div class="relative">
+                    <i class="ph-lock-key-open text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2"></i>
+                    <input type="password" id="confirm-password" name="confirm-password" required
+                           class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl input-focus transition duration-200"
+                           placeholder="Repite la contraseña">
+                </div>
+            </div>
+
+            <!-- Aceptación de Términos -->
+            <div class="flex items-start">
+                <input id="terms" name="terms" type="checkbox" required
+                       class="h-4 w-4 mt-1 text-pink-600 border-gray-300 rounded focus:ring-pink-500">
+                <label for="terms" class="ml-2 block text-sm text-gray-900">
+                    Acepto los <a href="#" class="font-medium text-pink-600 hover:text-pink-800 transition duration-200">Términos y Condiciones</a>
+                </label>
+            </div>
+
+            <!-- Botón de Registro -->
+            <div>
+                <button type="submit"
+                        class="w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-xl shadow-lg text-lg font-semibold text-white color-paragua-primary hover:bg-pink-600 transition duration-300 transform hover:scale-[1.01]">
+                    <i class="ph-user-plus mr-2 text-xl"></i> Registrarme
+                </button>
+            </div>
+        </form>
+
+        <!-- Enlace a Login -->
+        <div class="mt-6 text-center">
+            <p class="text-sm text-gray-600">
+                ¿Ya tienes cuenta?
+                <a href="login.html" class="font-medium text-pink-600 hover:text-pink-800 transition duration-200">
+                    Inicia Sesión aquí
+                </a>
+            </p>
+        </div>
+    </div>
+
+    <!-- JavaScript para Simular el Registro -->
+     
+    <script>
+        // Envío con fetch a /api/registrar (JSON). Mantiene las validaciones locales y muestra mensajes según la respuesta del servidor.
+        document.getElementById('register-form').addEventListener('submit', async function(event) {
+            event.preventDefault();
+
+            const nameInput = document.getElementById('name').value.trim();
+            const emailInput = document.getElementById('email').value.trim();
+            const phoneInput = document.getElementById('phone').value.trim();
+            const passwordInput = document.getElementById('password').value;
+            const confirmPasswordInput = document.getElementById('confirm-password').value;
+            const termsChecked = document.getElementById('terms').checked;
+            const messageBox = document.getElementById('message-box');
+            const submitBtn = this.querySelector('button[type="submit"]');
+
+            // Limpiar mensaje anterior (restablece clases base antes de aplicar nuevas)
+            messageBox.innerHTML = '';
+            messageBox.className = 'hidden p-3 rounded-lg text-sm mb-6 font-medium text-center transition-opacity duration-300';
+
+            // Validaciones básicas en cliente
+            if (!nameInput || !emailInput || !phoneInput || !passwordInput || !confirmPasswordInput) {
+                showMessage('Por favor, completa todos los campos requeridos.', 'bg-yellow-100 text-yellow-800');
+                return;
+            }
+            if (passwordInput.length < 8) {
+                showMessage('La contraseña debe tener al menos 8 caracteres.', 'bg-red-100 text-red-800');
+                return;
+            }
+            if (passwordInput !== confirmPasswordInput) {
+                showMessage('Las contraseñas no coinciden.', 'bg-red-100 text-red-800');
+                return;
+            }
+            if (!termsChecked) {
+                showMessage('Debes aceptar los Términos y Condiciones.', 'bg-yellow-100 text-yellow-800');
+                return;
+            }
+
+            // Preparar payload con las llaves que espera el backend
+            const payload = {
+                nombre_completo: nameInput,
+                email: emailInput,
+                telefono: phoneInput,
+                contrasena: passwordInput
+            };
+
+            // Funciones UI
+            function setLoading(loading) {
+                if (loading) {
+                    submitBtn.disabled = true;
+                    submitBtn.classList.add('opacity-60', 'cursor-not-allowed');
+                    submitBtn.innerHTML = '<i class="ph-spinner gap-2 animate-spin mr-2"></i> Enviando...';
+                } else {
+                    submitBtn.disabled = false;
+                    submitBtn.classList.remove('opacity-60', 'cursor-not-allowed');
+                    submitBtn.innerHTML = '<i class="ph-user-plus mr-2 text-xl"></i> Registrarme';
+                }
+            }
+
+            setLoading(true);
+
+            try {
+                const res = await fetch('/api/registrar', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                // intentar parsear JSON (si el servidor responde JSON)
+                let json = {};
+                try { json = await res.json(); } catch (e) { /* respuesta no JSON */ }
+
+                if (res.ok) {
+                    showMessage(json.message || 'Registro exitoso. Revisa tu correo para verificar tu cuenta.', 'bg-green-100 text-green-800');
+                    setTimeout(() => {
+                        document.getElementById('register-form').reset();
+                    }, 2000);
+                } else if (res.status === 409) {
+                    showMessage(json.message || 'Este correo electrónico ya está registrado.', 'bg-yellow-100 text-yellow-800');
+                } else if (res.status === 400) {
+                    showMessage(json.message || 'Datos inválidos. Revisa los campos.', 'bg-red-100 text-red-800');
+                } else {
+                    showMessage(json.message || 'Error en el servidor. Intenta nuevamente más tarde.', 'bg-red-100 text-red-800');
+                }
+
+            } catch (err) {
+                console.error('Error de red al enviar el formulario:', err);
+                showMessage('Error de red o el servidor no está disponible. Asegúrate de que Flask está corriendo en http://localhost:5000 y revisa CORS si el HTML se sirve desde otro origen.', 'bg-red-100 text-red-800');
+            } finally {
+                setLoading(false);
+            }
+        });
+
+        // Muestra mensajes en el contenedor de estado, reemplazando clases previas
+        function showMessage(message, classes) {
+            const messageBox = document.getElementById('message-box');
+            messageBox.innerHTML = message;
+            // restablecer clases base y añadir las de estado
+            messageBox.className = 'p-3 rounded-lg text-sm mb-6 font-medium text-center transition-opacity duration-300 ' + classes;
+            // mostrar con transición
+            setTimeout(() => messageBox.classList.remove('hidden', 'opacity-0'), 10);
+        }
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Centro de Educación Inicial "La Paragua"</title>
+    <!-- Enlace a Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Configuración de la fuente Inter y paleta de colores amigable -->
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        
+    </style>
+    <!-- Iconos Phosphor Icons (para un look amigable) -->
+    <script src="https://unpkg.com/phosphor-icons"></script>
+</head>
+<body class="antialiased">
+
+    <!-- 1. Header y Navegación -->
+    <header class="sticky top-0 z-50 bg-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-20">
+                <!-- Logo y Nombre del Centro -->
+                <a href="#" class="flex items-center space-x-2 text-2xl font-extrabold text-gray-800 hover:text-blue-600 transition duration-300">
+                    <i class="ph-drop text-3xl text-blue-500"></i> <!-- Icono de La Paragua/Gota -->
+                    <span>La Paragua</span>
+                </a>
+
+                <!-- Menú de Navegación (Desktop) -->
+                <nav class="hidden md:flex space-x-8">
+                    <a href="login.html" class="text-gray-600 hover:text-blue-600 font-medium transition duration-300">Acceso</a>
+                    <a href="#nosotros" class="text-gray-600 hover:text-blue-600 font-medium transition duration-300">Nosotros/Misión</a>
+                    <a href="#programas" class="text-gray-600 hover:text-blue-600 font-medium transition duration-300">Programas/Salas</a>
+                    <a href="form_registro.html" class="text-gray-600 hover:text-blue-600 font-medium transition duration-300">Preinscripción</a>
+                    <a href="#admisiones" class="text-gray-600 hover:text-blue-600 font-medium transition duration-300">Admisiones</a>
+                    <a href="#galeria" class="text-gray-600 hover:text-blue-600 font-medium transition duration-300">Galería</a>
+                    <a href="#contacto" class="text-gray-600 hover:text-blue-600 font-medium transition duration-300">Contacto</a>
+                </nav>
+
+                <!-- Botón Menú Hamburguesa (Mobile) -->
+                <button id="menu-toggle" class="md:hidden p-2 rounded-lg text-gray-700 hover:bg-gray-100 transition duration-300 focus:outline-none">
+                    <i class="ph-list text-2xl" id="menu-icon-open"></i>
+                    <i class="ph-x text-2xl hidden" id="menu-icon-close"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Menú Desplegable (Mobile) -->
+        <div id="mobile-menu" class="hidden md:hidden bg-white shadow-md">
+            <div class="pt-2 pb-3 space-y-1 sm:px-3">
+                <a href="login.html" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-blue-50">Acceso</a>
+                <a href="#nosotros" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-blue-50">Nosotros/Misión</a>
+                <a href="#programas" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-blue-50">Programas/Salas</a>
+                <a href="form_registro.html" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-blue-50">Preinscripción</a>
+                <a href="#galeria" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-blue-50">Galería</a>
+                <a href="#contacto" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-blue-50">Contacto</a>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <!-- 2. Sección Hero/Principal con Carrusel -->
+        <section id="inicio" class="relative overflow-hidden h-screen max-h-[800px] w-full">
+            <!-- Carrusel de Imágenes (Placeholder) -->
+            <div id="carousel" class="absolute inset-0 w-full h-full">
+                <!-- Slide 1 -->
+                <div class="carousel-item active absolute inset-0 transition-opacity duration-1000 bg-cover bg-center"
+                     style="background-image: url('https://placehold.co/1920x800/2563EB/ffffff?text=Slide+1%0A(Aula+de+juegos)')"
+                     data-slide="1">
+                </div>
+                <!-- Slide 2 -->
+                <div class="carousel-item absolute inset-0 transition-opacity duration-1000 bg-cover bg-center"
+                     style="background-image: url('https://placehold.co/1920x800/F59E0B/ffffff?text=Slide+2%0A(Actividad+al+aire+libre)')"
+                     data-slide="2">
+                </div>
+                <!-- Slide 3 -->
+                <div class="carousel-item absolute inset-0 transition-opacity duration-1000 bg-cover bg-center"
+                     style="background-image: url('https://placehold.co/1920x800/10B981/ffffff?text=Slide+3%0A(Pintura+y+Arte)')"
+                     data-slide="3">
+                </div>
+                <!-- Slide 4 -->
+                <div class="carousel-item absolute inset-0 transition-opacity duration-1000 bg-cover bg-center"
+                     style="background-image: url('https://placehold.co/1920x800/EC4899/ffffff?text=Slide+4%0A(Lectura+en+grupo)')"
+                     data-slide="4">
+                </div>
+                <!-- Slide 5 -->
+                <div class="carousel-item absolute inset-0 transition-opacity duration-1000 bg-cover bg-center"
+                     style="background-image: url('https://placehold.co/1920x800/8B5CF6/ffffff?text=Slide+5%0A(Desarrollo+Motor)')"
+                     data-slide="5">
+                </div>
+            </div>
+
+            <!-- Capa de Oscurecimiento y Contenido Hero -->
+            <div class="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center">
+                <div class="max-w-3xl text-center p-6 bg-white bg-opacity-80 rounded-xl shadow-2xl m-4">
+                    <!-- Título llamativo principal -->
+                    <h1 class="text-4xl sm:text-6xl font-extrabold text-gray-900 leading-tight mb-4 animate-fadeInDown">
+                        Aprendizaje y Alegría para los Más Pequeños
+                    </h1>
+                    <!-- Subtítulo/Slogan -->
+                    <p class="text-lg sm:text-2xl text-gray-700 mb-8 font-medium animate-fadeInUp">
+                        Cuidamos, Educamos y Creamos Recuerdos Inolvidables en el Centro de Educación Inicial "La Paragua".
+                    </p>
+                    <!-- Botón CTA (ACTUALIZADO: Ya no es Solicitar Visita, sino Ver Programas) -->
+                    <a href="#programas" class="inline-flex items-center justify-center px-8 py-4 border border-transparent text-lg font-bold rounded-full shadow-lg text-white color-paragua-primary hover:bg-pink-600 transition duration-300 transform hover:scale-[1.01]">
+                        <i class="ph-folder-open mr-2 text-xl"></i> Ver Programas
+                    </a>
+                </div>
+            </div>
+
+            <!-- Indicadores de Carrusel -->
+            <div id="carousel-indicators" class="absolute bottom-6 left-1/2 transform -translate-x-1/2 flex space-x-3">
+                <!-- Los indicadores se generarán con JavaScript -->
+            </div>
+        </section>
+
+        <!-- 3. Sección de Características Destacadas/Valores -->
+        <section id="nosotros" class="py-16 sm:py-24 bg-white">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+                <h2 class="text-3xl sm:text-4xl font-extrabold text-gray-900 mb-4">Nuestros Pilares Educativos</h2>
+                <p class="text-xl text-gray-600 mb-12 max-w-3xl mx-auto">Comprometidos con el desarrollo integral y la felicidad de cada niño.</p>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <!-- Característica 1: Desarrollo Integral -->
+                    <div class="bg-gray-50 p-6 rounded-2xl shadow-xl hover:shadow-2xl transition duration-300 transform hover:-translate-y-1 border-t-4 border-blue-500">
+                        <div class="text-blue-500 mb-4 inline-flex p-3 rounded-full bg-blue-100">
+                            <i class="ph-leaf-fill text-3xl"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-900 mb-3">Desarrollo Integral</h3>
+                        <p class="text-gray-600">Fomentamos el crecimiento cognitivo, emocional y físico a través de metodologías lúdicas y activas.</p>
+                    </div>
+
+                    <!-- Característica 2: Ambiente Seguro y Cariñoso -->
+                    <div class="bg-gray-50 p-6 rounded-2xl shadow-xl hover:shadow-2xl transition duration-300 transform hover:-translate-y-1 border-t-4 border-yellow-500">
+                        <div class="text-yellow-500 mb-4 inline-flex p-3 rounded-full bg-yellow-100">
+                            <i class="ph-heart-fill text-3xl"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-900 mb-3">Ambiente Seguro</h3>
+                        <p class="text-gray-600">Instalaciones seguras, personal certificado y un trato afectuoso que hace sentir a los niños como en casa.</p>
+                    </div>
+
+                    <!-- Característica 3: Aprendizaje Personalizado -->
+                    <div class="bg-gray-50 p-6 rounded-2xl shadow-xl hover:shadow-2xl transition duration-300 transform hover:-translate-y-1 border-t-4 border-green-500">
+                        <div class="text-green-500 mb-4 inline-flex p-3 rounded-full bg-green-100">
+                            <i class="ph-book-open-text-fill text-3xl"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-900 mb-3">Curriculo Innovador</h3>
+                        <p class="text-gray-600">Programas basados en la exploración, la creatividad y la adaptación a los ritmos individuales de cada estudiante.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 4. Sección de Programas/Salas Destacados -->
+        <section id="programas" class="py-16 sm:py-24 color-paragua-light">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+                <h2 class="text-3xl sm:text-4xl font-extrabold text-gray-900 mb-4">Nuestras Salas y Programas</h2>
+                <p class="text-xl text-gray-700 mb-12 max-w-3xl mx-auto">Organizamos el aprendizaje por grupos de edad para garantizar una atención y estímulo adecuados.</p>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                    <!-- Programa: Maternal -->
+                    <div class="bg-white p-6 rounded-2xl shadow-lg border-b-4 border-pink-500">
+                        <i class="ph-baby text-4xl text-pink-500 mb-3 block mx-auto"></i>
+                        <h3 class="text-xl font-bold text-gray-900 mb-2">Maternal</h3>
+                        <p class="text-gray-600 text-sm mb-4">Un ambiente de cuna seguro y estimulante para los primeros descubrimientos sensoriales.</p>
+                        <a href="#" class="text-pink-600 hover:text-pink-800 font-semibold transition duration-300 flex items-center justify-center">
+                            Saber Más <i class="ph-arrow-right ml-1"></i>
+                        </a>
+                    </div>
+                    <!-- Programa: 1er Grupo A/B -->
+                    <div class="bg-white p-6 rounded-2xl shadow-lg border-b-4 border-yellow-500">
+                        <i class="ph-puzzle-piece text-4xl text-yellow-500 mb-3 block mx-auto"></i>
+                        <h3 class="text-xl font-bold text-gray-900 mb-2">1er Grupo (1-2 años)</h3>
+                        <p class="text-gray-600 text-sm mb-4">Desarrollo del lenguaje y habilidades motoras finas a través del juego dirigido.</p>
+                        <a href="#" class="text-yellow-600 hover:text-yellow-800 font-semibold transition duration-300 flex items-center justify-center">
+                            Saber Más <i class="ph-arrow-right ml-1"></i>
+                        </a>
+                    </div>
+                    <!-- Programa: 2do Grupo A/B -->
+                    <div class="bg-white p-6 rounded-2xl shadow-lg border-b-4 border-green-500">
+                        <i class="ph-palette text-4xl text-green-500 mb-3 block mx-auto"></i>
+                        <h3 class="text-xl font-bold text-gray-900 mb-2">2do Grupo (2-3 años)</h3>
+                        <p class="text-gray-600 text-sm mb-4">Énfasis en la socialización, la autonomía y la introducción al mundo de las artes.</p>
+                        <a href="#" class="text-green-600 hover:text-green-800 font-semibold transition duration-300 flex items-center justify-center">
+                            Saber Más <i class="ph-arrow-right ml-1"></i>
+                        </a>
+                    </div>
+                    <!-- Programa: 3er Grupo A/B/C -->
+                    <div class="bg-white p-6 rounded-2xl shadow-lg border-b-4 border-blue-500">
+                        <i class="ph-graduation-cap text-4xl text-blue-500 mb-3 block mx-auto"></i>
+                        <h3 class="text-xl font-bold text-gray-900 mb-2">3er Grupo (3-5 años)</h3>
+                        <p class="text-gray-600 text-sm mb-4">Preparación preescolar, lógica temprana y pensamiento crítico a través de la exploración.</p>
+                        <a href="#" class="text-blue-600 hover:text-blue-800 font-semibold transition duration-300 flex items-center justify-center">
+                            Saber Más <i class="ph-arrow-right ml-1"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Botón para ver todos los programas -->
+                <div class="mt-12">
+                    <a href="#programas" class="inline-flex items-center px-6 py-3 border-2 border-gray-900 text-base font-semibold rounded-full text-gray-900 hover:bg-gray-900 hover:text-white transition duration-300">
+                        Ver Todos los Niveles y Horarios
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Sección de Testimonios (Opcional, no fue solicitada pero es buena práctica) -->
+        <section id="galeria" class="py-16 sm:py-24 bg-white">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+                <h2 class="text-3xl sm:text-4xl font-extrabold text-gray-900 mb-4">Lo que Dicen Nuestros Padres</h2>
+                <p class="text-xl text-gray-600 mb-12 max-w-3xl mx-auto">Historias reales de familias felices con la educación de La Paragua.</p>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <!-- Testimonio 1 -->
+                    <blockquote class="bg-gray-50 p-6 rounded-2xl shadow-lg border-l-4 border-indigo-500 flex flex-col items-start text-left">
+                        <i class="ph-quotes text-5xl text-indigo-400 mb-4"></i>
+                        <p class="text-lg text-gray-700 italic mb-4">"Desde que mi hija está en La Paragua, no solo ha aprendido muchísimo, sino que va feliz todos los días. El personal es increíblemente atento y profesional."</p>
+                        <footer class="flex items-center mt-4">
+                            <img class="h-12 w-12 rounded-full object-cover mr-4" src="https://placehold.co/100x100/A0AEC0/ffffff?text=P" alt="Foto Padre">
+                            <div>
+                                <p class="font-bold text-gray-900">María Rojas</p>
+                                <p class="text-sm text-gray-500">Madre de Sofía (2do Grupo)</p>
+                            </div>
+                        </footer>
+                    </blockquote>
+                    <!-- Testimonio 2 -->
+                    <blockquote class="bg-gray-50 p-6 rounded-2xl shadow-lg border-l-4 border-pink-500 flex flex-col items-start text-left">
+                        <i class="ph-quotes text-5xl text-pink-400 mb-4"></i>
+                        <p class="text-lg text-gray-700 italic mb-4">"La transición de Maternal a 1er Grupo fue muy suave gracias a la dedicación de las maestras. Siento total confianza en dejar a mi hijo en sus manos. ¡Excelente centro!"</p>
+                        <footer class="flex items-center mt-4">
+                            <img class="h-12 w-12 rounded-full object-cover mr-4" src="https://placehold.co/100x100/A0AEC0/ffffff?text=P" alt="Foto Padre">
+                            <div>
+                                <p class="font-bold text-gray-900">Juan Pérez</p>
+                                <p class="text-sm text-gray-500">Padre de Lucas (1er Grupo)</p>
+                            </div>
+                        </footer>
+                    </blockquote>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- 5. Footer -->
+    <footer id="contacto" class="color-paragua-primary py-12 text-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-4 gap-8">
+
+            <!-- Columna 1: Logo y Slogan -->
+            <div class="md:col-span-1">
+                <a href="#" class="flex items-center space-x-2 text-2xl font-extrabold text-white">
+                    <i class="ph-drop text-3xl"></i>
+                    <span>La Paragua</span>
+                </a>
+                <p class="mt-4 text-sm opacity-90">Sembrando la semilla del futuro con amor y conocimiento.</p>
+            </div>
+
+            <!-- Columna 2: Contacto -->
+            <div>
+                <h3 class="text-lg font-bold mb-4 border-b border-blue-300 pb-2">Contáctanos</h3>
+                <ul class="space-y-2 text-sm opacity-90">
+                    <li class="flex items-center">
+                        <i class="ph-map-pin mr-2 text-lg"></i>
+                        <span>Av. Principal, Edificio La Paragua, Maturín, Venezuela.</span>
+                    </li>
+                    <li class="flex items-center">
+                        <i class="ph-phone-call mr-2 text-lg"></i>
+                        <span>(0281) 555-1234</span>
+                    </li>
+                    <li class="flex items-center">
+                        <i class="ph-envelope-simple mr-2 text-lg"></i>
+                        <span>info@laparagua.edu.ve</span>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Columna 3: Enlaces Rápidos -->
+            <div>
+                <h3 class="text-lg font-bold mb-4 border-b border-blue-300 pb-2">Enlaces</h3>
+                <ul class="space-y-2 text-sm opacity-90">
+                    <li><a href="form_registro.html" class="hover:text-yellow-300 transition duration-300">Preinscripción</a></li>
+                    <li><a href="#programas" class="hover:text-yellow-300 transition duration-300">Nuestros Programas</a></li>
+                    <li><a href="#nosotros" class="hover:text-yellow-300 transition duration-300">Nuestra Misión</a></li>
+                    <li><a href="#" class="hover:text-yellow-300 transition duration-300">Preguntas Frecuentes</a></li>
+                </ul>
+            </div>
+
+            <!-- Columna 4: Redes Sociales -->
+            <div>
+                <h3 class="text-lg font-bold mb-4 border-b border-blue-300 pb-2">Síguenos</h3>
+                <div class="flex space-x-4 text-2xl">
+                    <a href="#" class="hover:text-yellow-300 transition duration-300" aria-label="Facebook"><i class="ph-facebook-logo-fill"></i></a>
+                    <a href="#" class="hover:text-yellow-300 transition duration-300" aria-label="Instagram"><i class="ph-instagram-logo-fill"></i></a>
+                    <a href="#" class="hover:text-yellow-300 transition duration-300" aria-label="Twitter"><i class="ph-twitter-logo-fill"></i></a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Derechos de Autor y Políticas -->
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8 pt-6 border-t border-blue-400 text-center text-xs opacity-80">
+            <p>&copy; 2025 Centro de Educación Inicial "La Paragua". Todos los derechos reservados. | <a href="#" class="underline hover:text-yellow-300">Política de Privacidad</a></p>
+        </div>
+    </footer>
+
+    <!-- JavaScript para Interactividad -->
+    <script src="js/main.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>La Paragua - Portal Familiar</title>
+    <!-- Carga de Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Carga de Lucide Icons para los iconos -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Configuración de Tailwind para colores pastel y fuente Inter -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'primary-blue': '#D2E3FC', // Azul muy claro, base del fondo
+                        'secondary-pink': '#F48BAF', // Rosa de botones
+                        'accent-yellow': '#FFD870', // Amarillo de acento
+                        'accent-green': '#A7F0BA', // Verde de acento
+                        'accent-purple': '#D5BCFF', // Lila de acento
+                        'dark-text': '#1F2937', // Texto oscuro
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Estilo para el fondo que simula el degradado suave */
+        body {
+            background-color: #f7f7f7;
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* Estilo base para el contenedor principal: flex en móvil, grid en escritorio */
+        .dashboard-container {
+            display: flex; /* Por defecto, utiliza flex para apilar en móvil */
+            flex-direction: column;
+            min-height: 100vh;
+            max-width: 1400px;
+            margin: 0 auto;
+            border-radius: 1.5rem; /* Bordes redondeados generales */
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+        }
+
+        /* En pantallas medianas (md) y superiores, usa el diseño de grid con sidebar */
+        @media (min-width: 768px) {
+            .dashboard-container {
+                display: grid;
+                grid-template-columns: 280px 1fr;
+                flex-direction: row;
+            }
+        }
+
+        /* Estilo para el sidebar - oculto por defecto en móvil */
+        .sidebar-desktop {
+            display: none;
+        }
+        @media (min-width: 768px) {
+            .sidebar-desktop {
+                display: flex; /* Mostrar en escritorio */
+            }
+        }
+        
+        /* Clase para el fondo del contenido principal (el azul claro) */
+        .main-content-bg {
+            background-color: #D2E3FC;
+            padding: 1.5rem;
+        }
+
+        /* Estilo para los botones del sidebar */
+        .nav-link {
+            transition: all 0.2s ease;
+        }
+        .nav-link:hover {
+            background-color: #E6EFFF; /* Color pastel más claro al pasar el ratón */
+            color: #4A5568;
+        }
+
+        /* Estilo para las tarjetas de contenido */
+        .content-card {
+            min-height: 180px;
+            padding: 1.5rem;
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            transition: transform 0.2s;
+        }
+        .content-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 10px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="dashboard-container">
+        
+        <!-- Navbar Superior para Móvil -->
+        <nav class="md:hidden bg-white p-4 shadow-md flex items-center justify-between">
+            <div class="flex items-center space-x-2">
+                <!-- Logo La Paragua -->
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="12" cy="12" r="10" fill="#FFD870" opacity="0.3"/>
+                    <path d="M12 4C8.68629 4 6 6.68629 6 10C6 13.3137 12 20 12 20C12 20 18 13.3137 18 10C18 6.68629 15.3137 4 12 4Z" fill="#F48BAF"/>
+                </svg>
+                <span class="text-xl font-bold text-dark-text">La Paragua</span>
+            </div>
+            <button id="menu-toggle" class="text-gray-600 hover:text-secondary-pink">
+                <span data-lucide="menu" class="w-6 h-6"></span>
+            </button>
+        </nav>
+
+        <!-- Sidebar (Menú de Navegación) - Escritorio y Móvil (oculto por defecto) -->
+        <aside id="sidebar" class="sidebar-desktop bg-white p-6 shadow-xl flex-col md:flex md:sticky md:top-0 h-full w-full absolute md:relative z-40 transform -translate-x-full md:translate-x-0 transition-transform duration-300">
+            
+            <div class="mb-10 flex items-center space-x-2">
+                <!-- Logo La Paragua (Visible solo en Sidebar) -->
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="12" cy="12" r="10" fill="#FFD870" opacity="0.3"/>
+                    <path d="M12 4C8.68629 4 6 6.68629 6 10C6 13.3137 12 20 12 20C12 20 18 13.3137 18 10C18 6.68629 15.3137 4 12 4Z" fill="#F48BAF"/>
+                </svg>
+                <span class="text-xl font-bold text-dark-text">La Paragua</span>
+            </div>
+            
+            <nav class="space-y-2 flex-grow">
+                <!-- Links de Navegación -->
+                <a href="#" class="nav-link flex items-center p-3 rounded-lg text-gray-700 font-medium bg-primary-blue/50 text-dark-text">
+                    <span data-lucide="layout-dashboard" class="w-5 h-5 mr-3"></span>
+                    Inicio
+                </a>
+                <a href="#" class="nav-link flex items-center p-3 rounded-lg text-gray-500 hover:text-dark-text">
+                    <span data-lucide="user-square" class="w-5 h-5 mr-3"></span>
+                    Mi Hijo(a)
+                </a>
+                <a href="#" class="nav-link flex items-center p-3 rounded-lg text-gray-500 hover:text-dark-text">
+                    <span data-lucide="calendar-check" class="w-5 h-5 mr-3"></span>
+                    Asistencias
+                </a>
+                <a href="#" class="nav-link flex items-center p-3 rounded-lg text-gray-500 hover:text-dark-text">
+                    <span data-lucide="file-text" class="w-5 h-5 mr-3"></span>
+                    Boletas/Reportes
+                </a>
+                <a href="#" class="nav-link flex items-center p-3 rounded-lg text-gray-500 hover:text-dark-text">
+                    <span data-lucide="megaphone" class="w-5 h-5 mr-3"></span>
+                    Comunicados
+                </a>
+                <a href="#" class="nav-link flex items-center p-3 rounded-lg text-gray-500 hover:text-dark-text">
+                    <span data-lucide="image" class="w-5 h-5 mr-3"></span>
+                    Galería
+                </a>
+                <a href="#" class="nav-link flex items-center p-3 rounded-lg text-gray-500 hover:text-dark-text">
+                    <span data-lucide="settings" class="w-5 h-5 mr-3"></span>
+                    Perfil
+                </a>
+                
+            </nav>
+
+            <div class="mt-auto pt-6 border-t border-gray-100">
+                <button onclick="//logout()" class="w-full text-center p-3 text-sm text-gray-500 hover:text-secondary-pink transition duration-150 rounded-lg">
+                    <span data-lucide="log-out" class="w-4 h-4 mr-2 inline-block"></span>
+                    <a href="/">Cerrar Sesión</a>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Contenido Principal del Dashboard -->
+        <main class="main-content-bg p-4 sm:p-8 flex-grow">
+            <!-- Sección de Bienvenida y Perfil -->
+            <header class="mb-6 p-4 sm:p-6 bg-white rounded-xl shadow-lg flex flex-col sm:flex-row items-start sm:items-center justify-between">
+                <div class="flex items-center mb-4 sm:mb-0">
+                    <!-- Foto de perfil del niño/a -->
+                    <img id="child-photo" src="https://placehold.co/80x80/FFD870/FFFFFF?text=S" alt="Foto de Sofía" class="w-16 h-16 rounded-full object-cover mr-4 ring-2 ring-accent-yellow flex-shrink-0">
+                    <div>
+                        <h1 class="text-xl sm:text-3xl font-bold text-dark-text" id="welcome-message">
+                            ¡Bienvenido/a, Sr/a. Pérez!
+                        </h1>
+                        <p class="text-gray-600 text-sm sm:text-lg">Aquí están las últimas novedades de <span id="child-name-display" class="font-semibold text-secondary-pink">Sofía Pérez</span> del grupo <span id="child-group-display">Maternal (1-2 años)</span>.</p>
+                    </div>
+                </div>
+
+                <div class="flex items-center space-x-3 w-full sm:w-auto justify-end">
+                    <input type="text" placeholder="Buscar..." class="p-2 border border-gray-200 rounded-full focus:ring-secondary-pink focus:border-secondary-pink transition w-full sm:w-40 text-sm">
+                    <span data-lucide="bell" class="w-6 h-6 text-gray-500 cursor-pointer hover:text-secondary-pink transition hidden sm:block"></span>
+                    <span data-lucide="user-circle" class="w-8 h-8 text-dark-text cursor-pointer hidden sm:block"></span>
+                </div>
+            </header>
+
+            <!-- Tarjetas/Módulos Destacados -->
+            <!-- La clave aquí es usar grid-cols-1, luego md:grid-cols-2 y lg:grid-cols-3 para la responsividad -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+
+                <!-- Módulo de Asistencia -->
+                <div class="content-card bg-white border-4 border-secondary-pink/50">
+                    <h2 class="text-lg sm:text-xl font-semibold text-dark-text mb-3 flex items-center">
+                        <span data-lucide="calendar-check" class="w-5 h-5 mr-2 text-secondary-pink"></span>
+                        Asistencia - Sofía Pérez
+                    </h2>
+                    <p class="text-xs sm:text-sm text-gray-500 mb-4">Grupo Maternal</p>
+
+                    <div class="flex space-x-2 sm:space-x-4 mb-4 text-white">
+                        <span class="flex flex-col items-center p-2 rounded-lg bg-green-500 w-1/4 text-xs sm:text-sm">
+                            <span data-lucide="check" class="w-4 h-4 sm:w-5 sm:h-5"></span>
+                            Lun
+                        </span>
+                        <span class="flex flex-col items-center p-2 rounded-lg bg-green-500 w-1/4 text-xs sm:text-sm">
+                            <span data-lucide="check" class="w-4 h-4 sm:w-5 sm:h-5"></span>
+                            Mar
+                        </span>
+                        <span class="flex flex-col items-center p-2 rounded-lg bg-green-500 w-1/4 text-xs sm:text-sm">
+                            <span data-lucide="check" class="w-4 h-4 sm:w-5 sm:h-5"></span>
+                            Mié
+                        </span>
+                        <span class="flex flex-col items-center p-2 rounded-lg bg-gray-300 text-dark-text w-1/4 text-xs sm:text-sm">
+                            <span data-lucide="help-circle" class="w-4 h-4 sm:w-5 sm:h-5"></span>
+                            Jue
+                        </span>
+                        <span class="flex flex-col items-center p-2 rounded-lg bg-gray-300 text-dark-text w-1/4 text-xs sm:text-sm">
+                            <span data-lucide="help-circle" class="w-4 h-4 sm:w-5 sm:h-5"></span>
+                            Vie
+                        </span>
+                    </div>
+
+                    <p class="text-xs sm:text-sm text-gray-600 mb-4">Hoy: <span class="font-bold text-green-600">Presente</span> (Llegada 8:30 AM)</p>
+
+                    <a href="#" class="text-secondary-pink font-semibold hover:text-secondary-pink/80 transition flex items-center text-sm">
+                        Ver todas las asistencias
+                        <span data-lucide="arrow-right" class="w-4 h-4 ml-1"></span>
+                    </a>
+                </div>
+
+                <!-- Módulo de Boletas/Reportes -->
+                <div class="content-card bg-white border-4 border-accent-yellow/50">
+                    <h2 class="text-lg sm:text-xl font-semibold text-dark-text mb-3 flex items-center">
+                        <span data-lucide="award" class="w-5 h-5 mr-2 text-accent-yellow"></span>
+                        Última Boleta de Desarrollo
+                    </h2>
+                    <p class="text-xs sm:text-sm text-gray-500 mb-6">3º Bimestre 2023</p>
+
+                    <div class="flex items-center mb-6">
+                        <span data-lucide="file-text" class="w-6 h-6 mr-3 text-gray-400"></span>
+                        <span class="text-base sm:text-lg font-medium text-dark-text">Reporte del 20-04 al 12-07</span>
+                    </div>
+
+                    <button class="w-full py-3 bg-secondary-pink text-white font-bold rounded-lg hover:bg-secondary-pink/90 transition shadow-lg shadow-secondary-pink/30 text-sm sm:text-base">
+                        <span data-lucide="download" class="w-4 h-4 mr-2 inline-block"></span>
+                        Descargar Boleta (PDF)
+                    </button>
+                </div>
+
+                <!-- Módulo de Comunicados Importantes -->
+                <div class="content-card bg-white border-4 border-accent-green/50">
+                    <h2 class="text-lg sm:text-xl font-semibold text-dark-text mb-3 flex items-center">
+                        <span data-lucide="megaphone" class="w-5 h-5 mr-2 text-accent-green"></span>
+                        Comunicados Importantes
+                    </h2>
+                    <ul class="space-y-3 text-xs sm:text-sm text-gray-700">
+                        <li class="flex items-start">
+                            <span data-lucide="dot" class="w-5 h-5 mr-1 text-accent-green"></span>
+                            Recordatorio: Traer protector solar (Hoy)
+                        </li>
+                        <li class="flex items-start">
+                            <span data-lucide="dot" class="w-5 h-5 mr-1 text-accent-green"></span>
+                            Evento: Acto de Fin de Año (15/12/23)
+                        </li>
+                        <li class="flex items-start">
+                            <span data-lucide="dot" class="w-5 h-5 mr-1 text-accent-green"></span>
+                            ¡Felices Fiestas! El Centro cierra el 20/12.
+                        </li>
+                    </ul>
+
+                    <a href="#" class="text-accent-green font-semibold hover:text-accent-green/80 transition flex items-center text-sm mt-4">
+                        Ver todos
+                        <span data-lucide="arrow-right" class="w-4 h-4 ml-1"></span>
+                    </a>
+                </div>
+
+                <!-- Módulo de Actividades de la Semana -->
+                <!-- En móvil es 1 columna, en tablet es 2, en lg sigue siendo 2 de 3 -->
+                <div class="content-card bg-white border-4 border-accent-purple/50 lg:col-span-2">
+                    <h2 class="text-lg sm:text-xl font-semibold text-dark-text mb-4 flex items-center">
+                        <span data-lucide="notebook-text" class="w-5 h-5 mr-2 text-accent-purple"></span>
+                        Actividades de la Semana
+                    </h2>
+                    <!-- Grid con 1 columna en móvil y 2 en tablet/escritorio -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-gray-700 text-sm">
+                        <div>
+                            <p class="font-medium text-dark-text mb-2">Lunes 11 - Miércoles 13</p>
+                            <ul class="space-y-1 text-xs sm:text-sm">
+                                <li class="flex items-center"><span data-lucide="sparkles" class="w-4 h-4 mr-2 text-accent-purple flex-shrink-0"></span>Cuento y Pintura Temática</li>
+                                <li class="flex items-center"><span data-lucide="sparkles" class="w-4 h-4 mr-2 text-accent-purple flex-shrink-0"></span>Juegos en el Jardín: Desarrollo Motor</li>
+                                <li class="flex items-center"><span data-lucide="sparkles" class="w-4 h-4 mr-2 text-accent-purple flex-shrink-0"></span>Taller de Cocina (Hacer galletas)</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <p class="font-medium text-dark-text mb-2">Jueves 14 - Viernes 15</p>
+                            <ul class="space-y-1 text-xs sm:text-sm">
+                                <li class="flex items-center"><span data-lucide="sparkles" class="w-4 h-4 mr-2 text-accent-purple flex-shrink-0"></span>Música y Movimiento</li>
+                                <li class="flex items-center"><span data-lucide="sparkles" class="w-4 h-4 mr-2 text-accent-purple flex-shrink-0"></span>Lección de Figuras y Colores</li>
+                                <li class="flex items-center"><span data-lucide="sparkles" class="w-4 h-4 mr-2 text-accent-purple flex-shrink-0"></span>Hora del Círculo y Despedida</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Módulo de Información del Hijo(a) -->
+                <div class="content-card bg-white border-4 border-primary-blue/50">
+                    <h2 class="text-lg sm:text-xl font-semibold text-dark-text mb-4 flex items-center">
+                        <span data-lucide="info" class="w-5 h-5 mr-2 text-blue-500"></span>
+                        Datos de Sofía
+                    </h2>
+                    <ul class="space-y-2 text-xs sm:text-sm text-gray-700">
+                        <li><span class="font-medium text-dark-text">Grupo:</span> Maternal (1-2 años)</li>
+                        <li><span class="font-medium text-dark-text">Educadora:</span> Miss Ana</li>
+                        <li><span class="font-medium text-dark-text">Alergias:</span> NINGUNA</li>
+                        <li><span class="font-medium text-dark-text">Contacto de Emergencia:</span> Abuela Elena</li>
+                    </ul>
+
+                    <button class="w-full mt-4 py-2 bg-primary-blue text-dark-text font-semibold rounded-lg hover:bg-blue-300 transition border border-blue-400 text-sm">
+                        <span data-lucide="message-square" class="w-4 h-4 mr-2 inline-block"></span>
+                        Contactar a Miss Ana
+                    </button>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- Overlay para el menú móvil -->
+    <div id="sidebar-overlay" class="fixed inset-0 bg-black opacity-0 md:hidden z-30 pointer-events-none transition-opacity duration-300"></div>
+
+    <script>
+        // Inicializa los iconos de Lucide
+        lucide.createIcons();
+
+        // Datos de ejemplo
+        const parentName = "Pérez";
+        const childData = {
+            name: "Sofía",
+            group: "Maternal (1-2 años)",
+            photoUrl: "https://placehold.co/80x80/FFD870/FFFFFF?text=S",
+        };
+        
+        // Referencias del DOM
+        const sidebar = document.getElementById('sidebar');
+        const menuToggle = document.getElementById('menu-toggle');
+        const overlay = document.getElementById('sidebar-overlay');
+        
+        // Manejo del menú móvil
+        function toggleMenu() {
+            const isHidden = sidebar.classList.toggle('-translate-x-full');
+            if (isHidden) {
+                overlay.classList.add('opacity-0', 'pointer-events-none');
+                overlay.classList.remove('opacity-50');
+            } else {
+                overlay.classList.remove('opacity-0', 'pointer-events-none');
+                overlay.classList.add('opacity-50');
+            }
+        }
+
+        if (menuToggle) {
+            menuToggle.addEventListener('click', toggleMenu);
+        }
+
+        if (overlay) {
+            overlay.addEventListener('click', toggleMenu);
+        }
+
+        // Función para cargar los datos en el dashboard
+        function loadDashboardData() {
+            // Actualizar mensaje de bienvenida
+            const welcomeMessage = document.getElementById('welcome-message');
+            welcomeMessage.innerHTML = `¡Bienvenido/a, Sr/a. ${parentName}!`;
+
+            // Actualizar nombre y grupo del niño/a
+            document.getElementById('child-name-display').textContent = childData.name + ' Pérez';
+            document.getElementById('child-group-display').textContent = childData.group;
+
+            // Actualizar foto del niño/a
+            const childPhoto = document.getElementById('child-photo');
+            childPhoto.src = childData.photoUrl;
+        }
+
+        function logout() {
+            // Placeholder para la función de cerrar sesión
+            const modal = document.createElement('div');
+            modal.className = 'fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50';
+            modal.innerHTML = `
+                <div class="bg-white p-6 rounded-lg shadow-xl max-w-sm w-full border-4 border-secondary-pink">
+                    <h3 class="text-xl font-bold text-dark-text mb-4">Cerrar Sesión</h3>
+                    <p class="text-gray-700 mb-6">¿Estás seguro/a que deseas salir del Portal Familiar?</p>
+                    <div class="flex justify-end space-x-3">
+                        <button onclick="document.body.removeChild(this.closest('.fixed'))" class="px-4 py-2 text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition">Cancelar</button>
+                        <button onclick="alert('Funcionalidad de cerrar sesión no implementada')" class="px-4 py-2 bg-secondary-pink text-white font-semibold rounded-lg hover:bg-secondary-pink/90 transition">Confirmar Salida</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+
+        // Llamar a la función al cargar la página
+        window.onload = loadDashboardData;
+    </script>
+</body>
+</html>
