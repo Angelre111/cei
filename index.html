@@ -30,7 +30,7 @@
                 <nav class="hidden md:flex space-x-8">
                     <a href="login.html" class="text-gray-600 hover:text-pink-600 font-medium transition duration-300">Acceso</a>
                     <a href="#nosotros" class="text-gray-600 hover:text-pink-600 font-medium transition duration-300">Nosotros/Misión</a>
-                    <a href="#programas" class="text-gray-600 hover:text-pink-600 font-medium transition duration-300">Programas/Salas</a>
+                    <a href="#programas" class="text-gray-600 hover:text-pink-600 font-medium transition duration-300">Secciones/Aulas</a>
                     <a href="form_registro.html" class="text-gray-600 hover:text-pink-600 font-medium transition duration-300">Preinscripción</a>
                     <a href="#admisiones" class="text-gray-600 hover:text-pink-600 font-medium transition duration-300">Admisiones</a>
                     <a href="#galeria" class="text-gray-600 hover:text-pink-600 font-medium transition duration-300">Galería</a>
@@ -50,7 +50,7 @@
             <div class="pt-2 pb-3 space-y-1 sm:px-3">
                 <a href="login.html" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-blue-50">Acceso</a>
                 <a href="#nosotros" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-blue-50">Nosotros/Misión</a>
-                <a href="#programas" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-blue-50">Programas/Salas</a>
+                <a href="#programas" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-blue-50">Secciones/Aulas</a>
                 <a href="form_registro.html" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-blue-50">Preinscripción</a>
                 <a href="#galeria" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-blue-50">Galería</a>
                 <a href="#contacto" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-blue-50">Contacto</a>
@@ -60,32 +60,33 @@
 
     <main>
         <!-- 2. Sección Hero/Principal con Carrusel -->
-        <section id="inicio" class="relative overflow-hidden h-screen max-h-[800px] w-full">
+        <section id="inicio" class="relative overflow-hidden h-screen max-h-[1000px] w-full">
             <!-- Carrusel de Imágenes (Placeholder) -->
             <div id="carousel" class="absolute inset-0 w-full h-full">
                 <!-- Slide 1 -->
                 <div class="carousel-item active absolute inset-0 transition-opacity duration-1000 bg-cover bg-center"
-                     style="background-image: url('https://placehold.co/1920x800/2563EB/ffffff?text=Slide+1%0A(Aula+de+juegos)')"
+                     style="background-image: url('img/1.jpg')"
                      data-slide="1">
+                     
                 </div>
                 <!-- Slide 2 -->
                 <div class="carousel-item absolute inset-0 transition-opacity duration-1000 bg-cover bg-center"
-                     style="background-image: url('https://placehold.co/1920x800/F59E0B/ffffff?text=Slide+2%0A(Actividad+al+aire+libre)')"
+                     style="background-image: url('img/2.jpg')"
                      data-slide="2">
                 </div>
                 <!-- Slide 3 -->
                 <div class="carousel-item absolute inset-0 transition-opacity duration-1000 bg-cover bg-center"
-                     style="background-image: url('https://placehold.co/1920x800/10B981/ffffff?text=Slide+3%0A(Pintura+y+Arte)')"
+                     style="background-image: url('img/3.jpg')"
                      data-slide="3">
                 </div>
                 <!-- Slide 4 -->
                 <div class="carousel-item absolute inset-0 transition-opacity duration-1000 bg-cover bg-center"
-                     style="background-image: url('https://placehold.co/1920x800/EC4899/ffffff?text=Slide+4%0A(Lectura+en+grupo)')"
+                     style="background-image: url('img/4.jpg')"
                      data-slide="4">
                 </div>
                 <!-- Slide 5 -->
                 <div class="carousel-item absolute inset-0 transition-opacity duration-1000 bg-cover bg-center"
-                     style="background-image: url('https://placehold.co/1920x800/8B5CF6/ffffff?text=Slide+5%0A(Desarrollo+Motor)')"
+                     style="background-image: url('img/5.jpg')"
                      data-slide="5">
                 </div>
             </div>
@@ -112,11 +113,12 @@
             <div id="carousel-indicators" class="absolute bottom-6 left-1/2 transform -translate-x-1/2 flex space-x-3">
                 <!-- Los indicadores se generarán con JavaScript -->
             </div>
+            
         </section>
 
         <!-- 3. Sección de Características Destacadas/Valores -->
-        <section id="nosotros" class="py-16 sm:py-24 bg-white">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <section id="nosotros" class="py-12 bg-white">
+            <div class="max-w-7xl mx-auto px-4 sm:py-24 sm:px-6 lg:px-8 text-center">
                 <h2 class="text-3xl sm:text-4xl font-extrabold text-gray-900 mb-4">Nuestros Pilares Educativos</h2>
                 <p class="text-xl text-gray-600 mb-12 max-w-3xl mx-auto">Comprometidos con el desarrollo integral y la felicidad de cada niño.</p>
 
@@ -154,7 +156,7 @@
         <!-- 4. Sección de Programas/Salas Destacados -->
         <section id="programas" class="py-16 sm:py-24 color-paragua-light">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-                <h2 class="text-3xl sm:text-4xl font-extrabold text-gray-900 mb-4">Nuestras Salas y Programas</h2>
+                <h2 class="text-3xl sm:text-4xl font-extrabold text-gray-900 mb-4 mt-7">Nuestras Aulas y Secciones</h2>
                 <p class="text-xl text-gray-700 mb-12 max-w-3xl mx-auto">Organizamos el aprendizaje por grupos de edad para garantizar una atención y estímulo adecuados.</p>
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
@@ -204,40 +206,35 @@
                 </div>
             </div>
         </section>
-
+            
+        
         <!-- Sección de Testimonios (Opcional, no fue solicitada pero es buena práctica) -->
-        <section id="galeria" class="py-16 sm:py-24 bg-white">
+        <section id="galeria" class="py-16 sm:py-36 bg-white">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-                <h2 class="text-3xl sm:text-4xl font-extrabold text-gray-900 mb-10">Actividades del CEI La Paragua</h2>
-                <!--<p class="text-xl text-gray-600 mb-12 max-w-3xl mx-auto">Historias reales de familias felices con la educación de La Paragua.</p>-->
+                <h2 class="text-3xl sm:text-4xl font-extrabold text-gray-900 mb-10 -mt-7">Galería del CEI La Paragua</h2>
+                <p class="text-xl text-gray-600 mb-12 max-w-3xl mx-auto"><b>Nuestra Familia CEI La Paragua:</b> Recuerdos, aprendizaje y mucha felicidad.</p>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <!-- Testimonio 1 -->
-                    <blockquote class="bg-gray-50 p-6 rounded-2xl shadow-lg border-l-4 border-indigo-500 flex flex-col items-start text-left">
-                        <i class="ph-quotes text-5xl text-indigo-400 mb-4"></i>
-                        <p class="text-lg text-gray-700 italic mb-4">"Desde que mi hija está en La Paragua, no solo ha aprendido muchísimo, sino que va feliz todos los días. El personal es increíblemente atento y profesional."</p>
-                        <footer class="flex items-center mt-4">
-                            <img class="h-12 w-12 rounded-full object-cover mr-4" src="https://placehold.co/100x100/A0AEC0/ffffff?text=P" alt="Foto Padre">
-                            <div>
-                                <p class="font-bold text-gray-900">María Rojas</p>
-                                <p class="text-sm text-gray-500">Madre de Sofía (2do Grupo)</p>
-                            </div>
-                        </footer>
+                    <blockquote class="bg-gray-50 p-6 rounded-2xl shadow-lg border-l-4 border-pink-500 flex flex-col items-start text-left">
+                        
+                        <img src="img/navidad.jpg" width="3096" height="3072" viewBox="0 0 24 24" fill="none">
+                       
                     </blockquote>
                     <!-- Testimonio 2 -->
-                    <blockquote class="bg-gray-50 p-6 rounded-2xl shadow-lg border-l-4 border-pink-500 flex flex-col items-start text-left">
-                        <i class="ph-quotes text-5xl text-pink-400 mb-4"></i>
-                        <p class="text-lg text-gray-700 italic mb-4">"La transición de Maternal a 1er Grupo fue muy suave gracias a la dedicación de las maestras. Siento total confianza en dejar a mi hijo en sus manos. ¡Excelente centro!"</p>
-                        <footer class="flex items-center mt-4">
-                            <img class="h-12 w-12 rounded-full object-cover mr-4" src="https://placehold.co/100x100/A0AEC0/ffffff?text=P" alt="Foto Padre">
-                            <div>
-                                <p class="font-bold text-gray-900">Juan Pérez</p>
-                                <p class="text-sm text-gray-500">Padre de Lucas (1er Grupo)</p>
-                            </div>
-                        </footer>
+                    <blockquote class="bg-gray-50 p-6 rounded-2xl shadow-lg border-l-4 border-indigo-500 flex flex-col items-start text-left">
+                        
+                        <img src="img/patio.jpg" width="3096" height="3072" viewBox="0 0 24 24" fill="none">
+                        
                     </blockquote>
                 </div>
+                <div class="mt-12">
+                    <a href="" class="inline-flex items-center px-6 py-3 border-2 border-gray-900 text-base font-semibold rounded-full text-gray-900 hover:bg-gray-900 hover:text-white transition duration-300">
+                        Ver Mas de la Galeria
+                    </a>
+                </div>
             </div>
+            
         </section>
 
     </main>
@@ -249,7 +246,7 @@
             <!-- Columna 1: Logo y Slogan -->
             <div class="md:col-span-1">
                 <a href="#" class="flex items-center space-x-2 text-2xl font-extrabold text-white">
-                    <i class="ph-drop text-3xl"></i>
+                    <img src="img/cei.png" class="-ml-4" width="70" height="70" viewBox="0 0 24 24" fill="none">
                     <span>La Paragua</span>
                 </a>
                 <p class="mt-4 mr-2 text-sm opacity-90">Sembrando la semilla del futuro con amor y conocimiento.</p>
