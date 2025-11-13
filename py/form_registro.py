@@ -118,6 +118,7 @@ def registrar_representante():
             'success': True,
             'message': 'Registro exitoso.'
         }), 201 # Created
+    
 
     except mysql.connector.Error as err:
         conn.rollback()
@@ -209,6 +210,9 @@ def serve_login():
 def serve_representante():
     return send_from_directory(os.getcwd(), 'representante.html')
 
+@app.route('/docente.html')
+def serve_docente():
+    return send_from_directory(os.getcwd(), 'docente.html')
 
 @app.route('/css/<path:filename>')
 def serve_css(filename):

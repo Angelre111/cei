@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portal del Docente | Preescolar</title>
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- jsPDF CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    
+    <!-- jsPDF-AutoTable CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
+    
+    <!-- Inter Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'primary-blue': '#D2E3FC', // Azul muy claro, base del fondo
+                        'secondary-pink': '#F48BAF', // Rosa de botones
+                        'accent-yellow': '#FFD870', // Amarillo de acento
+                        'accent-green': '#A7F0BA', // Verde de acento
+                        'accent-purple': '#D5BCFF', // Lila de acento
+                        'dark-text': '#1F2937', // Texto oscuro
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Aplicamos la fuente Inter como predeterminada */
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        
+        /* Estilos para el scrollbar (opcional, pero mejora la estética) */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9; /* cool-gray-100 */
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #94a3b8; /* cool-gray-400 */
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #64748b; /* cool-gray-500 */
+        }
+
+        /* Clase activa personalizada para el sidebar */
+        .nav-link-active {
+            background-color: #e0f2fe; /* sky-100 */
+            color: #0284c7; /* sky-600 */
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body class="bg-blue-50">
+
+    <div class="flex h-screen overflow-hidden">
+        
+        <!-- ============================================ -->
+        <!-- SIDEBAR DE NAVEGACIÓN -->
+        <!-- ============================================ -->
+        <nav class="w-64 bg-white shadow-lg overflow-y-auto flex-shrink-0">
+            <div class="p-6">
+                <!-- Logo -->
+                <a href="#" class="flex items-center space-x-3">
+                    <div class="flex items-center justify-center w-20 h-20 bg-blue-100 rounded-full">
+                        <img src="img/cei.png" width="100" height="100" viewBox="0 0 24 24" fill="none">
+                    </div>
+                    <span class="text-xl font-bold text-gray-800">CEI La Paragua</span>
+                </a>
+            </div>
+            
+            <!-- Links de Navegación -->
+            <ul class="space-y-2 p-4">
+                <li>
+                    <a href="#" data-section="section-dashboard" class="nav-link flex items-center space-x-3 p-3 rounded-xl transition-all duration-200 nav-link-active">
+                        <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" /></svg>
+                        <span>Inicio</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" data-section="section-asistencia" class="nav-link flex items-center space-x-3 p-3 rounded-xl hover:bg-blue-50 transition-all duration-200">
+                        <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                        <span>Asistencia</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" data-section="section-evaluaciones" class="nav-link flex items-center space-x-3 p-3 rounded-xl hover:bg-blue-50 transition-all duration-200">
+                        <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125" /></svg>
+                        <span>Evaluaciones</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" data-section="section-listados" class="nav-link flex items-center space-x-3 p-3 rounded-xl hover:bg-blue-50 transition-all duration-200">
+                        <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 12h16.5m-16.5 3.75h16.5M3.75 19.5h16.5M5.625 4.5h12.75a1.875 1.875 0 010 3.75H5.625a1.875 1.875 0 010-3.75z" /></svg>
+                        <span>Listados</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" data-section="section-perfil" class="nav-link flex items-center space-x-3 p-3 rounded-xl hover:bg-blue-50 transition-all duration-200">
+                        <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A1.875 1.875 0 0118 22.5H6.001c-.966 0-1.83-.69-2.099-1.62a7.5 7.5 0 01-1.4-1.262z" /></svg>
+                        <span>Perfil</span>
+                    </a>
+                </li>
+            </ul>
+            <div class="fixed bottom-5 left-10 pt-6 border-t border-gray-100">
+                <button onclick="//logout()" class="w-full text-center p-3 text-sm text-gray-500 hover:text-secondary-pink transition duration-150 rounded-lg">
+                    <span data-lucide="log-out" class="w-4 h-4 mr-2 inline-block"></span>
+                    <a href="/">Cerrar Sesión</a>
+                </button>
+            </div>
+        </nav>
+
+        <!-- ============================================ -->
+        <!-- ÁREA DE CONTENIDO PRINCIPAL -->
+        <!-- ============================================ -->
+        <main class="flex-1 h-screen overflow-y-auto">
+            
+            <!-- Header del Contenido -->
+            <header class="sticky top-0 z-10 flex items-center justify-between p-4 bg-blue-50/80 backdrop-blur-sm border-b border-blue-100">
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-800">¡Bienvenida, Prof. Pérez!</h1>
+                    <p class="text-gray-500">Grupo: Maternal (1-2 años)</p>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div class="relative">
+                        <input type="text" placeholder="Buscar..." class="px-4 py-2 pr-10 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-300">
+                        <svg class="w-5 h-5 text-gray-400 absolute right-3 top-1/2 -translate-y-1/2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" /></svg>
+                    </div>
+                    <button class="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-100 rounded-full">
+                        <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-1.905l-1.05-1.05a.75.75 0 00-1.06 0l-1.06 1.05v1.905c0 1.36.224 2.67.65 3.879l-1.06 1.06a.75.75 0 000 1.06l1.06 1.06a.75.75 0 001.06 0l1.06-1.06zM6.467 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0112 9.75v-1.905l-1.05-1.05a.75.75 0 00-1.06 0l-1.06 1.05v1.905c0 1.36.224 2.67.65 3.879l-1.06 1.06a.75.75 0 000 1.06l1.06 1.06a.75.75 0 001.06 0l1.06-1.06zM12 21a.75.75 0 00.75-.75V18a.75.75 0 00-1.5 0v2.25A.75.75 0 0012 21z" /></svg>
+                    </button>
+                    <img src="https://placehold.co/100x100/EBF4FF/60A5FA?text=P" alt="Perfil" class="w-10 h-10 rounded-full border-2 border-blue-200">
+                </div>
+            </header>
+            
+            <!-- Contenedor de Secciones -->
+            <div class="p-6 space-y-6">
+
+                <!-- ============================================ -->
+                <!-- SECCIÓN 1: DASHBOARD (INICIO) -->
+                <!-- ============================================ -->
+                <section id="section-dashboard" class="page-section">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        
+                        <!-- Card: Asistencia del Día -->
+                        <div class="bg-white p-6 rounded-2xl shadow-md transition-all hover:shadow-lg">
+                            <h2 class="text-xl font-bold text-gray-800 mb-4">Asistencia del Día</h2>
+                            <div class="flex items-center justify-center space-x-4 mb-4">
+                                <div class="text-center">
+                                    <p class="text-4xl font-bold text-green-500">22</p>
+                                    <p class="text-gray-500">Presentes</p>
+                                </div>
+                                <div class="border-l h-10 border-gray-200"></div>
+                                <div class="text-center">
+                                    <p class="text-4xl font-bold text-gray-400">25</p>
+                                    <p class="text-gray-500">Total</p>
+                                </div>
+                            </div>
+                            <button data-target="section-asistencia" class="nav-button w-full text-center px-4 py-2 bg-blue-500 text-white rounded-lg font-semibold hover:bg-blue-600 transition-all">
+                                Gestionar Asistencia
+                            </button>
+                        </div>
+                        
+                        <!-- Card: Evaluaciones Pendientes -->
+                        <div class="bg-white p-6 rounded-2xl shadow-md transition-all hover:shadow-lg">
+                            <h2 class="text-xl font-bold text-gray-800 mb-4">Evaluaciones Pendientes</h2>
+                            <p class="text-gray-500 mb-2">Período 2 (en curso)</p>
+                            <div class="w-full bg-gray-200 rounded-full h-2.5 mb-2">
+                                <div class="bg-yellow-400 h-2.5 rounded-full" style="width: 60%"></div>
+                            </div>
+                            <p class="text-gray-600 mb-4 text-sm">Progreso: 15 / 25 evaluados</p>
+                            <button data-target="section-evaluaciones" class="nav-button w-full text-center px-4 py-2 bg-yellow-500 text-white rounded-lg font-semibold hover:bg-yellow-600 transition-all">
+                                Ir a Evaluar
+                            </button>
+                        </div>
+
+                        <!-- Card: Accesos Rápidos (PDF) -->
+                        <div class="bg-white p-6 rounded-2xl shadow-md transition-all hover:shadow-lg">
+                            <h2 class="text-xl font-bold text-gray-800 mb-4">Accesos Rápidos</h2>
+                            <p class="text-gray-500 mb-4">Genera el listado oficial de tu sección en formato PDF.</p>
+                            <!-- Botón inspirado en el rosa/coral de la imagen -->
+                            <button data-target="section-listados" class="nav-button w-full text-center px-4 py-3 bg-pink-500 text-white rounded-lg font-semibold hover:bg-pink-600 transition-all flex items-center justify-center space-x-2">
+                                <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" /></svg>
+                                <span>Generar Listado PDF</span>
+                            </button>
+                        </div>
+
+                    </div>
+                </section>
+
+                <!-- ============================================ -->
+                <!-- SECCIÓN 2: GESTIÓN DE ASISTENCIA -->
+                <!-- ============================================ -->
+                <section id="section-asistencia" class="page-section hidden">
+                    <div class="bg-white p-6 rounded-2xl shadow-md">
+                        <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-4">
+                            <h2 class="text-2xl font-bold text-gray-800">Gestión de Asistencia</h2>
+                            <div class="flex items-center space-x-2 mt-4 md:mt-0">
+                                <label for="attendance-date" class="text-gray-600 font-medium">Fecha:</label>
+                                <input type="date" id="attendance-date" class="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300" value="">
+                            </div>
+                        </div>
+                        
+                        <!-- Contenedor de la lista de alumnos -->
+                        <div id="attendance-list-container" class="space-y-3">
+                            <!-- Los alumnos se cargarán aquí vía JS -->
+                        </div>
+                        
+                        <div class="mt-6 text-right">
+                            <button id="btn-save-attendance" class="px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-all">
+                                Guardar Cambios
+                            </button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ============================================ -->
+                <!-- SECCIÓN 3: EVALUACIONES DESCRIPTIVAS -->
+                <!-- ============================================ -->
+                <section id="section-evaluaciones" class="page-section hidden">
+                    <div class="bg-white p-6 rounded-2xl shadow-md">
+                        <h2 class="text-2xl font-bold text-gray-800 mb-4">Registro de Evaluaciones Descriptivas</h2>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                            <div>
+                                <label for="eval-student-select" class="block text-sm font-medium text-gray-700 mb-1">Seleccionar Estudiante</label>
+                                <select id="eval-student-select" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300">
+                                    <!-- Opciones de estudiantes cargadas por JS -->
+                                </select>
+                            </div>
+                            <div>
+                                <label for="eval-period-select" class="block text-sm font-medium text-gray-700 mb-1">Seleccionar Período Académico</label>
+                                <select id="eval-period-select" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300">
+                                    <option value="p1">Período 1</option>
+                                    <option value="p2" selected>Período 2</option>
+                                    <option value="p3">Período 3</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label for="eval-textarea" class="block text-sm font-medium text-gray-700 mb-1">Evaluación Descriptiva</label>
+                            <textarea id="eval-textarea" rows="10" class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300" placeholder="Escriba aquí el informe descriptivo del estudiante..."></textarea>
+                        </div>
+
+                        <div class="mt-6 text-right">
+                            <button id="btn-save-evaluation" class="px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-all">
+                                Guardar Evaluación
+                            </button>
+                        </div>
+                    </div>
+                </section>
+                
+                <!-- ============================================ -->
+                <!-- SECCIÓN 4: LISTADO DE ALUMNOS (PDF) -->
+                <!-- ============================================ -->
+                <section id="section-listados" class="page-section hidden">
+                    <div class="bg-white p-6 rounded-2xl shadow-md">
+                        <div class="flex items-center justify-between mb-4">
+                            <h2 class="text-2xl font-bold text-gray-800">Listado de Alumnos</h2>
+                            <button id="btn-download-pdf" class="px-4 py-2 bg-pink-500 text-white rounded-lg font-semibold hover:bg-pink-600 transition-all flex items-center space-x-2">
+                                <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" /></svg>
+                                <span>Descargar Listado (PDF)</span>
+                            </button>
+                        </div>
+
+                        <p class="text-gray-600 mb-4">Vista previa del listado oficial de la sección.</p>
+
+                        <!-- Tabla de Vista Previa -->
+                        <div class="overflow-x-auto rounded-lg border">
+                            <table class="w-full min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Foto</th>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nombre</th>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Apellido</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="preview-table-body" class="bg-white divide-y divide-gray-200">
+                                    <!-- Filas cargadas por JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+                
+                <!-- ============================================ -->
+                <!-- SECCIÓN 5: PERFIL (Placeholder) -->
+                <!-- ============================================ -->
+                <section id="section-perfil" class="page-section hidden">
+                    <div class="bg-white p-6 rounded-2xl shadow-md">
+                        <h2 class="text-2xl font-bold text-gray-800 mb-4">Perfil del Docente</h2>
+                        <p class="text-gray-600">Aquí iría la información del perfil del usuario.</p>
+                    </div>
+                </section>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- TOAST NOTIFICATION (para feedback) -->
+    <!-- ============================================ -->
+    <div id="toast-notification" class="fixed top-5 right-5 z-50 p-4 rounded-lg shadow-lg text-white transition-transform transform translate-x-full duration-300 ease-in-out">
+        <span id="toast-message"></span>
+    </div>
+
+
+    <!-- ============================================ -->
+    <!-- SCRIPT PRINCIPAL DE LA APLICACIÓN -->
+    <!-- ============================================ -->
+    <script>
+        // Importar jsPDF (ya está en el scope global por el CDN)
+        const { jsPDF } = window.jspdf;
+
+        // ============================================
+        // DATOS FICTICIOS (MOCK DATA)
+        // ============================================
+        const mockEstudiantes = [
+            { id: 1, nombre: "Sofía", apellido: "Pérez", fotoUrl: "https://placehold.co/100x100/FEF3C7/F97316?text=S" },
+            { id: 2, nombre: "Mateo", apellido: "González", fotoUrl: "https://placehold.co/100x100/E0F2FE/0284C7?text=M" },
+            { id: 3, nombre: "Valentina", apellido: "Rodríguez", fotoUrl: "https://placehold.co/100x100/FCE7F3/DB2777?text=V" },
+            { id: 4, nombre: "Leo", apellido: "Martínez", fotoUrl: "https://placehold.co/100x100/D1FAE5/059669?text=L" },
+            { id: 5, nombre: "Isabella", apellido: "García", fotoUrl: "https://placehold.co/100x100/EFE7FF/7C3AED?text=I" },
+            { id: 6, nombre: "Thiago", apellido: "López", fotoUrl: "https://placehold.co/100x100/F3E8FF/8B5CF6?text=T" },
+            { id: 7, nombre: "Emma", apellido: "Sánchez", fotoUrl: "https://placehold.co/100x100/FFF7ED/F97316?text=E" },
+        ];
+
+        // Almacén de datos en memoria
+        const appData = {
+            asistencia: {}, // { "2023-11-12": { 1: "P", 2: "A", ... }, ... }
+            evaluaciones: {} // { "p1": { 1: "Texto...", 2: "Texto..." }, ... }
+        };
+
+        // ============================================
+        // INICIALIZACIÓN DE LA APP
+        // ============================================
+        document.addEventListener('DOMContentLoaded', () => {
+            initApp();
+        });
+
+        function initApp() {
+            setupNavigation();
+            
+            // Setear la fecha de hoy en el picker de asistencia
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('attendance-date').value = today;
+
+            // Cargar datos iniciales
+            populateAttendanceList();
+            populateStudentDropdowns();
+            populatePreviewTable();
+
+            // Configurar Listeners de acciones
+            setupActionListeners();
+        }
+
+        // ============================================
+        // NAVEGACIÓN
+        // ============================================
+        function setupNavigation() {
+            const navLinks = document.querySelectorAll('.nav-link');
+            const navButtons = document.querySelectorAll('.nav-button'); // Botones del dashboard
+            const pageSections = document.querySelectorAll('.page-section');
+
+            const allNavTriggers = [...navLinks, ...navButtons];
+
+            allNavTriggers.forEach(trigger => {
+                trigger.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    
+                    const targetSectionId = trigger.dataset.section || trigger.dataset.target;
+                    
+                    // Ocultar todas las secciones
+                    pageSections.forEach(section => {
+                        section.classList.add('hidden');
+                    });
+                    
+                    // Mostrar la sección objetivo
+                    document.getElementById(targetSectionId).classList.remove('hidden');
+
+                    // Actualizar estado activo solo para sidebar
+                    if (trigger.classList.contains('nav-link')) {
+                        navLinks.forEach(link => {
+                            link.classList.remove('nav-link-active');
+                        });
+                        trigger.classList.add('nav-link-active');
+                    }
+                });
+            });
+        }
+
+        // ============================================
+        // SECCIÓN 2: ASISTENCIA
+        // ============================================
+        
+        function populateAttendanceList() {
+            const container = document.getElementById('attendance-list-container');
+            const selectedDate = document.getElementById('attendance-date').value;
+            
+            if (!appData.asistencia[selectedDate]) {
+                appData.asistencia[selectedDate] = {};
+            }
+            const dailyAttendance = appData.asistencia[selectedDate];
+            
+            container.innerHTML = ''; // Limpiar lista
+            
+            mockEstudiantes.forEach(student => {
+                const status = dailyAttendance[student.id] || null; // 'P', 'A', 'J', or null
+
+                const studentHtml = `
+                    <div class="flex flex-col md:flex-row md:items-center md:justify-between p-4 rounded-xl border border-gray-200 bg-gray-50/50">
+                        <div class="flex items-center space-x-3 mb-3 md:mb-0">
+                            <img src="${student.fotoUrl}" alt="${student.nombre}" class="w-12 h-12 rounded-full">
+                            <div>
+                                <p class="font-semibold text-gray-800">${student.nombre} ${student.apellido}</p>
+                                <span class="text-sm text-gray-500">ID: ${student.id}</span>
+                            </div>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <button data-id="${student.id}" data-status="P" class="attendance-btn ${status === 'P' ? 'bg-green-500 text-white' : 'bg-green-100 text-green-700'} w-10 h-10 rounded-full font-bold transition-all">P</button>
+                            <button data-id="${student.id}" data-status="A" class="attendance-btn ${status === 'A' ? 'bg-red-500 text-white' : 'bg-red-100 text-red-700'} w-10 h-10 rounded-full font-bold transition-all">A</button>
+                            <button data-id="${student.id}" data-status="J" class="attendance-btn ${status === 'J' ? 'bg-yellow-500 text-white' : 'bg-yellow-100 text-yellow-700'} w-10 h-10 rounded-full font-bold transition-all">J</button>
+                            <button data-id="${student.id}" data-status="null" class="attendance-btn-delete ${!status ? 'text-gray-300' : 'text-gray-500 hover:text-red-500'} ml-2 p-2 rounded-full transition-all" title="Eliminar/Resetear">
+                                <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9.75L14.25 12m-2.438 2.438L12 9.75m0 0L9.562 7.312M12 9.75L7.312 14.438m-2.188-2.188a9 9 0 1112.728 0 9 9 0 01-12.728 0z" /></svg>
+                            </button>
+                        </div>
+                    </div>
+                `;
+                container.innerHTML += studentHtml;
+            });
+
+            // Re-adjuntar listeners de botones de asistencia
+            setupAttendanceButtonListeners();
+        }
+
+        function setupAttendanceButtonListeners() {
+            const container = document.getElementById('attendance-list-container');
+            
+            container.addEventListener('click', (e) => {
+                const button = e.target.closest('.attendance-btn, .attendance-btn-delete');
+                if (!button) return;
+
+                const studentId = button.dataset.id;
+                const newStatus = button.dataset.status; // 'P', 'A', 'J', o 'null'
+                const selectedDate = document.getElementById('attendance-date').value;
+
+                // Lógica de "Eliminar" (resetear)
+                if (newStatus === 'null') {
+                    delete appData.asistencia[selectedDate][studentId];
+                } else {
+                    // Lógica de Registrar/Modificar
+                    appData.asistencia[selectedDate][studentId] = newStatus;
+                }
+                
+                // Repintar la lista para reflejar el estado
+                // En una app más grande, solo actualizaríamos los botones afectados
+                populateAttendanceList();
+            });
+        }
+        
+        // ============================================
+        // SECCIÓN 3: EVALUACIONES
+        // ============================================
+        
+        function populateStudentDropdowns() {
+            const select = document.getElementById('eval-student-select');
+            select.innerHTML = '<option value="">Seleccione un estudiante...</option>';
+            mockEstudiantes.forEach(student => {
+                select.innerHTML += `<option value="${student.id}">${student.nombre} ${student.apellido}</option>`;
+            });
+        }
+
+        function loadEvaluation() {
+            const studentId = document.getElementById('eval-student-select').value;
+            const period = document.getElementById('eval-period-select').value;
+            const textarea = document.getElementById('eval-textarea');
+
+            if (appData.evaluaciones[period] && appData.evaluaciones[period][studentId]) {
+                textarea.value = appData.evaluaciones[period][studentId];
+            } else {
+                textarea.value = '';
+            }
+        }
+
+        function saveEvaluation() {
+            const studentId = document.getElementById('eval-student-select').value;
+            const period = document.getElementById('eval-period-select').value;
+            const text = document.getElementById('eval-textarea').value;
+
+            if (!studentId || !period) {
+                showToast("Por favor, seleccione un estudiante y un período.", "error");
+                return;
+            }
+
+            if (!appData.evaluaciones[period]) {
+                appData.evaluaciones[period] = {};
+            }
+            
+            appData.evaluaciones[period][studentId] = text;
+            showToast("Evaluación guardada exitosamente.", "success");
+            
+            console.log("Datos de Evaluaciones:", appData.evaluaciones);
+        }
+
+        // ============================================
+        // SECCIÓN 4: LISTADOS Y PDF
+        // ============================================
+        
+        function populatePreviewTable() {
+            const tbody = document.getElementById('preview-table-body');
+            tbody.innerHTML = '';
+            mockEstudiantes.forEach(student => {
+                tbody.innerHTML += `
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${student.id}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <img src="${student.fotoUrl}" alt="${student.nombre}" class="w-10 h-10 rounded-full">
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800">${student.nombre}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800">${student.apellido}</td>
+                    </tr>
+                `;
+            });
+        }
+
+        function generatePDF() {
+            const doc = new jsPDF();
+
+            // Título
+            doc.setFontSize(18);
+            doc.text("Listado de Alumnos - Grupo Maternal", 14, 22);
+            doc.setFontSize(11);
+            doc.text(`Fecha: ${new Date().toLocaleDateString()}`, 14, 30);
+            
+            // Preparar datos para AutoTable
+            const tableData = mockEstudiantes.map(student => {
+                return [student.id, student.nombre, student.apellido];
+            });
+            
+            // Generar la tabla
+            doc.autoTable({
+                startY: 40,
+                head: [['ID', 'Nombre', 'Apellido']],
+                body: tableData,
+                theme: 'striped', // 'striped', 'grid', 'plain'
+                headStyles: {
+                    fillColor: [37, 99, 235] // azul-600
+                }
+            });
+
+            // Guardar el PDF
+            doc.save('listado_alumnos_maternal.pdf');
+            showToast("PDF generado exitosamente.", "success");
+        }
+
+        // ============================================
+        // LISTENERS DE ACCIONES GLOBALES
+        // ============================================
+        
+        function setupActionListeners() {
+            // Asistencia
+            document.getElementById('attendance-date').addEventListener('change', populateAttendanceList);
+            document.getElementById('btn-save-attendance').addEventListener('click', () => {
+                showToast("Asistencia guardada exitosamente.", "success");
+                console.log("Datos de Asistencia:", appData.asistencia);
+            });
+
+            // Evaluaciones
+            document.getElementById('eval-student-select').addEventListener('change', loadEvaluation);
+            document.getElementById('eval-period-select').addEventListener('change', loadEvaluation);
+            document.getElementById('btn-save-evaluation').addEventListener('click', saveEvaluation);
+            
+            // Listados (PDF)
+            document.getElementById('btn-download-pdf').addEventListener('click', generatePDF);
+        }
+
+        // ============================================
+        // UTILIDADES (Toast Notification)
+        // ============================================
+        
+        function showToast(message, type = "success") {
+            const toast = document.getElementById('toast-notification');
+            const messageSpan = document.getElementById('toast-message');
+            
+            messageSpan.innerText = message;
+            
+            // Resetear clases
+            toast.classList.remove('bg-green-500', 'bg-red-500', 'translate-x-full');
+            
+            if (type === "success") {
+                toast.classList.add('bg-green-500');
+            } else if (type === "error") {
+                toast.classList.add('bg-red-500');
+            }
+
+            // Mostrar
+            toast.classList.remove('translate-x-full');
+            toast.classList.add('translate-x-0');
+            
+            // Ocultar después de 3 segundos
+            setTimeout(() => {
+                toast.classList.remove('translate-x-0');
+                toast.classList.add('translate-x-full');
+            }, 3000);
+        }
+
+    </script>
+
+</body>
+</html>

@@ -109,7 +109,7 @@
             <p class="text-sm text-gray-600">
                 ¿Aún no tienes cuenta?
                 <!-- CAMBIO: Enlace de registro en color Rosa -->
-                <a href="#" class="font-medium text-pink-600 hover:text-pink-800 transition duration-200">
+                <a href="/" class="font-medium text-pink-600 hover:text-pink-800 transition duration-200">
                     Contacta a Admisiones
                 </a>
             </p>
@@ -147,7 +147,7 @@
                 const json = await res.json().catch(() => ({}));
 
                 if (res.ok) {
-                    showMessage(json.message || 'Inicio de sesión correcto. Redirigiendo...', 'bg-green-100 text-green-800');
+                    
                     setTimeout(() => window.location.href = 'representante.html', 800);
                 } else if (res.status === 400) {
                     showMessage(json.message || 'Errores en los datos enviados.', 'bg-red-100 text-red-800');
