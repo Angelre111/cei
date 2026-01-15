@@ -1,22 +1,29 @@
 # =======================================================
-# VALIDACIÓN DEL FORMULARIO DE REGISTRO CON PYTHON (FLASK)
+# SISTEMA DE REGISTRO CON ENVÍO REAL DE CORREOS (GMAIL)
 # =======================================================
 
-# Librerías requeridas:
-# pip install Flask mysql-connector-python Flask-Bcrypt
-from flask import Flask, request, jsonify, send_from_directory
+from flask import Flask, request, jsonify, send_from_directory, session, redirect, url_for
 import os
 import mysql.connector
 from flask_bcrypt import Bcrypt
-import re # Módulo para expresiones regulares (validación de email)
+import re
+import secrets 
 from form_inicio import validate_login
 
-# Sirve archivos estáticos desde el directorio del proyecto en desarrollo
-# Esto facilita probar `index.html` y otros .html sin configurar un servidor aparte.
-app = Flask(__name__)
-bcrypt = Bcrypt(app)
+# --- LIBRERÍAS PARA EMAIL (NUEVO) ---
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 
-# --- CONFIGURACIÓN DE LA BASE DE DATOS (REEMPLAZA ESTOS VALORES) ---
+app = Flask(__name__)
+app.secret_key = 'tu_clave_secreta_super_segura' 
+bcrypt = Bcrypt(app) 
+
+# --- CONFIGURACIÓN EMAIL (¡Edita esto!) ---
+SMTP_EMAIL = 'requenaangel823@gmail.com'           # <--- TU GMAIL AQUÍ
+SMTP_PASSWORD = 'dqju fgpd tufj blkw'       # <--- LA CONTRASEÑA DE APLICACIÓN DE 16 LETRAS
+
+# --- CONFIGURACIÓN BASE DE DATOS ---
 DB_CONFIG = {
     'host': 'localhost',
     'user': 'root',
@@ -25,218 +32,223 @@ DB_CONFIG = {
 }
 
 def get_db_connection():
-    """Establece y devuelve una conexión a la base de datos MySQL."""
     try:
         conn = mysql.connector.connect(**DB_CONFIG)
         return conn
     except mysql.connector.Error as err:
-        print(f"Error al conectar a MySQL: {err}")
+        print(f"Error MySQL: {err}")
         return None
 
-# --- VALIDACIONES BÁSICAS ---
+# --- FUNCIÓN DE ENVÍO DE CORREO REAL (NUEVO) ---
+def enviar_correo_verificacion(destinatario, token):
+    try:
+        # Configurar el mensaje
+        msg = MIMEMultipart()
+        msg['From'] = SMTP_EMAIL
+        msg['To'] = destinatario
+        msg['Subject'] = "Valida tu cuenta - Inscripciones CEI"
 
-def validar_email(email):
-    """Verifica el formato del correo electrónico."""
-    # Expresión regular simple para verificar el formato del email
-    if re.match(r"[^@]+@[^@]+\.[^@]+", email):
+        # El enlace (OJO: En producción cambia localhost por tu dominio real)
+        link = f"http://127.0.0.1:5000/api/verificar-email?token={token}"
+
+        # Cuerpo del correo en HTML (Diseño bonito)
+        cuerpo_html = f"""
+        <!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    
+</head>
+<body style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f7ff; padding: 40px 10px;">
+    
+    <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 24px; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.05);">
+        
+        <!-- Espacio para el Logo -->
+        <div style="padding: 30px 20px 10px 20px; text-align: center;">
+            <!-- Aquí colocas la URL de tu logo -->
+            <img src="../img/cei.png" width="100" height="100" viewBox="0 0 24 24" fill="none">
+        </div>
+
+        <div style="padding: 30px 40px;">
+            <h2 style="color: #0284c7; text-align: center; font-size: 26px; margin-bottom: 20px;">¡Bienvenido al Sistema!</h2>
+            
+            <p style="color: #4b5563; font-size: 16px; line-height: 1.6;">Hola, <strong>Representante</strong>:</p>
+            
+            <p style="color: #4b5563; font-size: 16px; line-height: 1.6;">
+                ¡Qué alegría tenerte con nosotros! Gracias por registrarte en nuestro portal educativo. Para completar el proceso de inscripción de tu representado, necesitamos validar tu dirección de correo electrónico.
+            </p>
+
+            <!-- Botón de Acción -->
+            <div style="text-align: center; margin: 40px 0;">
+                <a href="{link}" style="background-color: #ec4899; color: #ffffff; padding: 16px 32px; text-decoration: none; border-radius: 14px; font-weight: bold; font-size: 18px; display: inline-block; box-shadow: 0 4px 12px rgba(236, 72, 153, 0.3);">
+                    Verificar mi Cuenta
+                </a>
+            </div>
+
+            <p style="color: #6b7280; font-size: 14px; line-height: 1.5; text-align: center;">
+                Si el botón de arriba no funciona, puedes copiar y pegar este enlace en tu navegador:
+            </p>
+            
+            <p style="background-color: #f8fafc; padding: 15px; border-radius: 10px; font-size: 12px; color: #3b82f6; text-align: center; word-break: break-all;">
+                {link}
+            </p>
+
+            <div style="border-top: 1px solid #e5e7eb; margin-top: 40px; padding-top: 20px; text-align: center;">
+                <p style="color: #9ca3af; font-size: 13px;">
+                    Este es un mensaje automático, por favor no respondas a este correo.<br>
+                    <strong>Sistema Escolar de Preescolar</strong>
+                </p>
+            </div>
+        </div>
+        
+        <!-- Decoración Inferior Estilo Preescolar -->
+        <div style="background-color: #e0f2fe; height: 10px; width: 100%;"></div>
+    </div>
+    
+    <div style="text-align: center; margin-top: 20px;">
+        <p style="color: #94a3b8; font-size: 12px;">© 2023 Tu Institución Educativa. Todos los derechos reservados.</p>
+    </div>
+
+</body>
+</html>
+        """
+        
+        msg.attach(MIMEText(cuerpo_html, 'html'))
+
+        # Conexión con Gmail (Puerto 465 para SSL)
+        server = smtplib.SMTP_SSL('smtp.gmail.com', 465)
+        server.login(SMTP_EMAIL, SMTP_PASSWORD)
+        server.send_message(msg)
+        server.quit()
+        print(f"✅ Correo enviado correctamente a {destinatario}")
         return True
-    return False
 
+    except Exception as e:
+        print(f"❌ Error enviando correo: {e}")
+        return False
+
+# --- VALIDACIONES AUXILIARES ---
 def email_ya_existe(email, cursor):
-    """Verifica si el correo electrónico ya está registrado en la base de datos."""
-    query = "SELECT COUNT(*) FROM representantes WHERE email = %s"
-    cursor.execute(query, (email,))
-    count = cursor.fetchone()[0]
-    return count > 0
+    cursor.execute("SELECT COUNT(*) FROM representantes WHERE email = %s", (email,))
+    return cursor.fetchone()[0] > 0
 
-# --- RUTA PRINCIPAL DE REGISTRO ---
-
+# --- API: REGISTRO ---
 @app.route('/api/registrar', methods=['POST'])
 def registrar_representante():
-    """Maneja la solicitud POST del formulario de registro."""
     data = request.json
-
-    # 1. Extracción de datos
     nombre_completo = data.get('nombre_completo')
     email = data.get('email')
     telefono = data.get('telefono')
     contrasena = data.get('contrasena')
 
-    # 2. Validación de campos obligatorios
     if not all([nombre_completo, email, telefono, contrasena]):
-        return jsonify({
-            'success': False,
-            'message': 'Todos los campos son obligatorios.'
-        }), 400 # Bad Request
-
-    # 3. Validación de formato de datos
-    if not validar_email(email):
-        return jsonify({
-            'success': False,
-            'message': 'El formato del correo electrónico no es válido.'
-        }), 400
-
-    if len(contrasena) < 8:
-        return jsonify({
-            'success': False,
-            'message': 'La contraseña debe tener al menos 8 caracteres.'
-        }), 400
+        return jsonify({'success': False, 'message': 'Faltan datos.'}), 400
 
     conn = get_db_connection()
-    if conn is None:
-        return jsonify({
-            'success': False,
-            'message': 'Error interno del servidor al conectar con la base de datos.'
-        }), 500
-
+    if not conn: return jsonify({'success': False, 'message': 'Error de BD'}), 500
     cursor = conn.cursor()
 
     try:
-        # 4. Validación de unicidad (Email)
         if email_ya_existe(email, cursor):
-            return jsonify({
-                'success': False,
-                'message': 'Este correo electrónico ya está registrado.'
-            }), 409 # Conflict
+            return jsonify({'success': False, 'message': 'Correo ya registrado.'}), 409
 
-        # 5. Hashing de la contraseña (¡CRÍTICO para la seguridad!)
         hashed_password = bcrypt.generate_password_hash(contrasena).decode('utf-8')
+        token = secrets.token_urlsafe(32)
+        estado_inicial = 'pendiente_verificacion'
 
-        # 6. Preparación de la consulta SQL de inserción
         insert_query = """
-        INSERT INTO representantes (nombre_completo, email, telefono, contrasena_hash, activo)
-        VALUES (%s, %s, %s, %s, %s)
+        INSERT INTO representantes (nombre_completo, email, telefono, contrasena_hash, fecha_registro, estado_cuenta, token_verificacion)
+        VALUES (%s, %s, %s, %s, NOW(), %s, %s)
         """
-        # activo = 1 porque, por ahora, omitimos la verificación por correo
-        cursor.execute(insert_query, (nombre_completo, email, telefono, hashed_password, 1))
-
-        # 7. Confirmar la transacción
+        cursor.execute(insert_query, (nombre_completo, email, telefono, hashed_password, estado_inicial, token))
         conn.commit()
 
-        # Respuesta de éxito (cuenta activada automáticamente)
-        return jsonify({
-            'success': True,
-            'message': 'Registro exitoso.'
-        }), 201 # Created
-    
+        # --- AQUÍ LLAMAMOS A LA FUNCIÓN DE CORREO REAL ---
+        envio_exitoso = enviar_correo_verificacion(email, token)
+
+        if envio_exitoso:
+            return jsonify({'success': True, 'message': 'Registro exitoso. Se ha enviado un correo de verificación.'}), 201
+        else:
+            # Si falla el correo, podrías decidir borrar el usuario o avisar que hubo un problema
+            return jsonify({'success': True, 'message': 'Registro guardado, pero hubo un error enviando el correo. Contacte soporte.'}), 201
 
     except mysql.connector.Error as err:
         conn.rollback()
-        print(f"Error de base de datos durante la inserción: {err}")
-        return jsonify({
-            'success': False,
-            'message': f'Error en la base de datos: {err}'
-        }), 500
-
+        return jsonify({'success': False, 'message': f'Error BD: {err}'}), 500
     finally:
         cursor.close()
         conn.close()
 
-
-@app.route('/api/login', methods=['POST'])
-def api_login():
-    """Endpoint para iniciar sesión.
-
-    Recibe JSON { email, password }. Usa `validate_login` de `form_inicio.py`.
-    """
-    data = request.get_json(silent=True)
-    if not data:
-        return jsonify({'success': False, 'message': 'JSON inválido.'}), 400
-
-    # Validación del formato de entrada
-    is_valid, errors = validate_login(data)
-    if not is_valid:
-        return jsonify({'success': False, 'message': 'Errores de validación.', 'errors': errors}), 400
-
-    email = data.get('email')
-    password = data.get('password')
+# --- API: VERIFICACIÓN ---
+@app.route('/api/verificar-email', methods=['GET'])
+def verificar_email():
+    token = request.args.get('token')
+    if not token: return "Token inválido", 400
 
     conn = get_db_connection()
-    if conn is None:
-        return jsonify({'success': False, 'message': 'Error interno: no se pudo conectar a la base de datos.'}), 500
+    cursor = conn.cursor(dictionary=True)
 
-    cursor = conn.cursor()
     try:
-        cursor.execute("SELECT id, contrasena_hash, activo FROM representantes WHERE email = %s", (email,))
-        row = cursor.fetchone()
-        if not row:
-            # No dar detalles para evitar enumeración de usuarios
-            return jsonify({'success': False, 'message': 'Credenciales inválidas.'}), 401
+        cursor.execute("SELECT id, email, nombre_completo FROM representantes WHERE token_verificacion = %s", (token,))
+        user = cursor.fetchone()
 
-        user_id, contrasena_hash, activo = row[0], row[1], row[2]
+        if not user: return "Enlace inválido o expirado.", 400
 
-        # Verificar contraseña
-        if not bcrypt.check_password_hash(contrasena_hash, password):
-            return jsonify({'success': False, 'message': 'Credenciales inválidas.'}), 401
+        cursor.execute("UPDATE representantes SET estado_cuenta = 'activo_incompleto', token_verificacion = NULL WHERE id = %s", (user['id'],))
+        conn.commit()
 
-        if activo != 1:
-            return jsonify({'success': False, 'message': 'Cuenta no verificada. Revisa tu correo.'}), 403
+        session['user_id'] = user['id']
+        session['email'] = user['email']
+        
+        return redirect('/formulario.html') 
 
-        # Login exitoso — aquí podrías crear sesión o devolver un token
-        return jsonify({'success': True, 'message': 'Login correcto.'}), 200
-
-    except mysql.connector.Error as err:
-        print('Error en login (BD):', err)
-        return jsonify({'success': False, 'message': 'Error interno en la base de datos.'}), 500
+    except Exception as e:
+        return f"Error: {e}", 500
     finally:
         cursor.close()
         conn.close()
 
-# Nota: app.run se llama al final del archivo, después de declarar todas las rutas.
-
-
-@app.route('/')
-def index():
-    """Sirve el archivo index.html desde la raíz del proyecto."""
-    # Si estás ejecutando el script desde la raíz (cd .../cei), app.send_static_file funciona.
-    # Si por alguna razón no encuentra el archivo, send_from_directory con cwd absoluto es alternativa.
+# --- API: LOGIN ---
+@app.route('/api/login', methods=['POST'])
+def api_login():
+    data = request.get_json(silent=True)
+    if not data: return jsonify({'success': False}), 400
+    
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
     try:
-        return app.send_static_file('index.html')
-    except Exception:
-        return send_from_directory(os.getcwd(), 'index.html')
+        cursor.execute("SELECT id, contrasena_hash, estado_cuenta FROM representantes WHERE email = %s", (data.get('email'),))
+        row = cursor.fetchone()
+        
+        if row and bcrypt.check_password_hash(row[1], data.get('password')):
+            if row[2] == 'pendiente_verificacion':
+                return jsonify({'success': False, 'message': 'Verifica tu correo primero.'}), 403
+            
+            session['user_id'] = row[0]
+            session['email'] = data.get('email')
+            return jsonify({'success': True}), 200
+            
+        return jsonify({'success': False, 'message': 'Datos incorrectos'}), 401
+    finally:
+        cursor.close()
+        conn.close()
 
+# --- RUTAS ESTÁTICAS ---
+@app.route('/')
+def index(): return send_from_directory(os.getcwd(), 'index.html')
 
-# Rutas explícitas para servir las páginas y recursos (desarrollo)
-@app.route('/form_registro.html')
-def serve_form():
-    return send_from_directory(os.getcwd(), 'form_registro.html')
-
-
-@app.route('/login.html')
-def serve_login():
-    return send_from_directory(os.getcwd(), 'login.html')
-
-@app.route('/representante.html')
-def serve_representante():
-    return send_from_directory(os.getcwd(), 'representante.html')
-
-@app.route('/docente.html')
-def serve_docente():
-    return send_from_directory(os.getcwd(), 'docente.html')
+@app.route('/<path:filename>')
+def serve_static(filename): return send_from_directory(os.getcwd(), filename)
 
 @app.route('/css/<path:filename>')
-def serve_css(filename):
-    return send_from_directory(os.path.join(os.getcwd(), 'css'), filename)
-
+def serve_css(filename): return send_from_directory(os.path.join(os.getcwd(), 'css'), filename)
 
 @app.route('/js/<path:filename>')
-def serve_js(filename):
-    return send_from_directory(os.path.join(os.getcwd(), 'js'), filename)
-
+def serve_js(filename): return send_from_directory(os.path.join(os.getcwd(), 'js'), filename)
 
 @app.route('/img/<path:filename>')
-def serve_img(filename):
-    return send_from_directory(os.path.join(os.getcwd(), 'img'), filename)
-
+def serve_img(filename): return send_from_directory(os.path.join(os.getcwd(), 'img'), filename)
 
 if __name__ == '__main__':
-    # Mostrar rutas registradas y directorio de trabajo para depuración
-    try:
-        print('Directorio de trabajo (cwd):', os.getcwd())
-        print('Rutas registradas:')
-        print(app.url_map)
-    except Exception:
-        pass
-
-    # ¡IMPORTANTE! En un entorno de producción, no uses debug=True ni sirvas archivos así.
     app.run(debug=True, port=5000)

@@ -3,23 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>La Paragua - Portal Familiar</title>
-    <!-- Carga de Tailwind CSS -->
+    <title>Portal Familiar | La Paragua</title>
+    
+    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Carga de Lucide Icons para los iconos -->
+    
+    <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
-    <!-- Configuración de Tailwind para colores pastel y fuente Inter -->
+    
+    <!-- Inter Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     colors: {
-                        'primary-blue': '#D2E3FC', // Azul muy claro, base del fondo
-                        'secondary-pink': '#F48BAF', // Rosa de botones
-                        'accent-yellow': '#FFD870', // Amarillo de acento
-                        'accent-green': '#A7F0BA', // Verde de acento
-                        'accent-purple': '#D5BCFF', // Lila de acento
-                        'dark-text': '#1F2937', // Texto oscuro
+                        'primary-blue': '#D2E3FC',
+                        'secondary-pink': '#F48BAF',
+                        'accent-yellow': '#FFD870',
+                        'accent-green': '#A7F0BA',
+                        'accent-purple': '#D5BCFF',
+                        'dark-text': '#1F2937',
                     },
                     fontFamily: {
                         sans: ['Inter', 'sans-serif'],
@@ -29,371 +36,363 @@
         }
     </script>
     <style>
-        /* Estilo para el fondo que simula el degradado suave */
+        /* Estilos base unificados */
         body {
-            background-color: #f7f7f7;
             font-family: 'Inter', sans-serif;
-        }
-
-        /* Estilo base para el contenedor principal: flex en móvil, grid en escritorio */
-        .dashboard-container {
-            display: flex; /* Por defecto, utiliza flex para apilar en móvil */
-            flex-direction: column;
-            min-height: 100vh;
-            max-width: 1400px;
-            margin: 0 auto;
-            border-radius: 1.5rem; /* Bordes redondeados generales */
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
-            overflow: hidden;
-        }
-
-        /* En pantallas medianas (md) y superiores, usa el diseño de grid con sidebar */
-        @media (min-width: 768px) {
-            .dashboard-container {
-                display: grid;
-                grid-template-columns: 280px 1fr;
-                flex-direction: row;
-            }
-        }
-
-        /* Estilo para el sidebar - oculto por defecto en móvil */
-        .sidebar-desktop {
-            display: none;
-        }
-        @media (min-width: 768px) {
-            .sidebar-desktop {
-                display: flex; /* Mostrar en escritorio */
-            }
+            background-image: url('img/descarga (1)_upscayl_3x_digital-art-4x.png'); 
+            background-size: cover;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            background-position: center;
         }
         
-        /* Clase para el fondo del contenido principal (el azul claro) */
-        .main-content-bg {
-            background-color: #D2E3FC;
-            padding: 1.5rem;
-        }
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #64748b; }
 
-        /* Estilo para los botones del sidebar */
-        .nav-link {
-            transition: all 0.2s ease;
+        /* Estilos de Navegación */
+        .nav-link-active {
+            background-color: #e0f2fe;
+            color: #0284c7;
+            font-weight: 600;
         }
-        .nav-link:hover {
-            background-color: #E6EFFF; /* Color pastel más claro al pasar el ratón */
-            color: #4A5568;
-        }
-
-        /* Estilo para las tarjetas de contenido */
-        .content-card {
-            min-height: 180px;
-            padding: 1.5rem;
-            border-radius: 1rem;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-            transition: transform 0.2s;
-        }
-        .content-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 10px rgba(0, 0, 0, 0.1);
-        }
+        
+        /* Animaciones */
+        .fade-in { animation: fadeIn 0.3s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
-<body>
+<body class="bg-blue-50/90">
 
-    <div class="dashboard-container">
+    <div class="flex h-screen overflow-hidden">
         
-        <!-- Navbar Superior para Móvil -->
-        <nav class="md:hidden bg-white p-4 shadow-md flex items-center justify-between">
-            <div class="flex items-center space-x-2">
-                <!-- Logo La Paragua -->
-                <img src="img/cei.png" width="24" height="24" viewBox="0 0 24 24" fill="none">
-                    
-                <span class="text-xl font-bold text-dark-text">La Paragua</span>
-            </div>
-            <button id="menu-toggle" class="text-gray-600 hover:text-secondary-pink">
-                <span data-lucide="menu" class="w-6 h-6"></span>
-            </button>
-        </nav>
-
-        <!-- Sidebar (Menú de Navegación) - Escritorio y Móvil (oculto por defecto) -->
-        <aside id="sidebar" class="sidebar-desktop bg-white p-6 shadow-xl flex-col md:flex md:sticky md:top-0 h-full w-full absolute md:relative z-40 transform -translate-x-full md:translate-x-0 transition-transform duration-300">
-            
-            <div class="mb-10 flex items-center space-x-2">
-                <!-- Logo La Paragua (Visible solo en Sidebar) -->
-                <img src="img/cei.png" width="100" height="100" viewBox="0 0 24 24" fill="none">
-                <span class="text-xl font-bold text-dark-text ml-10">La Paragua</span>
+        <!-- ============================================ -->
+        <!-- SIDEBAR (Navegación) -->
+        <!-- ============================================ -->
+        <nav class="w-64 bg-white shadow-lg overflow-y-auto flex-shrink-0 hidden md:block">
+            <div class="p-6">
+                <!-- Logo -->
+                <a href="#" class="flex flex-col items-center space-y-2">
+                    <div class="flex items-center justify-center w-20 h-20 bg-accent-yellow/30 rounded-full shadow-sm">
+                        <img src="img/cei.png" onerror="this.src='https://placehold.co/100x100/FCE7F3/EC4899?text=CEI'" width="80" height="80" class="rounded-full" alt="Logo">
+                    </div>
+                    <div class="text-center">
+                        <span class="text-xl font-bold text-gray-800 block">La Paragua</span>
+                        <span class="text-xs font-semibold text-yellow-500 uppercase tracking-widest">Portal Familiar</span>
+                    </div>
+                </a>
             </div>
             
-            <nav class="space-y-2 flex-grow">
-                <!-- Links de Navegación -->
-                <a href="#" class="nav-link flex items-center p-3 rounded-lg text-gray-700 font-medium bg-primary-blue/50 text-dark-text">
-                    <span data-lucide="layout-dashboard" class="w-5 h-5 mr-3"></span>
-                    Inicio
-                </a>
-                <a href="#" class="nav-link flex items-center p-3 rounded-lg text-gray-500 hover:text-dark-text">
-                    <span data-lucide="user-square" class="w-5 h-5 mr-3"></span>
-                    Mi Hijo(a)
-                </a>
-                <a href="#" class="nav-link flex items-center p-3 rounded-lg text-gray-500 hover:text-dark-text">
-                    <span data-lucide="calendar-check" class="w-5 h-5 mr-3"></span>
-                    Asistencias
-                </a>
-                <a href="#" class="nav-link flex items-center p-3 rounded-lg text-gray-500 hover:text-dark-text">
-                    <span data-lucide="file-text" class="w-5 h-5 mr-3"></span>
-                    Boletas/Reportes
-                </a>
-                <a href="#" class="nav-link flex items-center p-3 rounded-lg text-gray-500 hover:text-dark-text">
-                    <span data-lucide="megaphone" class="w-5 h-5 mr-3"></span>
-                    Comunicados
-                </a>
-                <a href="#" class="nav-link flex items-center p-3 rounded-lg text-gray-500 hover:text-dark-text">
-                    <span data-lucide="settings" class="w-5 h-5 mr-3"></span>
-                    Perfil
-                </a>
-                
-            </nav>
-
-            <div class="mt-auto pt-6 border-t border-gray-100">
-                <button onclick="//logout()" class="w-full text-center p-3 text-sm text-gray-500 hover:text-secondary-pink transition duration-150 rounded-lg">
-                    <span data-lucide="log-out" class="w-4 h-4 mr-2 inline-block"></span>
-                    <a href="/">Cerrar Sesión</a>
+            <!-- Links -->
+            <ul class="space-y-2 p-4">
+                <li>
+                    <a href="#" class="nav-link flex items-center space-x-3 p-3 rounded-xl transition-all duration-200 nav-link-active hover:bg-blue-50">
+                        <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
+                        <span>Inicio</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" class="nav-link flex items-center space-x-3 p-3 rounded-xl transition-all duration-200 hover:bg-blue-50">
+                        <i data-lucide="user-square" class="w-5 h-5"></i>
+                        <span>Mi Hijo(a)</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" class="nav-link flex items-center space-x-3 p-3 rounded-xl transition-all duration-200 hover:bg-blue-50">
+                        <i data-lucide="calendar-check" class="w-5 h-5"></i>
+                        <span>Asistencias</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" class="nav-link flex items-center space-x-3 p-3 rounded-xl transition-all duration-200 hover:bg-blue-50">
+                        <i data-lucide="file-text" class="w-5 h-5"></i>
+                        <span>Boletas</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" class="nav-link flex items-center space-x-3 p-3 rounded-xl transition-all duration-200 hover:bg-blue-50">
+                        <i data-lucide="megaphone" class="w-5 h-5"></i>
+                        <span>Comunicados</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" class="nav-link flex items-center space-x-3 p-3 rounded-xl transition-all duration-200 hover:bg-blue-50">
+                        <i data-lucide="credit-card" class="w-5 h-5"></i>
+                        <span>Pagos</span>
+                    </a>
+                </li>
+            </ul>
+            
+            <div class="fixed bottom-5 left-10 pt-6 border-t border-gray-100 w-44">
+                <button onclick="//logout()" class="w-full text-center p-3 text-sm text-gray-500 hover:text-secondary-pink transition duration-150 rounded-lg flex items-center justify-center">
+                    <i data-lucide="log-out" class="w-4 h-4 mr-2"></i>
+                    Cerrar Sesión
                 </button>
             </div>
-        </aside>
+        </nav>
 
-        <!-- Contenido Principal del Dashboard -->
-        <main class="main-content-bg p-4 sm:p-8 flex-grow">
-            <!-- Sección de Bienvenida y Perfil -->
-            <header class="mb-6 p-4 sm:p-6 bg-white rounded-xl shadow-lg flex flex-col sm:flex-row items-start sm:items-center justify-between">
-                <div class="flex items-center mb-4 sm:mb-0">
-                    <!-- Foto de perfil del niño/a -->
-                    <img id="child-photo" src="https://placehold.co/80x80/FFD870/FFFFFF?text=S" alt="Foto de Sofía" class="w-16 h-16 rounded-full object-cover mr-4 ring-2 ring-accent-yellow flex-shrink-0">
+        <!-- ============================================ -->
+        <!-- CONTENIDO PRINCIPAL -->
+        <!-- ============================================ -->
+        <main class="flex-1 h-screen overflow-y-auto relative">
+            
+            <!-- Header Móvil -->
+            <div class="md:hidden bg-white p-4 shadow-sm flex justify-between items-center sticky top-0 z-20">
+                <span class="font-bold text-lg text-gray-800">La Paragua</span>
+                <button class="p-2 text-gray-600"><i data-lucide="menu" class="w-6 h-6"></i></button>
+            </div>
+
+            <!-- Header Desktop -->
+            <header class="sticky top-0 z-10 hidden md:flex items-center justify-between p-4 bg-blue-50/80 backdrop-blur-sm border-b border-blue-100">
+                <div class="flex items-center gap-4">
+                    <img id="child-photo" src="https://placehold.co/80x80/FFD870/FFFFFF?text=S" alt="Foto" class="w-12 h-12 rounded-full ring-2 ring-white shadow-sm">
                     <div>
-                        <h1 class="text-xl sm:text-3xl font-bold text-dark-text" id="welcome-message">
-                            ¡Bienvenido/a, Sr/a. Pérez!
-                        </h1>
-                        <p class="text-gray-600 text-sm sm:text-lg">Aquí están las últimas novedades de <span id="child-name-display" class="font-semibold text-secondary-pink">Sofía Pérez</span> del grupo <span id="child-group-display">Maternal (1-2 años)</span>.</p>
+                        <h1 class="text-xl font-bold text-gray-800">¡Hola, Familia Pérez!</h1>
+                        <p class="text-sm text-gray-500">Viendo perfil de: <span class="font-bold text-secondary-pink">Sofía Pérez</span></p>
                     </div>
                 </div>
-
-                <div class="flex items-center space-x-3 w-full sm:w-auto justify-end">
-                    <input type="text" placeholder="Buscar..." class="p-2 border border-gray-200 rounded-full focus:ring-secondary-pink focus:border-secondary-pink transition w-full sm:w-40 text-sm">
-                    <span data-lucide="bell" class="w-6 h-6 text-gray-500 cursor-pointer hover:text-secondary-pink transition hidden sm:block"></span>
-                    <span data-lucide="user-circle" class="w-8 h-8 text-dark-text cursor-pointer hidden sm:block"></span>
+                <div class="flex items-center space-x-4">
+                    <button class="relative p-2 text-gray-500 hover:bg-white hover:text-secondary-pink rounded-full transition">
+                        <i data-lucide="bell" class="w-6 h-6"></i>
+                        <span class="absolute top-1 right-2 w-2 h-2 bg-red-500 rounded-full"></span>
+                    </button>
+                    <div class="h-8 w-px bg-gray-300"></div>
+                    <div class="flex items-center gap-2 cursor-pointer">
+                        <span class="text-sm font-medium text-gray-700">Sr. Pérez</span>
+                        <div class="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center text-gray-500">
+                            <i data-lucide="user" class="w-5 h-5"></i>
+                        </div>
+                    </div>
                 </div>
             </header>
+            
+            <div class="p-6 space-y-6 max-w-7xl mx-auto">
 
-            <!-- Tarjetas/Módulos Destacados -->
-            <!-- La clave aquí es usar grid-cols-1, luego md:grid-cols-2 y lg:grid-cols-3 para la responsividad -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-
-                <!-- Módulo de Asistencia -->
-                <div class="content-card bg-white border-4 border-secondary-pink/50">
-                    <h2 class="text-lg sm:text-xl font-semibold text-dark-text mb-3 flex items-center">
-                        <span data-lucide="calendar-check" class="w-5 h-5 mr-2 text-secondary-pink"></span>
-                        Asistencia - Sofía Pérez
-                    </h2>
-                    <p class="text-xs sm:text-sm text-gray-500 mb-4">Grupo Maternal</p>
-
-                    <div class="flex space-x-2 sm:space-x-4 mb-4 text-white">
-                        <span class="flex flex-col items-center p-2 rounded-lg bg-green-500 w-1/4 text-xs sm:text-sm">
-                            <span data-lucide="check" class="w-4 h-4 sm:w-5 sm:h-5"></span>
-                            Lun
-                        </span>
-                        <span class="flex flex-col items-center p-2 rounded-lg bg-green-500 w-1/4 text-xs sm:text-sm">
-                            <span data-lucide="check" class="w-4 h-4 sm:w-5 sm:h-5"></span>
-                            Mar
-                        </span>
-                        <span class="flex flex-col items-center p-2 rounded-lg bg-green-500 w-1/4 text-xs sm:text-sm">
-                            <span data-lucide="check" class="w-4 h-4 sm:w-5 sm:h-5"></span>
-                            Mié
-                        </span>
-                        <span class="flex flex-col items-center p-2 rounded-lg bg-gray-300 text-dark-text w-1/4 text-xs sm:text-sm">
-                            <span data-lucide="help-circle" class="w-4 h-4 sm:w-5 sm:h-5"></span>
-                            Jue
-                        </span>
-                        <span class="flex flex-col items-center p-2 rounded-lg bg-gray-300 text-dark-text w-1/4 text-xs sm:text-sm">
-                            <span data-lucide="help-circle" class="w-4 h-4 sm:w-5 sm:h-5"></span>
-                            Vie
-                        </span>
-                    </div>
-
-                    <p class="text-xs sm:text-sm text-gray-600 mb-4">Hoy: <span class="font-bold text-green-600">Presente</span> (Llegada 8:30 AM)</p>
-
-                    <a href="#" class="text-secondary-pink font-semibold hover:text-secondary-pink/80 transition flex items-center text-sm">
-                        Ver todas las asistencias
-                        <span data-lucide="arrow-right" class="w-4 h-4 ml-1"></span>
-                    </a>
-                </div>
-
-                <!-- Módulo de Boletas/Reportes -->
-                <div class="content-card bg-white border-4 border-accent-yellow/50">
-                    <h2 class="text-lg sm:text-xl font-semibold text-dark-text mb-3 flex items-center">
-                        <span data-lucide="award" class="w-5 h-5 mr-2 text-accent-yellow"></span>
-                        Última Boleta de Desarrollo
-                    </h2>
-                    <p class="text-xs sm:text-sm text-gray-500 mb-6">3º Bimestre 2023</p>
-
-                    <div class="flex items-center mb-6">
-                        <span data-lucide="file-text" class="w-6 h-6 mr-3 text-gray-400"></span>
-                        <span class="text-base sm:text-lg font-medium text-dark-text">Reporte del 20-04 al 12-07</span>
-                    </div>
-
-                    <button class="w-full py-3 bg-secondary-pink text-white font-bold rounded-lg hover:bg-secondary-pink/90 transition shadow-lg shadow-secondary-pink/30 text-sm sm:text-base">
-                        <span data-lucide="download" class="w-4 h-4 mr-2 inline-block"></span>
-                        Descargar Boleta (PDF)
-                    </button>
-                </div>
-
-                <!-- Módulo de Comunicados Importantes -->
-                <div class="content-card bg-white border-4 border-accent-green/50">
-                    <h2 class="text-lg sm:text-xl font-semibold text-dark-text mb-3 flex items-center">
-                        <span data-lucide="megaphone" class="w-5 h-5 mr-2 text-accent-green"></span>
-                        Comunicados Importantes
-                    </h2>
-                    <ul class="space-y-3 text-xs sm:text-sm text-gray-700">
-                        <li class="flex items-start">
-                            <span data-lucide="dot" class="w-5 h-5 mr-1 text-accent-green"></span>
-                            Recordatorio: Traer protector solar (Hoy)
-                        </li>
-                        <li class="flex items-start">
-                            <span data-lucide="dot" class="w-5 h-5 mr-1 text-accent-green"></span>
-                            Evento: Acto de Fin de Año (15/12/23)
-                        </li>
-                        <li class="flex items-start">
-                            <span data-lucide="dot" class="w-5 h-5 mr-1 text-accent-green"></span>
-                            ¡Felices Fiestas! El Centro cierra el 20/12.
-                        </li>
-                    </ul>
-
-                    <a href="#" class="text-accent-green font-semibold hover:text-accent-green/80 transition flex items-center text-sm mt-4">
-                        Ver todos
-                        <span data-lucide="arrow-right" class="w-4 h-4 ml-1"></span>
-                    </a>
-                </div>
-
-                <!-- Módulo de Actividades de la Semana -->
-                <!-- En móvil es 1 columna, en tablet es 2, en lg sigue siendo 2 de 3 -->
-                <div class="content-card bg-white border-4 border-accent-purple/50 lg:col-span-2">
-                    <h2 class="text-lg sm:text-xl font-semibold text-dark-text mb-4 flex items-center">
-                        <span data-lucide="notebook-text" class="w-5 h-5 mr-2 text-accent-purple"></span>
-                        Actividades de la Semana
-                    </h2>
-                    <!-- Grid con 1 columna en móvil y 2 en tablet/escritorio -->
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-gray-700 text-sm">
-                        <div>
-                            <p class="font-medium text-dark-text ml-6 mb-2">Lunes 11 - Miércoles 13</p>
-                            <ul class="space-y-1 text-xs sm:text-sm">
-                                <li class="flex items-center"><span data-lucide="sparkles" class="w-4 h-4 mr-2 text-accent-purple flex-shrink-0"></span>Cuento y Pintura Temática</li>
-                                <li class="flex items-center"><span data-lucide="sparkles" class="w-4 h-4 mr-2 text-accent-purple flex-shrink-0"></span>Juegos en el Jardín: Desarrollo Motor</li>
-                                <li class="flex items-center"><span data-lucide="sparkles" class="w-4 h-4 mr-2 text-accent-purple flex-shrink-0"></span>Taller de Cocina (Hacer galletas)</li>
-                            </ul>
+                <!-- ============================================ -->
+                <!-- SECCIÓN 1: RESUMEN (Grid) -->
+                <!-- ============================================ -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 fade-in">
+                    
+                    <!-- Card: Asistencia -->
+                    <div class="bg-white p-6 rounded-2xl shadow-md border border-gray-50 hover:shadow-lg transition-all">
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <h2 class="text-lg font-bold text-gray-800">Asistencia Semanal</h2>
+                                <p class="text-xs text-gray-500">Grupo Maternal</p>
+                            </div>
+                            <div class="p-2 bg-green-100 text-green-600 rounded-lg">
+                                <i data-lucide="calendar-check" class="w-6 h-6"></i>
+                            </div>
                         </div>
-                        <div>
-                            <p class="font-medium text-dark-text ml-6 mb-2">Jueves 14 - Viernes 15</p>
-                            <ul class="space-y-1 text-xs sm:text-sm">
-                                <li class="flex items-center"><span data-lucide="sparkles" class="w-4 h-4 mr-2 text-accent-purple flex-shrink-0"></span>Música y Movimiento</li>
-                                <li class="flex items-center"><span data-lucide="sparkles" class="w-4 h-4 mr-2 text-accent-purple flex-shrink-0"></span>Lección de Figuras y Colores</li>
-                                <li class="flex items-center"><span data-lucide="sparkles" class="w-4 h-4 mr-2 text-accent-purple flex-shrink-0"></span>Hora del Círculo y Despedida</li>
-                            </ul>
+
+                        <!-- Días -->
+                        <div class="flex justify-between gap-2 mb-4">
+                            <div class="flex-1 text-center p-2 rounded-xl bg-green-500 text-white shadow-sm">
+                                <p class="text-xs font-bold opacity-80">LUN</p>
+                                <i data-lucide="check" class="w-4 h-4 mx-auto mt-1"></i>
+                            </div>
+                            <div class="flex-1 text-center p-2 rounded-xl bg-green-500 text-white shadow-sm">
+                                <p class="text-xs font-bold opacity-80">MAR</p>
+                                <i data-lucide="check" class="w-4 h-4 mx-auto mt-1"></i>
+                            </div>
+                            <div class="flex-1 text-center p-2 rounded-xl bg-green-500 text-white shadow-sm">
+                                <p class="text-xs font-bold opacity-80">MIÉ</p>
+                                <i data-lucide="check" class="w-4 h-4 mx-auto mt-1"></i>
+                            </div>
+                            <div class="flex-1 text-center p-2 rounded-xl bg-gray-100 text-gray-400">
+                                <p class="text-xs font-bold">JUE</p>
+                                <span class="block text-xs mt-1">-</span>
+                            </div>
+                            <div class="flex-1 text-center p-2 rounded-xl bg-gray-100 text-gray-400">
+                                <p class="text-xs font-bold">VIE</p>
+                                <span class="block text-xs mt-1">-</span>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-center justify-between text-sm mt-2">
+                            <span class="text-gray-600">Hoy: <span class="font-bold text-green-600">Presente</span> (8:30 AM)</span>
+                            <a href="#" class="text-blue-500 hover:text-blue-700 font-medium text-xs">Historial &rarr;</a>
                         </div>
                     </div>
+
+                    <!-- Card: Última Boleta -->
+                    <div class="bg-white p-6 rounded-2xl shadow-md border border-gray-50 hover:shadow-lg transition-all relative overflow-hidden">
+                        <!-- Decorative Circle -->
+                        <div class="absolute -right-4 -top-4 w-24 h-24 bg-accent-yellow/20 rounded-full"></div>
+                        
+                        <div class="flex justify-between items-start mb-4 relative z-10">
+                            <div>
+                                <h2 class="text-lg font-bold text-gray-800">Desarrollo</h2>
+                                <p class="text-xs text-gray-500">Última evaluación disponible</p>
+                            </div>
+                            <div class="p-2 bg-yellow-100 text-yellow-600 rounded-lg">
+                                <i data-lucide="award" class="w-6 h-6"></i>
+                            </div>
+                        </div>
+
+                        <div class="bg-gray-50 rounded-xl p-3 mb-4 flex items-center gap-3">
+                            <i data-lucide="file-text" class="text-gray-400 w-8 h-8"></i>
+                            <div>
+                                <p class="font-bold text-gray-800 text-sm">3º Bimestre 2023</p>
+                                <p class="text-xs text-gray-500">Publicado: 12 Jul</p>
+                            </div>
+                        </div>
+
+                        <button class="w-full py-2.5 bg-accent-yellow text-yellow-900 font-bold rounded-xl hover:bg-yellow-400 transition shadow-sm flex items-center justify-center gap-2 text-sm">
+                            <i data-lucide="download" class="w-4 h-4"></i>
+                            Descargar PDF
+                        </button>
+                    </div>
+
+                    <!-- Card: Comunicados -->
+                    <div class="bg-white p-6 rounded-2xl shadow-md border border-gray-50 hover:shadow-lg transition-all">
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <h2 class="text-lg font-bold text-gray-800">Avisos</h2>
+                                <p class="text-xs text-gray-500">Importante leer</p>
+                            </div>
+                            <div class="p-2 bg-green-100 text-green-600 rounded-lg">
+                                <i data-lucide="megaphone" class="w-6 h-6"></i>
+                            </div>
+                        </div>
+
+                        <ul class="space-y-3">
+                            <li class="flex items-start gap-3 p-2 hover:bg-gray-50 rounded-lg transition">
+                                <div class="w-2 h-2 mt-1.5 bg-red-400 rounded-full flex-shrink-0"></div>
+                                <div class="text-sm">
+                                    <p class="font-semibold text-gray-700">Reunión de Padres</p>
+                                    <p class="text-xs text-gray-500">Mañana, 4:00 PM - Auditorio</p>
+                                </div>
+                            </li>
+                            <li class="flex items-start gap-3 p-2 hover:bg-gray-50 rounded-lg transition">
+                                <div class="w-2 h-2 mt-1.5 bg-blue-400 rounded-full flex-shrink-0"></div>
+                                <div class="text-sm">
+                                    <p class="font-semibold text-gray-700">Feria de Ciencias</p>
+                                    <p class="text-xs text-gray-500">Traer materiales el lunes</p>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+
                 </div>
 
-                <!-- Módulo de Información del Hijo(a) -->
-                <div class="content-card bg-white border-4 border-primary-blue/50">
-                    <h2 class="text-lg sm:text-xl font-semibold text-dark-text mb-4 flex items-center">
-                        <span data-lucide="info" class="w-5 h-5 mr-2 text-blue-500"></span>
-                        Datos de Sofía
-                    </h2>
-                    <ul class="space-y-2 text-xs sm:text-sm text-gray-700">
-                        <li><span class="font-medium text-dark-text">Grupo:</span> Maternal (1-2 años)</li>
-                        <li><span class="font-medium text-dark-text">Educadora:</span> Miss Ana</li>
-                        <li><span class="font-medium text-dark-text">Alergias:</span> NINGUNA</li>
-                        <li><span class="font-medium text-dark-text">Contacto de Emergencia:</span> Abuela Elena</li>
-                    </ul>
+                <!-- ============================================ -->
+                <!-- SECCIÓN 2: ACTIVIDADES & CONTACTO -->
+                <!-- ============================================ -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 fade-in delay-75">
+                    
+                    <!-- Actividades Semanales (2 Col) -->
+                    <div class="lg:col-span-2 bg-white p-6 rounded-2xl shadow-md border border-gray-50">
+                        <div class="flex items-center gap-3 mb-6">
+                            <div class="p-2 bg-purple-100 text-purple-600 rounded-lg">
+                                <i data-lucide="sparkles" class="w-6 h-6"></i>
+                            </div>
+                            <h2 class="text-xl font-bold text-gray-800">Actividades de la Semana</h2>
+                        </div>
 
-                    <button class="w-full mt-4 py-2 bg-primary-blue text-dark-text font-semibold rounded-lg hover:bg-blue-300 transition border border-blue-400 text-sm">
-                        <span data-lucide="message-square" class="w-4 h-4 mr-2 inline-block"></span>
-                        Contactar a Miss Ana
-                    </button>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <!-- Bloque 1 -->
+                            <div class="bg-purple-50/50 p-4 rounded-xl border border-purple-100">
+                                <h3 class="font-bold text-purple-800 mb-3 flex items-center">
+                                    <i data-lucide="calendar" class="w-4 h-4 mr-2"></i> Lunes - Miércoles
+                                </h3>
+                                <ul class="space-y-2 text-sm text-gray-600">
+                                    <li class="flex items-center gap-2">
+                                        <i data-lucide="palette" class="w-4 h-4 text-secondary-pink"></i>
+                                        Pintura con dedos (Arte)
+                                    </li>
+                                    <li class="flex items-center gap-2">
+                                        <i data-lucide="music" class="w-4 h-4 text-blue-400"></i>
+                                        Ronda de canciones
+                                    </li>
+                                    <li class="flex items-center gap-2">
+                                        <i data-lucide="utensils" class="w-4 h-4 text-orange-400"></i>
+                                        Taller de mini-chef
+                                    </li>
+                                </ul>
+                            </div>
+
+                            <!-- Bloque 2 -->
+                            <div class="bg-blue-50/50 p-4 rounded-xl border border-blue-100">
+                                <h3 class="font-bold text-blue-800 mb-3 flex items-center">
+                                    <i data-lucide="calendar" class="w-4 h-4 mr-2"></i> Jueves - Viernes
+                                </h3>
+                                <ul class="space-y-2 text-sm text-gray-600">
+                                    <li class="flex items-center gap-2">
+                                        <i data-lucide="tree-pine" class="w-4 h-4 text-green-500"></i>
+                                        Exploración en el jardín
+                                    </li>
+                                    <li class="flex items-center gap-2">
+                                        <i data-lucide="shapes" class="w-4 h-4 text-red-400"></i>
+                                        Juegos de formas y colores
+                                    </li>
+                                    <li class="flex items-center gap-2">
+                                        <i data-lucide="book-open" class="w-4 h-4 text-indigo-400"></i>
+                                        Cuentacuentos
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Info Alumno & Contacto (1 Col) -->
+                    <div class="bg-white p-6 rounded-2xl shadow-md border border-gray-50 flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center gap-3 mb-4">
+                                <div class="p-2 bg-blue-100 text-blue-600 rounded-lg">
+                                    <i data-lucide="info" class="w-6 h-6"></i>
+                                </div>
+                                <h2 class="text-lg font-bold text-gray-800">Datos de Sofía</h2>
+                            </div>
+                            
+                            <div class="space-y-3 text-sm">
+                                <div class="flex justify-between border-b border-gray-50 pb-2">
+                                    <span class="text-gray-500">Grupo</span>
+                                    <span class="font-medium text-gray-800">Maternal A</span>
+                                </div>
+                                <div class="flex justify-between border-b border-gray-50 pb-2">
+                                    <span class="text-gray-500">Educadora</span>
+                                    <span class="font-medium text-gray-800">Miss Ana</span>
+                                </div>
+                                <div class="flex justify-between border-b border-gray-50 pb-2">
+                                    <span class="text-gray-500">Alergias</span>
+                                    <span class="font-bold text-green-500 bg-green-50 px-2 rounded-full text-xs py-0.5">NINGUNA</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-6">
+                            <button class="w-full py-3 bg-secondary-pink text-white font-bold rounded-xl hover:bg-pink-500 transition shadow-md shadow-pink-200 flex items-center justify-center gap-2">
+                                <i data-lucide="message-circle" class="w-5 h-5"></i>
+                                Contactar a Miss Ana
+                            </button>
+                            <button class="w-full mt-2 py-3 bg-white text-gray-600 font-semibold rounded-xl hover:bg-gray-50 transition border border-gray-200 flex items-center justify-center gap-2 text-sm">
+                                <i data-lucide="settings" class="w-4 h-4"></i>
+                                Actualizar Datos Médicos
+                            </button>
+                        </div>
+                    </div>
+
                 </div>
 
             </div>
         </main>
     </div>
 
-    <!-- Overlay para el menú móvil -->
-    <div id="sidebar-overlay" class="fixed inset-0 bg-black opacity-0 md:hidden z-30 pointer-events-none transition-opacity duration-300"></div>
-
+    <!-- Scripts -->
     <script>
-        // Inicializa los iconos de Lucide
+        // Inicializar iconos
         lucide.createIcons();
 
-        // Datos de ejemplo
-        const parentName = "Pérez";
-        const childData = {
-            name: "Sofía",
-            group: "Maternal (1-2 años)",
-            photoUrl: "https://placehold.co/80x80/FFD870/FFFFFF?text=S",
-        };
-        
-        // Referencias del DOM
-        const sidebar = document.getElementById('sidebar');
-        const menuToggle = document.getElementById('menu-toggle');
-        const overlay = document.getElementById('sidebar-overlay');
-        
-        // Manejo del menú móvil
-        function toggleMenu() {
-            const isHidden = sidebar.classList.toggle('-translate-x-full');
-            if (isHidden) {
-                overlay.classList.add('opacity-0', 'pointer-events-none');
-                overlay.classList.remove('opacity-50');
-            } else {
-                overlay.classList.remove('opacity-0', 'pointer-events-none');
-                overlay.classList.add('opacity-50');
-            }
+        // Simple efecto de carga simulado para la imagen
+        const img = document.getElementById('child-photo');
+        img.onload = function() {
+            this.classList.remove('opacity-0');
+            this.classList.add('opacity-100');
         }
-
-        if (menuToggle) {
-            menuToggle.addEventListener('click', toggleMenu);
-        }
-
-        if (overlay) {
-            overlay.addEventListener('click', toggleMenu);
-        }
-
-        // Función para cargar los datos en el dashboard
-        function loadDashboardData() {
-            // Actualizar mensaje de bienvenida
-            const welcomeMessage = document.getElementById('welcome-message');
-            welcomeMessage.innerHTML = `¡Bienvenido/a, Sr/a. ${parentName}!`;
-
-            // Actualizar nombre y grupo del niño/a
-            document.getElementById('child-name-display').textContent = childData.name + ' Pérez';
-            document.getElementById('child-group-display').textContent = childData.group;
-
-            // Actualizar foto del niño/a
-            const childPhoto = document.getElementById('child-photo');
-            childPhoto.src = childData.photoUrl;
-        }
-
-        function logout() {
-            // Placeholder para la función de cerrar sesión
-            const modal = document.createElement('div');
-            modal.className = 'fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50';
-            modal.innerHTML = `
-                <div class="bg-white p-6 rounded-lg shadow-xl max-w-sm w-full border-4 border-secondary-pink">
-                    <h3 class="text-xl font-bold text-dark-text mb-4">Cerrar Sesión</h3>
-                    <p class="text-gray-700 mb-6">¿Estás seguro/a que deseas salir del Portal Familiar?</p>
-                    <div class="flex justify-end space-x-3">
-                        <button onclick="document.body.removeChild(this.closest('.fixed'))" class="px-4 py-2 text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition">Cancelar</button>
-                        <button onclick="alert('Funcionalidad de cerrar sesión no implementada')" class="px-4 py-2 bg-secondary-pink text-white font-semibold rounded-lg hover:bg-secondary-pink/90 transition">Confirmar Salida</button>
-                    </div>
-                </div>
-            `;
-            document.body.appendChild(modal);
-        }
-
-        // Llamar a la función al cargar la página
-        window.onload = loadDashboardData;
     </script>
+
 </body>
 </html>
