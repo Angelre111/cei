@@ -1,21 +1,22 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Portal Familiar | La Paragua</title>
-    
+
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
+
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
-    
+
     <!-- Inter Font -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    
+
     <script>
         tailwind.config = {
             theme: {
@@ -39,18 +40,30 @@
         /* Estilos base unificados */
         body {
             font-family: 'Inter', sans-serif;
-            background-image: url('img/descarga (1)_upscayl_3x_digital-art-4x.png'); 
+            background-image: url('img/descarga (1)_upscayl_3x_digital-art-4x.png');
             background-size: cover;
             background-repeat: no-repeat;
             background-attachment: fixed;
             background-position: center;
         }
-        
+
         /* Scrollbar */
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: #f1f5f9; }
-        ::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: #64748b; }
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #94a3b8;
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #64748b;
+        }
 
         /* Estilos de Navegación */
         .nav-link-active {
@@ -58,75 +71,106 @@
             color: #0284c7;
             font-weight: 600;
         }
-        
+
         /* Animaciones */
-        .fade-in { animation: fadeIn 0.3s ease-in-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .fade-in {
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
     </style>
 </head>
+
 <body class="bg-blue-50/90">
 
     <div class="flex h-screen overflow-hidden">
-        
+
         <!-- ============================================ -->
         <!-- SIDEBAR (Navegación) -->
         <!-- ============================================ -->
-        <nav class="w-64 bg-white shadow-lg overflow-y-auto flex-shrink-0 hidden md:block">
+        <!-- Overlay Móvil -->
+        <div id="mobile-overlay" onclick="toggleSidebar()"
+            class="fixed inset-0 bg-black/50 z-30 hidden backdrop-blur-sm transition-opacity opacity-0 lg:hidden"></div>
+
+        <!-- ============================================ -->
+        <!-- SIDEBAR (Navegación) -->
+        <!-- ============================================ -->
+        <nav id="sidebar"
+            class="w-64 bg-white shadow-lg overflow-y-auto flex-shrink-0 fixed inset-y-0 left-0 z-40 transform -translate-x-full transition-transform duration-300 md:translate-x-0 md:static border-r border-gray-100">
             <div class="p-6">
                 <!-- Logo -->
                 <a href="#" class="flex flex-col items-center space-y-2">
                     <div class="flex items-center justify-center w-20 h-20 bg-accent-yellow/30 rounded-full shadow-sm">
-                        <img src="img/cei.png" onerror="this.src='https://placehold.co/100x100/FCE7F3/EC4899?text=CEI'" width="80" height="80" class="rounded-full" alt="Logo">
+                        <img src="img/cei.png" onerror="this.src='https://placehold.co/100x100/FCE7F3/EC4899?text=CEI'"
+                            width="80" height="80" class="rounded-full" alt="Logo">
                     </div>
                     <div class="text-center">
                         <span class="text-xl font-bold text-gray-800 block">La Paragua</span>
-                        <span class="text-xs font-semibold text-yellow-500 uppercase tracking-widest">Portal Familiar</span>
+                        <span class="text-xs font-semibold text-yellow-500 uppercase tracking-widest">Portal
+                            Familiar</span>
                     </div>
                 </a>
             </div>
-            
+
             <!-- Links -->
             <ul class="space-y-2 p-4">
                 <li>
-                    <a href="#" class="nav-link flex items-center space-x-3 p-3 rounded-xl transition-all duration-200 nav-link-active hover:bg-blue-50">
+                    <a href="#"
+                        class="nav-link flex items-center space-x-3 p-3 rounded-xl transition-all duration-200 nav-link-active hover:bg-blue-50">
                         <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
                         <span>Inicio</span>
                     </a>
                 </li>
                 <li>
-                    <a href="#" class="nav-link flex items-center space-x-3 p-3 rounded-xl transition-all duration-200 hover:bg-blue-50">
+                    <a href="#"
+                        class="nav-link flex items-center space-x-3 p-3 rounded-xl transition-all duration-200 hover:bg-blue-50">
                         <i data-lucide="user-square" class="w-5 h-5"></i>
                         <span>Mi Hijo(a)</span>
                     </a>
                 </li>
                 <li>
-                    <a href="#" class="nav-link flex items-center space-x-3 p-3 rounded-xl transition-all duration-200 hover:bg-blue-50">
+                    <a href="#"
+                        class="nav-link flex items-center space-x-3 p-3 rounded-xl transition-all duration-200 hover:bg-blue-50">
                         <i data-lucide="calendar-check" class="w-5 h-5"></i>
                         <span>Asistencias</span>
                     </a>
                 </li>
                 <li>
-                    <a href="#" class="nav-link flex items-center space-x-3 p-3 rounded-xl transition-all duration-200 hover:bg-blue-50">
+                    <a href="#"
+                        class="nav-link flex items-center space-x-3 p-3 rounded-xl transition-all duration-200 hover:bg-blue-50">
                         <i data-lucide="file-text" class="w-5 h-5"></i>
                         <span>Boletas</span>
                     </a>
                 </li>
                 <li>
-                    <a href="#" class="nav-link flex items-center space-x-3 p-3 rounded-xl transition-all duration-200 hover:bg-blue-50">
+                    <a href="#"
+                        class="nav-link flex items-center space-x-3 p-3 rounded-xl transition-all duration-200 hover:bg-blue-50">
                         <i data-lucide="megaphone" class="w-5 h-5"></i>
                         <span>Comunicados</span>
                     </a>
                 </li>
                 <li>
-                    <a href="#" class="nav-link flex items-center space-x-3 p-3 rounded-xl transition-all duration-200 hover:bg-blue-50">
+                    <a href="#"
+                        class="nav-link flex items-center space-x-3 p-3 rounded-xl transition-all duration-200 hover:bg-blue-50">
                         <i data-lucide="credit-card" class="w-5 h-5"></i>
                         <span>Pagos</span>
                     </a>
                 </li>
             </ul>
-            
+
             <div class="fixed bottom-5 left-10 pt-6 border-t border-gray-100 w-44">
-                <button onclick="//logout()" class="w-full text-center p-3 text-sm text-gray-500 hover:text-secondary-pink transition duration-150 rounded-lg flex items-center justify-center">
+                <button onclick="//logout()"
+                    class="w-full text-center p-3 text-sm text-gray-500 hover:text-secondary-pink transition duration-150 rounded-lg flex items-center justify-center">
                     <i data-lucide="log-out" class="w-4 h-4 mr-2"></i>
                     Cerrar Sesión
                 </button>
@@ -137,24 +181,29 @@
         <!-- CONTENIDO PRINCIPAL -->
         <!-- ============================================ -->
         <main class="flex-1 h-screen overflow-y-auto relative">
-            
+
             <!-- Header Móvil -->
             <div class="md:hidden bg-white p-4 shadow-sm flex justify-between items-center sticky top-0 z-20">
                 <span class="font-bold text-lg text-gray-800">La Paragua</span>
-                <button class="p-2 text-gray-600"><i data-lucide="menu" class="w-6 h-6"></i></button>
+                <button onclick="toggleSidebar()" class="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition"><i
+                        data-lucide="menu" class="w-6 h-6"></i></button>
             </div>
 
             <!-- Header Desktop -->
-            <header class="sticky top-0 z-10 hidden md:flex items-center justify-between p-4 bg-blue-50/80 backdrop-blur-sm border-b border-blue-100">
+            <header
+                class="sticky top-0 z-10 hidden md:flex items-center justify-between p-4 bg-blue-50/80 backdrop-blur-sm border-b border-blue-100">
                 <div class="flex items-center gap-4">
-                    <img id="child-photo" src="https://placehold.co/80x80/FFD870/FFFFFF?text=S" alt="Foto" class="w-12 h-12 rounded-full ring-2 ring-white shadow-sm">
+                    <img id="child-photo" src="https://placehold.co/80x80/FFD870/FFFFFF?text=S" alt="Foto"
+                        class="w-12 h-12 rounded-full ring-2 ring-white shadow-sm">
                     <div>
                         <h1 class="text-xl font-bold text-gray-800">¡Hola, Familia Pérez!</h1>
-                        <p class="text-sm text-gray-500">Viendo perfil de: <span class="font-bold text-secondary-pink">Sofía Pérez</span></p>
+                        <p class="text-sm text-gray-500">Viendo perfil de: <span
+                                class="font-bold text-secondary-pink">Sofía Pérez</span></p>
                     </div>
                 </div>
                 <div class="flex items-center space-x-4">
-                    <button class="relative p-2 text-gray-500 hover:bg-white hover:text-secondary-pink rounded-full transition">
+                    <button
+                        class="relative p-2 text-gray-500 hover:bg-white hover:text-secondary-pink rounded-full transition">
                         <i data-lucide="bell" class="w-6 h-6"></i>
                         <span class="absolute top-1 right-2 w-2 h-2 bg-red-500 rounded-full"></span>
                     </button>
@@ -167,16 +216,17 @@
                     </div>
                 </div>
             </header>
-            
-            <div class="p-6 space-y-6 max-w-7xl mx-auto">
+
+            <div class="p-4 md:p-6 space-y-6 max-w-7xl mx-auto">
 
                 <!-- ============================================ -->
                 <!-- SECCIÓN 1: RESUMEN (Grid) -->
                 <!-- ============================================ -->
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 fade-in">
-                    
+
                     <!-- Card: Asistencia -->
-                    <div class="bg-white p-6 rounded-2xl shadow-md border border-gray-50 hover:shadow-lg transition-all">
+                    <div
+                        class="bg-white p-6 rounded-2xl shadow-md border border-gray-50 hover:shadow-lg transition-all">
                         <div class="flex justify-between items-start mb-4">
                             <div>
                                 <h2 class="text-lg font-bold text-gray-800">Asistencia Semanal</h2>
@@ -210,18 +260,21 @@
                                 <span class="block text-xs mt-1">-</span>
                             </div>
                         </div>
-                        
+
                         <div class="flex items-center justify-between text-sm mt-2">
-                            <span class="text-gray-600">Hoy: <span class="font-bold text-green-600">Presente</span> (8:30 AM)</span>
-                            <a href="#" class="text-blue-500 hover:text-blue-700 font-medium text-xs">Historial &rarr;</a>
+                            <span class="text-gray-600">Hoy: <span class="font-bold text-green-600">Presente</span>
+                                (8:30 AM)</span>
+                            <a href="#" class="text-blue-500 hover:text-blue-700 font-medium text-xs">Historial
+                                &rarr;</a>
                         </div>
                     </div>
 
                     <!-- Card: Última Boleta -->
-                    <div class="bg-white p-6 rounded-2xl shadow-md border border-gray-50 hover:shadow-lg transition-all relative overflow-hidden">
+                    <div
+                        class="bg-white p-6 rounded-2xl shadow-md border border-gray-50 hover:shadow-lg transition-all relative overflow-hidden">
                         <!-- Decorative Circle -->
                         <div class="absolute -right-4 -top-4 w-24 h-24 bg-accent-yellow/20 rounded-full"></div>
-                        
+
                         <div class="flex justify-between items-start mb-4 relative z-10">
                             <div>
                                 <h2 class="text-lg font-bold text-gray-800">Desarrollo</h2>
@@ -240,14 +293,16 @@
                             </div>
                         </div>
 
-                        <button class="w-full py-2.5 bg-accent-yellow text-yellow-900 font-bold rounded-xl hover:bg-yellow-400 transition shadow-sm flex items-center justify-center gap-2 text-sm">
+                        <button
+                            class="w-full py-2.5 bg-accent-yellow text-yellow-900 font-bold rounded-xl hover:bg-yellow-400 transition shadow-sm flex items-center justify-center gap-2 text-sm">
                             <i data-lucide="download" class="w-4 h-4"></i>
                             Descargar PDF
                         </button>
                     </div>
 
                     <!-- Card: Comunicados -->
-                    <div class="bg-white p-6 rounded-2xl shadow-md border border-gray-50 hover:shadow-lg transition-all">
+                    <div
+                        class="bg-white p-6 rounded-2xl shadow-md border border-gray-50 hover:shadow-lg transition-all">
                         <div class="flex justify-between items-start mb-4">
                             <div>
                                 <h2 class="text-lg font-bold text-gray-800">Avisos</h2>
@@ -282,7 +337,7 @@
                 <!-- SECCIÓN 2: ACTIVIDADES & CONTACTO -->
                 <!-- ============================================ -->
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 fade-in delay-75">
-                    
+
                     <!-- Actividades Semanales (2 Col) -->
                     <div class="lg:col-span-2 bg-white p-6 rounded-2xl shadow-md border border-gray-50">
                         <div class="flex items-center gap-3 mb-6">
@@ -346,7 +401,7 @@
                                 </div>
                                 <h2 class="text-lg font-bold text-gray-800">Datos de Sofía</h2>
                             </div>
-                            
+
                             <div class="space-y-3 text-sm">
                                 <div class="flex justify-between border-b border-gray-50 pb-2">
                                     <span class="text-gray-500">Grupo</span>
@@ -358,17 +413,20 @@
                                 </div>
                                 <div class="flex justify-between border-b border-gray-50 pb-2">
                                     <span class="text-gray-500">Alergias</span>
-                                    <span class="font-bold text-green-500 bg-green-50 px-2 rounded-full text-xs py-0.5">NINGUNA</span>
+                                    <span
+                                        class="font-bold text-green-500 bg-green-50 px-2 rounded-full text-xs py-0.5">NINGUNA</span>
                                 </div>
                             </div>
                         </div>
 
                         <div class="mt-6">
-                            <button class="w-full py-3 bg-secondary-pink text-white font-bold rounded-xl hover:bg-pink-500 transition shadow-md shadow-pink-200 flex items-center justify-center gap-2">
+                            <button
+                                class="w-full py-3 bg-secondary-pink text-white font-bold rounded-xl hover:bg-pink-500 transition shadow-md shadow-pink-200 flex items-center justify-center gap-2">
                                 <i data-lucide="message-circle" class="w-5 h-5"></i>
                                 Contactar a Miss Ana
                             </button>
-                            <button class="w-full mt-2 py-3 bg-white text-gray-600 font-semibold rounded-xl hover:bg-gray-50 transition border border-gray-200 flex items-center justify-center gap-2 text-sm">
+                            <button
+                                class="w-full mt-2 py-3 bg-white text-gray-600 font-semibold rounded-xl hover:bg-gray-50 transition border border-gray-200 flex items-center justify-center gap-2 text-sm">
                                 <i data-lucide="settings" class="w-4 h-4"></i>
                                 Actualizar Datos Médicos
                             </button>
@@ -388,11 +446,38 @@
 
         // Simple efecto de carga simulado para la imagen
         const img = document.getElementById('child-photo');
-        img.onload = function() {
+        img.onload = function () {
             this.classList.remove('opacity-0');
             this.classList.add('opacity-100');
+        }
+
+        // Lógica del Menú Móvil
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('mobile-overlay');
+        let isSidebarOpen = false;
+
+        function toggleSidebar() {
+            isSidebarOpen = !isSidebarOpen;
+
+            if (isSidebarOpen) {
+                // Abrir
+                sidebar.classList.remove('-translate-x-full');
+                overlay.classList.remove('hidden');
+                // Timeout para permitir que la clase 'hidden' se quite antes de animar opacidad
+                setTimeout(() => {
+                    overlay.classList.remove('opacity-0');
+                }, 10);
+            } else {
+                // Cerrar
+                sidebar.classList.add('-translate-x-full');
+                overlay.classList.add('opacity-0');
+                setTimeout(() => {
+                    overlay.classList.add('hidden');
+                }, 300); // Esperar a que termine la transición de opacidad
+            }
         }
     </script>
 
 </body>
+
 </html>
