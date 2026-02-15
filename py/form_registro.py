@@ -4,7 +4,8 @@
 
 from flask import Flask, request, jsonify, send_from_directory, session, redirect, url_for
 import os
-import mysql.connector
+import psycopg2
+from psycopg2 import extras
 from flask_bcrypt import Bcrypt
 import re
 import secrets 
@@ -14,29 +15,30 @@ from form_inicio import validate_login
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+from dotenv import load_dotenv
+
+load_dotenv()
 
 app = Flask(__name__)
-app.secret_key = 'tu_clave_secreta_super_segura' 
+app.secret_key = os.getenv('SECRET_KEY', 'default_secret_key')
 bcrypt = Bcrypt(app) 
 
 # --- CONFIGURACIÓN EMAIL (¡Edita esto!) ---
-SMTP_EMAIL = 'requenaangel823@gmail.com'           # <--- TU GMAIL AQUÍ
-SMTP_PASSWORD = 'dqju fgpd tufj blkw'       # <--- LA CONTRASEÑA DE APLICACIÓN DE 16 LETRAS
+SMTP_EMAIL = os.getenv('SMTP_EMAIL')
+SMTP_PASSWORD = os.getenv('SMTP_PASSWORD')
 
 # --- CONFIGURACIÓN BASE DE DATOS ---
-DB_CONFIG = {
-    'host': 'localhost',
-    'user': 'root',
-    'password': '',
-    'database': 'cei'
-}
+# --- CONFIGURACIÓN BASE DE DATOS (Supabase/PostgreSQL) ---
+# La URL de conexión completa suele ser más fácil para bibliotecas como psycopg2
+# Formato: postgresql://postgres:[PASSWORD]@[HOST]:[PORT]/[DB_NAME]
+DATABASE_URL = os.getenv('DATABASE_URL')
 
 def get_db_connection():
     try:
-        conn = mysql.connector.connect(**DB_CONFIG)
+        conn = psycopg2.connect(DATABASE_URL)
         return conn
-    except mysql.connector.Error as err:
-        print(f"Error MySQL: {err}")
+    except Exception as err:
+        print(f"Error Conexión BD: {err}")
         return None
 
 # --- FUNCIÓN DE ENVÍO DE CORREO REAL (NUEVO) ---
@@ -172,7 +174,7 @@ def registrar_representante():
             # Si falla el correo, podrías decidir borrar el usuario o avisar que hubo un problema
             return jsonify({'success': True, 'message': 'Registro guardado, pero hubo un error enviando el correo. Contacte soporte.'}), 201
 
-    except mysql.connector.Error as err:
+    except psycopg2.Error as err:
         conn.rollback()
         return jsonify({'success': False, 'message': f'Error BD: {err}'}), 500
     finally:
@@ -186,7 +188,7 @@ def verificar_email():
     if not token: return "Token inválido", 400
 
     conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
+    cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 
     try:
         cursor.execute("SELECT id, email, nombre_completo FROM representantes WHERE token_verificacion = %s", (token,))
