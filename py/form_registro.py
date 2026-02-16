@@ -9,7 +9,7 @@ from psycopg2 import extras
 from flask_bcrypt import Bcrypt
 import re
 import secrets 
-from form_inicio import validate_login
+from py.form_inicio import validate_login
 
 # --- LIBRERÍAS PARA EMAIL (NUEVO) ---
 import smtplib
