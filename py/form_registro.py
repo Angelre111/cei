@@ -11,6 +11,8 @@ import re
 import secrets 
 from py.form_inicio import validate_login
 
+from datetime import datetime
+
 # --- LIBRERÍAS PARA EMAIL (NUEVO) ---
 import smtplib
 from email.mime.text import MIMEText
@@ -142,6 +144,7 @@ def registrar_representante():
     email = data.get('email')
     telefono = data.get('telefono')
     contrasena = data.get('contrasena')
+    fecha_actual = datetime.now()
 
     if not all([nombre_completo, email, telefono, contrasena]):
         return jsonify({'success': False, 'message': 'Faltan datos.'}), 400
@@ -162,7 +165,7 @@ def registrar_representante():
         INSERT INTO representantes (nombre_completo, email, telefono, contrasena_hash, fecha_registro, estado_cuenta, token_verificacion)
         VALUES (%s, %s, %s, %s, NOW(), %s, %s)
         """
-        cursor.execute(insert_query, (nombre_completo, email, telefono, hashed_password, estado_inicial, token))
+        cursor.execute(insert_query, (nombre_completo, email, telefono, hashed_password, fecha_actual, estado_inicial, token))
         conn.commit()
 
         # --- AQUÍ LLAMAMOS A LA FUNCIÓN DE CORREO REAL ---
