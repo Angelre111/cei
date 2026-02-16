@@ -254,10 +254,16 @@
                 try { json = await res.json(); } catch (e) { /* respuesta no JSON */ }
 
                 if (res.ok) {
-                    showMessage(json.message || 'Registro exitoso. Revisa tu correo para verificar tu cuenta.', 'bg-green-100 text-green-800');
-                    setTimeout(() => {
-                        document.getElementById('register-form').reset();
-                    }, 2000);
+                    if (json.success && json.email_sent === false) {
+                        // Caso: Usuario creado pero falló el correo (Warning)
+                        showMessage(json.message || 'Registro guardado, pero no se envió el correo. Contacte soporte.', 'bg-yellow-100 text-yellow-800');
+                    } else {
+                        // Caso: Éxito total
+                        showMessage(json.message || 'Registro exitoso. Revisa tu correo para verificar tu cuenta.', 'bg-green-100 text-green-800');
+                        setTimeout(() => {
+                            document.getElementById('register-form').reset();
+                        }, 2000);
+                    }
                 } else if (res.status === 409) {
                     showMessage(json.message || 'Este correo electrónico ya está registrado.', 'bg-yellow-100 text-yellow-800');
                 } else if (res.status === 400) {

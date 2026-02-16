@@ -119,8 +119,10 @@ def enviar_correo_verificacion(destinatario, token):
         
         msg.attach(MIMEText(cuerpo_html, 'html'))
 
-        # Conexión con Gmail (Puerto 465 para SSL)
-        server = smtplib.SMTP_SSL('smtp.gmail.com', 465)
+        # Conexión con Gmail (Puerto 587 para TLS - Más compatible con hosting)
+        server = smtplib.SMTP('smtp.gmail.com', 587)
+        server.set_debuglevel(1)  # Esto nos dirá qué pasa en los logs
+        server.starttls()  # ¡Esta línea es vital para activar el cifrado!
         server.login(SMTP_EMAIL, SMTP_PASSWORD)
         server.send_message(msg)
         server.quit()
@@ -173,10 +175,18 @@ def registrar_representante():
         envio_exitoso = enviar_correo_verificacion(email, token)
 
         if envio_exitoso:
-            return jsonify({'success': True, 'message': 'Registro exitoso. Se ha enviado un correo de verificación.'}), 201
+            return jsonify({
+                'success': True, 
+                'email_sent': True,
+                'message': 'Registro exitoso. Se ha enviado un correo de verificación.'
+            }), 201
         else:
-            # Si falla el correo, podrías decidir borrar el usuario o avisar que hubo un problema
-            return jsonify({'success': True, 'message': 'Registro guardado, pero hubo un error enviando el correo. Contacte soporte.'}), 201
+            # Si falla el correo, avisamos al frontend pero mantenemos success=True porque el usuario se creó
+            return jsonify({
+                'success': True, 
+                'email_sent': False,
+                'message': 'Registro guardado, pero hubo un error enviando el correo. Contacte soporte.'
+            }), 201
 
     except Exception as err:
         print(f"❌ Error en registro: {err}")
