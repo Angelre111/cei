@@ -53,7 +53,7 @@ def enviar_correo_verificacion(destinatario, token):
         msg['Subject'] = "Valida tu cuenta - Inscripciones CEI"
 
         # El enlace (OJO: En producción cambia localhost por tu dominio real)
-        link = f"http://127.0.0.1:5000/api/verificar-email?token={token}"
+        link = f"https://cei-preescolar.onrender.com/api/verificar-email?token={token}"
 
         # Cuerpo del correo en HTML (Diseño bonito)
         cuerpo_html = f"""

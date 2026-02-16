@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,12 +10,13 @@
     <!-- Configuración de la fuente Inter y paleta de colores amigable -->
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
+
         body {
             font-family: 'Inter', sans-serif;
-            background-image: url(img/descarga\ \(1\)_upscayl_3x_digital-art-4x.png); 
+            background-image: url(img/descarga\ \(1\)_upscayl_3x_digital-art-4x.png);
             background-size: cover;
             background-repeat: no-repeat;
-            
+
             min-height: 100vh;
             display: flex;
             align-items: center;
@@ -22,33 +24,50 @@
             padding: 1rem;
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
-            
+
         }
+
         /* Colores personalizados del Home Page, ajustados a un estilo infantil */
-        .color-paragua-primary { background-color: #EC4899; /* Rosa Coral/Fucsia (Infantil) */ }
-        .text-paragua-primary { color: #EC4899; }
-        .color-paragua-secondary { background-color: #f59e0b; /* Amarillo sol (Acento) */ }
+        .color-paragua-primary {
+            background-color: #EC4899;
+            /* Rosa Coral/Fucsia (Infantil) */
+        }
+
+        .text-paragua-primary {
+            color: #EC4899;
+        }
+
+        .color-paragua-secondary {
+            background-color: #f59e0b;
+            /* Amarillo sol (Acento) */
+        }
 
         /* Estilo para inputs enfocados - Usando un verde suave/menta */
         .input-focus:focus {
-            border-color: #10B981; /* Verde menta */
-            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.5); /* Sombra verde pastel */
+            border-color: #10B981;
+            /* Verde menta */
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.5);
+            /* Sombra verde pastel */
             outline: none;
         }
 
         /* Estilos para el contenedor del formulario para asegurar legibilidad */
         .form-container {
-            background-color: rgba(255, 255, 255, 0.9); /* Fondo blanco semitransparente */
-            backdrop-filter: blur(5px); /* Efecto de desenfoque para el fondo detrás del formulario */
+            background-color: rgba(255, 255, 255, 0.9);
+            /* Fondo blanco semitransparente */
+            backdrop-filter: blur(5px);
+            /* Efecto de desenfoque para el fondo detrás del formulario */
         }
     </style>
     <!-- Iconos Phosphor Icons -->
     <script src="https://unpkg.com/phosphor-icons"></script>
 </head>
+
 <body class="antialiased">
 
     <!-- Contenedor Central del Formulario -->
-    <div class="form-container max-w-lg w-full rounded-3xl p-8 sm:p-10 shadow-2xl transition-all duration-500 transform hover:shadow-3xl">
+    <div
+        class="form-container max-w-lg w-full rounded-3xl p-8 sm:p-10 shadow-2xl transition-all duration-500 transform hover:shadow-3xl">
 
         <!-- Encabezado y Logo -->
         <div class="text-center mb-8">
@@ -57,29 +76,32 @@
                 <span>La Paragua</span>
             </div>
             <h1 class="text-2xl font-bold text-gray-900 mt-4">Crea tu Cuenta Padre/Representante!</h1>
-            
+
             <!-- Mensaje Personalizado -->
             <p class="text-lg text-pink-600 mt-2 font-semibold flex items-center justify-center">
-                <i class="ph-star-fill text-xl mr-2"></i> ¡Bienvenido! Regístrate para iniciar el proceso de Preinscripción.
+                <i class="ph-star-fill text-xl mr-2"></i> ¡Bienvenido! Regístrate para iniciar el proceso de
+                Preinscripción.
             </p>
         </div>
 
         <!-- Mensaje de Estado (Para simular alertas sin usar alert()) -->
-        <div id="message-box" class="hidden p-3 rounded-lg text-sm mb-6 font-medium text-center transition-opacity duration-300">
+        <div id="message-box"
+            class="hidden p-3 rounded-lg text-sm mb-6 font-medium text-center transition-opacity duration-300">
             <!-- El contenido se inyecta con JavaScript -->
         </div>
 
         <!-- Formulario de Registro -->
         <form id="register-form" class="space-y-4">
-            
+
             <!-- Campo Nombre Completo -->
             <div>
-                <label for="name" class="block text-sm font-medium text-gray-700 mb-1">Nombre Completo del Representante</label>
+                <label for="name" class="block text-sm font-medium text-gray-700 mb-1">Nombre Completo del
+                    Representante</label>
                 <div class="relative">
                     <i class="ph-user-circle text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2"></i>
                     <input type="text" id="name" name="name" required
-                           class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl input-focus transition duration-200"
-                           placeholder="Ej: Ana María Rodríguez">
+                        class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl input-focus transition duration-200"
+                        placeholder="Ej: Ana María Rodríguez">
                 </div>
             </div>
 
@@ -89,8 +111,8 @@
                 <div class="relative">
                     <i class="ph-envelope text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2"></i>
                     <input type="email" id="email" name="email" required
-                           class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl input-focus transition duration-200"
-                           placeholder="ejemplo@correo.com">
+                        class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl input-focus transition duration-200"
+                        placeholder="ejemplo@correo.com">
                 </div>
             </div>
 
@@ -100,8 +122,8 @@
                 <div class="relative">
                     <i class="ph-phone text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2"></i>
                     <input type="tel" id="phone" name="phone" required
-                           class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl input-focus transition duration-200"
-                           placeholder="Ej: 0412-1234567">
+                        class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl input-focus transition duration-200"
+                        placeholder="Ej: 0412-1234567">
                 </div>
             </div>
 
@@ -111,35 +133,38 @@
                 <div class="relative">
                     <i class="ph-lock-key text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2"></i>
                     <input type="password" id="password" name="password" required
-                           class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl input-focus transition duration-200"
-                           placeholder="Mínimo 8 caracteres">
+                        class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl input-focus transition duration-200"
+                        placeholder="Mínimo 8 caracteres">
                 </div>
             </div>
 
             <!-- Campo Confirmar Contraseña -->
             <div>
-                <label for="confirm-password" class="block text-sm font-medium text-gray-700 mb-1">Confirmar Contraseña</label>
+                <label for="confirm-password" class="block text-sm font-medium text-gray-700 mb-1">Confirmar
+                    Contraseña</label>
                 <div class="relative">
                     <i class="ph-lock-key-open text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2"></i>
                     <input type="password" id="confirm-password" name="confirm-password" required
-                           class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl input-focus transition duration-200"
-                           placeholder="Repite la contraseña">
+                        class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl input-focus transition duration-200"
+                        placeholder="Repite la contraseña">
                 </div>
             </div>
 
             <!-- Aceptación de Términos -->
             <div class="flex items-start">
                 <input id="terms" name="terms" type="checkbox" required
-                       class="h-4 w-4 mt-1 text-pink-600 border-gray-300 rounded focus:ring-pink-500">
+                    class="h-4 w-4 mt-1 text-pink-600 border-gray-300 rounded focus:ring-pink-500">
                 <label for="terms" class="ml-2 block text-sm text-gray-900">
-                    Acepto los <a href="#" class="font-medium text-pink-600 hover:text-pink-800 transition duration-200">Términos y Condiciones</a>
+                    Acepto los <a href="#"
+                        class="font-medium text-pink-600 hover:text-pink-800 transition duration-200">Términos y
+                        Condiciones</a>
                 </label>
             </div>
 
             <!-- Botón de Registro -->
             <div>
                 <button type="submit"
-                        class="w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-xl shadow-lg text-lg font-semibold text-white color-paragua-primary hover:bg-pink-600 transition duration-300 transform hover:scale-[1.01]">
+                    class="w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-xl shadow-lg text-lg font-semibold text-white color-paragua-primary hover:bg-pink-600 transition duration-300 transform hover:scale-[1.01]">
                     <i class="ph-user-plus mr-2 text-xl"></i> Registrarme
                 </button>
             </div>
@@ -157,10 +182,10 @@
     </div>
 
     <!-- JavaScript para Simular el Registro -->
-     
+
     <script>
         // Envío con fetch a /api/registrar (JSON). Mantiene las validaciones locales y muestra mensajes según la respuesta del servidor.
-        document.getElementById('register-form').addEventListener('submit', async function(event) {
+        document.getElementById('register-form').addEventListener('submit', async function (event) {
             event.preventDefault();
 
             const nameInput = document.getElementById('name').value.trim();
@@ -243,7 +268,7 @@
 
             } catch (err) {
                 console.error('Error de red al enviar el formulario:', err);
-                showMessage('Error de red o el servidor no está disponible. Asegúrate de que Flask está corriendo en http://localhost:5000 y revisa CORS si el HTML se sirve desde otro origen.', 'bg-red-100 text-red-800');
+                showMessage('Error de red o el servidor no está disponible. Por favor, inténtelo de nuevo más tarde.', 'bg-red-100 text-red-800');
             } finally {
                 setLoading(false);
             }
@@ -261,4 +286,5 @@
     </script>
 
 </body>
+
 </html>
