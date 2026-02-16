@@ -29,15 +29,14 @@ DATABASE_URL = os.getenv('DATABASE_URL')
 
 def get_db_connection():
     try:
-        # Aumentamos el timeout y nos aseguramos de que el host sea el correcto
+        # Forzamos sslmode y un timeout prudente
         conn = psycopg2.connect(
             DATABASE_URL, 
-            connect_timeout=20, # Le damos 20 segundos
-            sslmode='require'
+            connect_timeout=15
         )
         return conn
     except Exception as err:
-        print(f"❌ Error Real de Conexión BD: {err}")
+        print(f"❌ Error de Conexión: {err}")
         return None
 
 def enviar_correo_verificacion(destinatario, token):
