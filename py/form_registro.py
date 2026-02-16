@@ -61,18 +61,33 @@ def enviar_correo_verificacion(destinatario, token):
         """
         msg.attach(MIMEText(cuerpo_html, 'html'))
 
-        # USAMOS TIMEOUT DE 10 SEGUNDOS PARA GMAIL
-        server = smtplib.SMTP('smtp.gmail.com', 587, timeout=10)
+        # --- CAMBIO AQUÍ: Forzamos el uso de SMTP de Gmail por el puerto 587 ---
+        # Si 'smtp.gmail.com' sigue fallando, usaremos una técnica para forzar IPv4
+        server = smtplib.SMTP('74.125.141.108', 587, timeout=15) # Esta es una IP de Gmail (IPv4)
+        server.ehlo() 
         server.starttls()
         server.login(SMTP_EMAIL, SMTP_PASSWORD)
         server.send_message(msg)
         server.quit()
+        
         print(f"✅ Correo enviado a {destinatario}")
         return True
 
     except Exception as e:
         print(f"❌ Error enviando correo: {e}")
-        return False
+        # Intentamos un segundo método si la IP falla (Plan B)
+        try:
+            print("Intentando Plan B con nombre de host...")
+            server = smtplib.SMTP('smtp.gmail.com', 587, timeout=15)
+            server.starttls()
+            server.login(SMTP_EMAIL, SMTP_PASSWORD)
+            server.send_message(msg)
+            server.quit()
+            print(f"✅ Correo enviado a {destinatario} (Plan B)")
+            return True
+        except Exception as e2:
+            print(f"❌ Falló Plan B también: {e2}")
+            return False
 
 def email_ya_existe(email, cursor):
     cursor.execute("SELECT COUNT(*) FROM representantes WHERE email = %s", (email,))
