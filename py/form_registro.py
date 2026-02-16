@@ -69,8 +69,9 @@ def registrar_representante():
         print(f"Error Supabase: {str(e)}")
         return jsonify({'success': False, 'message': str(e)}), 400
 
-    # 2. Guardar datos adicionales en tu tabla SQL (Opcional pero recomendado)
-    # Ya no guardamos la contraseña aquí, solo los datos de perfil.
+    # 2. Guardar datos en tu tabla SQL local
+    # ---------------------------------------------------------
+    # Obtenemos el ID de Supabase solo para referencia (opcional si luego quieres guardarlo)
     user_id_supabase = auth_response.user.id
     
     conn = get_db_connection()
@@ -78,32 +79,48 @@ def registrar_representante():
         try:
             cursor = conn.cursor()
             
-            # Verificamos si ya existe en tu tabla local para no duplicar error
+            # Verificamos si el email ya existe en tu tabla para no duplicar error
             cursor.execute("SELECT id FROM representantes WHERE email = %s", (email,))
             if cursor.fetchone():
-                pass # Ya existe, no hacemos nada
+                pass # Ya existe el perfil, no hacemos nada
             else:
-                # Insertamos vinculando con el ID de Supabase
-                # NOTA: He quitado 'contrasena_hash' y 'token_verificacion' del insert
-                # porque Supabase ya maneja eso.
-                # Asegúrate que tu tabla permita nulos en esos campos o adáptala.
+                # --- CORRECCIÓN AQUÍ ---
+                # 1. QUITAMOS 'id' del insert. La base de datos pondrá el número 1, 2, 3 sola.
+                # 2. Agregamos valores de relleno para contrasena y token para evitar errores de "Not Null"
+                
                 insert_query = """
-                INSERT INTO representantes (id, nombre_completo, email, telefono, fecha_registro, estado_cuenta)
-                VALUES (%s, %s, %s, %s, %s, %s)
+                INSERT INTO representantes (
+                    nombre_completo, 
+                    email, 
+                    telefono, 
+                    fecha_registro, 
+                    estado_cuenta,
+                    contrasena_hash,
+                    token_verificacion
+                )
+                VALUES (%s, %s, %s, %s, %s, %s, %s)
                 """
+                
                 cursor.execute(insert_query, (
-                    user_id_supabase, # Usamos el ID de Supabase como ID (debe ser UUID en tu DB) o guárdalo en otra columna
                     nombre_completo, 
                     email, 
                     telefono, 
                     datetime.now(), 
-                    'pendiente_verificacion'
+                    'pendiente_verificacion',
+                    'GESTIONADO_POR_SUPABASE', # Relleno: Ya no usamos esto, pero tu tabla lo pide
+                    'ENVIADO_POR_SUPABASE'     # Relleno: Ya no usamos esto, pero tu tabla lo pide
                 ))
+                
                 conn.commit()
                 cursor.close()
+                print(f"✅ Usuario guardado en tabla representantes: {email}")
+
         except Exception as db_err:
-            print(f"⚠️ Usuario creado en Auth pero error al guardar en tabla local: {db_err}")
-            # No fallamos la petición porque el registro Auth sí funcionó
+            # Si falla aquí, imprimimos el error pero NO devolvemos error 500 al usuario,
+            # porque el registro en Supabase (Auth) sí funcionó.
+            print(f"⚠️ Alerta: Usuario creado en Auth pero error en tabla local: {db_err}")
+            # Hacemos rollback para limpiar la transacción fallida
+            if conn: conn.rollback()
         finally:
             conn.close()
 
