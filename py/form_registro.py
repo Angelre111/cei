@@ -37,6 +37,7 @@ DATABASE_URL = os.getenv('DATABASE_URL')
 
 def get_db_connection():
     try:
+        print(f"DEBUG: Conectando a {DATABASE_URL[:20]}...")
         conn = psycopg2.connect(DATABASE_URL)
         return conn
     except Exception as err:
