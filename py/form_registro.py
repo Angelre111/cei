@@ -163,10 +163,11 @@ def registrar_representante():
 
         insert_query = """
         INSERT INTO representantes (nombre_completo, email, telefono, contrasena_hash, fecha_registro, estado_cuenta, token_verificacion)
-        VALUES (%s, %s, %s, %s, NOW(), %s, %s)
+        VALUES (%s, %s, %s, %s, %s, %s, %s)
         """
         cursor.execute(insert_query, (nombre_completo, email, telefono, hashed_password, fecha_actual, estado_inicial, token))
         conn.commit()
+        print(f"✅ Usuario {email} insertado en BD y COMMIT realizado exitosamente.")
 
         # --- AQUÍ LLAMAMOS A LA FUNCIÓN DE CORREO REAL ---
         envio_exitoso = enviar_correo_verificacion(email, token)
@@ -177,9 +178,10 @@ def registrar_representante():
             # Si falla el correo, podrías decidir borrar el usuario o avisar que hubo un problema
             return jsonify({'success': True, 'message': 'Registro guardado, pero hubo un error enviando el correo. Contacte soporte.'}), 201
 
-    except psycopg2.Error as err:
+    except Exception as err:
+        print(f"❌ Error en registro: {err}")
         conn.rollback()
-        return jsonify({'success': False, 'message': f'Error BD: {err}'}), 500
+        return jsonify({'success': False, 'message': f'Error interno: {err}'}), 500
     finally:
         cursor.close()
         conn.close()
