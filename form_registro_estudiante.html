@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inscripción Preescolar - La Paragua</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Google Fonts (Nunito) -->
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Iconos (Phosphor Icons) -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <style>
+        body {
+            font-family: 'Nunito', sans-serif;
+            background-color: #f3f4f6;
+            background-image:
+                linear-gradient(#e5e7eb 1px, transparent 1px),
+                linear-gradient(90deg, #e5e7eb 1px, transparent 1px);
+            background-size: 20px 20px;
+            background-image: url(img/descarga\ \(1\)_upscayl_3x_digital-art-4x.png);
+            background-size: cover;
+            background-repeat: no-repeat;
+        }
+
+        .fade-in {
+            animation: fadeIn 0.4s ease-in-out forwards;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(5px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* --- ESTILOS MEJORADOS PARA INPUTS (Más visibles e intuitivos) --- */
+        .input-group {
+            position: relative;
+        }
+
+        /* Icono dentro del input */
+        .input-icon {
+            position: absolute;
+            top: 50%;
+            left: 1rem;
+            transform: translateY(-50%);
+            color: #6b7280;
+            /* text-gray-500 (Más visible) */
+            font-size: 1.35rem;
+            /* Icono ligeramente más grande */
+            pointer-events: none;
+            transition: color 0.2s;
+            z-index: 10;
+        }
+
+        /* El input en sí */
+        .input-field {
+            width: 100%;
+            padding-left: 3.25rem;
+            /* Más espacio para el icono */
+            padding-right: 1rem;
+            padding-top: 0.875rem;
+            /* py-3.5 (Más alto) */
+            padding-bottom: 0.875rem;
+            border-radius: 0.75rem;
+            /* rounded-xl */
+            border: 1px solid #d1d5db;
+            /* border-gray-300 */
+            background-color: #f9fafb;
+            /* bg-gray-50 (Fondo sutil para diferenciar) */
+            color: #1f2937;
+            /* text-gray-800 */
+            font-size: 1rem;
+            /* Texto base legible */
+            outline: none;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            /* shadow-sm */
+        }
+
+        .input-field::placeholder {
+            color: #9ca3af;
+            /* text-gray-400 */
+        }
+
+        /* Hover: Feedback visual al pasar el mouse */
+        .input-field:hover {
+            background-color: #ffffff;
+            border-color: #9ca3af;
+            /* border-gray-400 */
+        }
+
+        /* Focus: Estado activo claro */
+        .input-field:focus {
+            background-color: #ffffff;
+            border-color: #ec4899;
+            /* pink-500 */
+            box-shadow: 0 0 0 4px rgba(236, 72, 153, 0.15);
+            /* Ring suave rosa */
+        }
+
+        /* Colorear icono al enfocar */
+        .input-field:focus+.input-icon,
+        .input-group:focus-within .input-icon {
+            color: #ec4899;
+        }
+
+        .label-primary {
+            display: block;
+            font-size: 0.95rem;
+            /* Texto un pelín más grande */
+            font-weight: 700;
+            /* Más negrita para legibilidad */
+            color: #374151;
+            /* text-gray-700 */
+            margin-bottom: 0.5rem;
+            /* Más separación del input */
+            margin-left: 0.25rem;
+        }
+
+        .section-title {
+            @apply text-xl font-bold text-gray-800 mb-6 border-b-2 border-pink-100 pb-3 flex items-center gap-3;
+        }
+
+        /* Cards de selección (Radio/Checkbox) mejoradas */
+        .check-card:checked+div {
+            border-color: #ec4899;
+            background-color: #fdf2f8;
+            color: #be185d;
+            font-weight: 700;
+            box-shadow: 0 4px 6px -1px rgba(236, 72, 153, 0.1);
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+
+<body class="min-h-screen flex items-center justify-center py-10 px-4 md:px-6">
+
+    <main
+        class="w-full max-w-4xl bg-white rounded-[2rem] shadow-2xl shadow-gray-200/50 border border-white overflow-hidden ring-1 ring-gray-100">
+
+        <!-- Header -->
+        <header class="bg-white px-8 md:px-10 py-8 border-b border-gray-100 relative overflow-hidden">
+            <!-- Elemento decorativo de fondo -->
+            <div class="absolute top-0 right-0 -mt-10 -mr-10 w-40 h-40 bg-pink-50 rounded-full opacity-50 blur-2xl">
+            </div>
+
+            <div class="flex justify-between items-center mb-6 relative z-10">
+                <div>
+                    <h1 class="text-3xl font-black text-gray-800 tracking-tight">Ficha de Inscripción</h1>
+                    <p class="text-gray-500 font-medium mt-1">Completa los datos del estudiante</p>
+                </div>
+                <div
+                    class="bg-pink-50 text-pink-600 px-5 py-2 rounded-2xl text-sm font-bold shadow-sm border border-pink-100 flex items-center gap-2">
+                    <div class="w-2 h-2 rounded-full bg-pink-500 animate-pulse"></div>
+                    <span id="step-indicator">Paso 1 de 4</span>
+                </div>
+            </div>
+            <!-- Barra de Progreso -->
+            <div class="h-3 w-full bg-gray-100 rounded-full overflow-hidden p-0.5">
+                <div id="progress-bar"
+                    class="h-full bg-gradient-to-r from-pink-400 to-pink-600 w-1/4 transition-all duration-500 ease-out rounded-full shadow-md">
+                </div>
+            </div>
+        </header>
+
+        <form id="registrationForm" class="p-8 md:p-12 bg-white">
+
+            <!-- PASO 1: DATOS DEL NIÑO -->
+            <div class="step-content fade-in" id="step-1">
+                <h2 class="section-title"><i class="ph-fill ph-baby text-pink-500 text-2xl"></i> Identificación del
+                    Estudiante</h2>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-6">
+                    <div>
+                        <label class="label-primary">Nombres del Niño(a) <span class="text-pink-500">*</span></label>
+                        <div class="input-group">
+                            <input type="text" name="nino_nombres" class="input-field" placeholder="Ej: Sofía Valentina"
+                                required>
+                            <i class="ph ph-user input-icon"></i>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="label-primary">Apellidos del Niño(a) <span class="text-pink-500">*</span></label>
+                        <div class="input-group">
+                            <input type="text" name="nino_apellidos" class="input-field"
+                                placeholder="Ej: Pérez Rodríguez" required>
+                            <i class="ph ph-user input-icon"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-6">
+                    <div>
+                        <label class="label-primary">Fecha de Nacimiento <span class="text-pink-500">*</span></label>
+                        <div class="input-group">
+                            <input type="date" name="nino_fecha_nacimiento" class="input-field" required>
+                            <i class="ph ph-calendar-blank input-icon"></i>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="label-primary">Edad (Años)</label>
+                        <div class="input-group">
+                            <input type="number" name="nino_edad" class="input-field" placeholder="0">
+                            <i class="ph ph-cake input-icon"></i>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="label-primary">Sexo <span class="text-pink-500">*</span></label>
+                        <div class="input-group">
+                            <select name="nino_sexo" class="input-field appearance-none cursor-pointer" required>
+                                <option value="" disabled selected>Seleccionar</option>
+                                <option value="F">Femenino</option>
+                                <option value="M">Masculino</option>
+                            </select>
+                            <i class="ph ph-gender-intersex input-icon"></i>
+                            <i
+                                class="ph ph-caret-down absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none text-lg"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-6">
+                    <div>
+                        <label class="label-primary">Lugar de Nacimiento</label>
+                        <div class="input-group">
+                            <input type="text" name="nino_lugar_nac" class="input-field" placeholder="Ciudad, Estado">
+                            <i class="ph ph-map-pin input-icon"></i>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="label-primary">Cédula Escolar (Opcional)</label>
+                        <div class="input-group">
+                            <input type="text" name="nino_cedula_escolar" class="input-field" placeholder="V-00000000">
+                            <i class="ph ph-identification-card input-icon"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-2">
+                    <label class="label-primary">Dirección de Habitación <span class="text-pink-500">*</span></label>
+                    <div class="input-group">
+                        <textarea name="nino_direccion" rows="2" class="input-field pt-3.5" style="min-height: 80px;"
+                            placeholder="Dirección completa donde reside el niño..." required></textarea>
+                        <i class="ph ph-house-line input-icon" style="top: 1.5rem; transform: none;"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PASO 2: PADRES -->
+            <div class="step-content hidden fade-in" id="step-2">
+
+                <!-- Madre -->
+                <h2 class="section-title"><i class="ph-fill ph-user-circle text-pink-500 text-2xl"></i> Datos de la
+                    Madre</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10">
+                    <div>
+                        <label class="label-primary">Nombre Completo <span class="text-pink-500">*</span></label>
+                        <div class="input-group">
+                            <input type="text" name="madre_nombre" class="input-field" placeholder="Nombre y Apellido"
+                                required>
+                            <i class="ph ph-user input-icon"></i>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="label-primary">Cédula de Identidad</label>
+                        <div class="input-group">
+                            <input type="text" name="madre_ci" class="input-field" placeholder="Ej: 12.345.678">
+                            <i class="ph ph-identification-card input-icon"></i>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="label-primary">Teléfono Móvil</label>
+                        <div class="input-group">
+                            <input type="tel" name="madre_telefono" class="input-field" placeholder="Ej: 0412-1234567">
+                            <i class="ph ph-phone input-icon"></i>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="label-primary">Ocupación / Trabajo</label>
+                        <div class="input-group">
+                            <input type="text" name="madre_ocupacion" class="input-field" placeholder="Ej: Abogada">
+                            <i class="ph ph-briefcase input-icon"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Padre -->
+                <h2 class="section-title"><i class="ph-fill ph-user-circle-gear text-blue-500 text-2xl"></i> Datos del
+                    Padre</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+                    <div>
+                        <label class="label-primary">Nombre Completo</label>
+                        <div class="input-group">
+                            <input type="text" name="padre_nombre" class="input-field" placeholder="Nombre y Apellido">
+                            <i class="ph ph-user input-icon"></i>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="label-primary">Teléfono Móvil</label>
+                        <div class="input-group">
+                            <input type="tel" name="padre_telefono" class="input-field" placeholder="Ej: 0414-1234567">
+                            <i class="ph ph-phone input-icon"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div
+                    class="grid grid-cols-1 md:grid-cols-2 gap-8 mt-10 p-6 bg-gray-50 rounded-2xl border border-gray-100">
+                    <div>
+                        <label class="label-primary">Tipo de Vivienda</label>
+                        <div class="input-group">
+                            <select name="vivienda_tipo" class="input-field appearance-none cursor-pointer bg-white">
+                                <option value="Casa">Casa</option>
+                                <option value="Apartamento">Apartamento</option>
+                                <option value="Anexo">Anexo</option>
+                            </select>
+                            <i class="ph ph-buildings input-icon"></i>
+                            <i
+                                class="ph ph-caret-down absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"></i>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="label-primary">Tenencia</label>
+                        <div class="input-group">
+                            <select name="vivienda_tenencia"
+                                class="input-field appearance-none cursor-pointer bg-white">
+                                <option value="Propia">Propia</option>
+                                <option value="Alquilada">Alquilada</option>
+                                <option value="Prestada">Cedida/Prestada</option>
+                            </select>
+                            <i class="ph ph-key input-icon"></i>
+                            <i
+                                class="ph ph-caret-down absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PASO 3: SALUD -->
+            <div class="step-content hidden fade-in" id="step-3">
+                <h2 class="section-title"><i class="ph-fill ph-heartbeat text-red-500 text-2xl"></i> Historia Médica
+                </h2>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-8">
+                    <!-- Checkbox Cards Simplificadas -->
+                    <label class="cursor-pointer group relative">
+                        <input type="checkbox" name="bio_cesarea" class="check-card hidden">
+                        <div
+                            class="border-2 border-gray-100 rounded-2xl p-5 flex flex-col items-center gap-3 transition-all hover:border-pink-300 bg-white hover:shadow-lg hover:-translate-y-1">
+                            <i
+                                class="ph-duotone ph-baby text-3xl text-gray-400 group-hover:text-pink-500 transition-colors"></i>
+                            <span class="text-sm font-bold text-gray-600">Fue Cesárea</span>
+                        </div>
+                    </label>
+                    <label class="cursor-pointer group relative">
+                        <input type="checkbox" name="bio_prematuro" class="check-card hidden">
+                        <div
+                            class="border-2 border-gray-100 rounded-2xl p-5 flex flex-col items-center gap-3 transition-all hover:border-pink-300 bg-white hover:shadow-lg hover:-translate-y-1">
+                            <i
+                                class="ph-duotone ph-clock-countdown text-3xl text-gray-400 group-hover:text-pink-500 transition-colors"></i>
+                            <span class="text-sm font-bold text-gray-600">Prematuro</span>
+                        </div>
+                    </label>
+                    <label class="cursor-pointer group relative">
+                        <input type="checkbox" name="bio_alergico" class="check-card hidden">
+                        <div
+                            class="border-2 border-gray-100 rounded-2xl p-5 flex flex-col items-center gap-3 transition-all hover:border-pink-300 bg-white hover:shadow-lg hover:-translate-y-1">
+                            <i
+                                class="ph-duotone ph-warning-circle text-3xl text-gray-400 group-hover:text-pink-500 transition-colors"></i>
+                            <span class="text-sm font-bold text-gray-600">Es Alérgico</span>
+                        </div>
+                    </label>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+                    <div>
+                        <label class="label-primary">Peso al Nacer (kg)</label>
+                        <div class="input-group">
+                            <input type="text" name="bio_peso" class="input-field" placeholder="Ej: 3.5">
+                            <i class="ph ph-scales input-icon"></i>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="label-primary">Talla al Nacer (cm)</label>
+                        <div class="input-group">
+                            <input type="text" name="bio_talla" class="input-field" placeholder="Ej: 50">
+                            <i class="ph ph-ruler input-icon"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-8">
+                    <label class="label-primary">¿Padece alguna enfermedad crónica?</label>
+                    <div class="input-group">
+                        <input type="text" name="salud_enfermedad" class="input-field"
+                            placeholder="Describa o deje vacío si no aplica">
+                        <i class="ph ph-first-aid-kit input-icon"></i>
+                    </div>
+                </div>
+
+                <div class="mb-2">
+                    <label class="label-primary">Medicamento para la fiebre (Habitual)</label>
+                    <div class="input-group">
+                        <input type="text" name="salud_fiebre" class="input-field" placeholder="Ej: Acetaminofén">
+                        <i class="ph ph-pill input-icon"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PASO 4: HÁBITOS -->
+            <div class="step-content hidden fade-in" id="step-4">
+                <h2 class="section-title"><i class="ph-fill ph-moon-stars text-indigo-500 text-2xl"></i> Hábitos y
+                    Conducta</h2>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10">
+                    <div>
+                        <label class="label-primary">¿Come solo?</label>
+                        <div class="input-group">
+                            <select name="habito_come" class="input-field appearance-none bg-white cursor-pointer">
+                                <option value="Si">Sí, come solo</option>
+                                <option value="No">No, requiere ayuda</option>
+                                <option value="Con Ayuda">Con un poco de ayuda</option>
+                            </select>
+                            <i class="ph ph-fork-knife input-icon"></i>
+                            <i
+                                class="ph ph-caret-down absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"></i>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="label-primary">Hora de dormir (Noche)</label>
+                        <div class="input-group">
+                            <input type="time" name="habito_hora" class="input-field">
+                            <i class="ph ph-clock input-icon"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <label class="label-primary mb-4 block text-lg">Diagnóstico Inicial (Seleccione los que
+                    apliquen)</label>
+                <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 mb-10">
+                    <!-- Botones Toggle -->
+                    <label class="cursor-pointer">
+                        <input type="checkbox" name="conducta[]" value="Sociable" class="check-card hidden">
+                        <div
+                            class="border-2 border-gray-100 rounded-xl py-3 px-2 text-center text-sm font-bold text-gray-600 bg-gray-50 hover:bg-white hover:border-gray-200 transition-all select-none">
+                            😊 Sociable
+                        </div>
+                    </label>
+                    <label class="cursor-pointer">
+                        <input type="checkbox" name="conducta[]" value="Inquieto" class="check-card hidden">
+                        <div
+                            class="border-2 border-gray-100 rounded-xl py-3 px-2 text-center text-sm font-bold text-gray-600 bg-gray-50 hover:bg-white hover:border-gray-200 transition-all select-none">
+                            ⚡ Inquieto
+                        </div>
+                    </label>
+                    <label class="cursor-pointer">
+                        <input type="checkbox" name="conducta[]" value="Cariñoso" class="check-card hidden">
+                        <div
+                            class="border-2 border-gray-100 rounded-xl py-3 px-2 text-center text-sm font-bold text-gray-600 bg-gray-50 hover:bg-white hover:border-gray-200 transition-all select-none">
+                            🥰 Cariñoso
+                        </div>
+                    </label>
+                    <label class="cursor-pointer">
+                        <input type="checkbox" name="conducta[]" value="Independiente" class="check-card hidden">
+                        <div
+                            class="border-2 border-gray-100 rounded-xl py-3 px-2 text-center text-sm font-bold text-gray-600 bg-gray-50 hover:bg-white hover:border-gray-200 transition-all select-none">
+                            🚀 Independiente
+                        </div>
+                    </label>
+                    <label class="cursor-pointer">
+                        <input type="checkbox" name="conducta[]" value="Agresivo" class="check-card hidden">
+                        <div
+                            class="border-2 border-gray-100 rounded-xl py-3 px-2 text-center text-sm font-bold text-gray-600 bg-gray-50 hover:bg-white hover:border-gray-200 transition-all select-none">
+                            😡 Agresivo
+                        </div>
+                    </label>
+                    <label class="cursor-pointer">
+                        <input type="checkbox" name="conducta[]" value="Timido" class="check-card hidden">
+                        <div
+                            class="border-2 border-gray-100 rounded-xl py-3 px-2 text-center text-sm font-bold text-gray-600 bg-gray-50 hover:bg-white hover:border-gray-200 transition-all select-none">
+                            🫣 Tímido
+                        </div>
+                    </label>
+                </div>
+
+                <div
+                    class="bg-yellow-50 border border-yellow-200 rounded-2xl p-5 flex gap-4 text-yellow-800 text-sm shadow-sm">
+                    <i class="ph-fill ph-info text-2xl text-yellow-500 mt-0.5"></i>
+                    <div>
+                        <p class="font-bold mb-1">Información Importante</p>
+                        <p>Al finalizar, los datos serán enviados al departamento de administración para su
+                            verificación. Asegúrese de que todo sea correcto.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Botones -->
+            <div class="mt-10 pt-8 border-t border-gray-100 flex justify-between items-center">
+                <button type="button" id="prevBtn"
+                    class="hidden px-7 py-3.5 rounded-xl bg-gray-100 text-gray-600 font-extrabold hover:bg-gray-200 transition-all flex items-center gap-2 hover:-translate-x-1">
+                    <i class="ph-bold ph-arrow-left"></i> Atrás
+                </button>
+
+                <button type="button" id="nextBtn"
+                    class="ml-auto px-10 py-3.5 rounded-xl bg-pink-500 text-white font-extrabold shadow-lg shadow-pink-200 hover:bg-pink-600 hover:shadow-pink-300 transform hover:-translate-y-0.5 transition-all flex items-center gap-2 text-lg">
+                    Siguiente <i class="ph-bold ph-arrow-right"></i>
+                </button>
+
+                <button type="submit" id="submitBtn"
+                    class="hidden ml-auto px-10 py-3.5 rounded-xl bg-green-500 text-white font-extrabold shadow-lg shadow-green-200 hover:bg-green-600 hover:shadow-green-300 transform hover:-translate-y-0.5 transition-all flex items-center gap-2 text-lg">
+                    Finalizar <i class="ph-fill ph-check-circle text-2xl"></i>
+                </button>
+            </div>
+        </form>
+    </main>
+
+    <!-- JS sigue igual pero robusto -->
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            // 1. Inicializar cliente de Supabase (Lado Cliente) - USA LA ANON KEY
+            const _supabase = supabase.createClient('https://yfvupxrrvqfwafvozypn.supabase.co', 'sb_publishable_VnDNWpwncQFFonAktaYOqw_zAXNMtg6');
+
+            let userId = null;
+
+            // 2. Obtener el usuario de la sesión actual (venga del correo o login previo)
+            const { data: { session } } = await _supabase.auth.getSession();
+
+            if (session) {
+                userId = session.user.id;
+            } else {
+                // Si no hay sesión, verificamos si hay un ID manual en la URL como respaldo
+                const urlParams = new URLSearchParams(window.location.search);
+                userId = urlParams.get('uid');
+            }
+
+            // 3. Seguridad: Si no hay forma de identificar al usuario, fuera de aquí
+            if (!userId) {
+                document.querySelector('main').classList.add('hidden');
+                Swal.fire({
+                    title: 'Acceso Restringido',
+                    text: 'Debes confirmar tu correo para acceder a este formulario.',
+                    icon: 'warning',
+                    confirmButtonText: 'Ir al Inicio',
+                    confirmButtonColor: '#ec4899'
+                }).then(() => { window.location.href = 'index.html'; });
+                return;
+            }
+
+            // 4. VERIFICAR ESTADO (¿Ya se inscribió?)
+            try {
+                const checkResp = await fetch(`/api/verificar_estado/${userId}`);
+                const checkData = await checkResp.json();
+
+                if (checkData.completado) {
+                    document.querySelector('main').innerHTML = ""; // Limpiar pantalla
+                    Swal.fire({
+                        title: '¡Ya estás inscrito!',
+                        text: 'Ya recibimos los datos de tu representado. Puedes iniciar sesión para ver el estatus.',
+                        icon: 'info',
+                        allowOutsideClick: false,
+                        confirmButtonText: 'Ir al Login',
+                        confirmButtonColor: '#ec4899'
+                    }).then(() => { window.location.href = 'login.html'; });
+                    return;
+                }
+            } catch (error) {
+                console.error("Error en verificación:", error);
+            }
+
+            let currentStep = 1;
+            const totalSteps = 4;
+
+            const form = document.getElementById('registrationForm');
+            const nextBtn = document.getElementById('nextBtn');
+            const prevBtn = document.getElementById('prevBtn');
+            const submitBtn = document.getElementById('submitBtn');
+            const progressBar = document.getElementById('progress-bar');
+            const stepIndicator = document.getElementById('step-indicator');
+
+            updateUI();
+
+            // --- LÓGICA DE NAVEGACIÓN ---
+            nextBtn.addEventListener('click', () => {
+                if (validateStep(currentStep)) {
+                    currentStep++;
+                    updateUI();
+                }
+            });
+
+            prevBtn.addEventListener('click', () => {
+                if (currentStep > 1) {
+                    currentStep--;
+                    updateUI();
+                }
+            });
+
+            // --- LÓGICA DE ENVÍO ---
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+
+                if (validateStep(currentStep)) {
+                    const originalBtnContent = submitBtn.innerHTML;
+                    submitBtn.innerHTML = '<i class="ph ph-spinner animate-spin text-xl"></i> Enviando...';
+                    submitBtn.disabled = true;
+
+                    try {
+                        const formData = new FormData(form);
+                        const data = Object.fromEntries(formData.entries());
+
+                        const conductas = formData.getAll('conducta[]');
+                        data['conducta'] = conductas;
+                        delete data['conducta[]'];
+
+                        data.bio_cesarea = formData.has('bio_cesarea');
+                        data.bio_prematuro = formData.has('bio_prematuro');
+                        data.bio_alergico = formData.has('bio_alergico');
+
+                        if (data.nino_edad) data.nino_edad = parseInt(data.nino_edad);
+                        if (data.bio_peso) data.bio_peso = parseFloat(data.bio_peso);
+                        if (data.bio_talla) data.bio_talla = parseFloat(data.bio_talla);
+
+                        // AGREGAR EL USER_ID AL JSON
+                        data.user_id = userId;
+
+                        const response = await fetch('/api/inscribir', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify(data)
+                        });
+
+                        if (!response.ok) {
+                            const errorData = await response.json();
+                            throw new Error(errorData.error || 'Error en el servidor');
+                        }
+
+                        Swal.fire({
+                            title: '¡Inscripción Exitosa!',
+                            text: 'Los datos del estudiante han sido registrados correctamente.',
+                            icon: 'success',
+                            confirmButtonText: 'Ir a Iniciar Sesión',
+                            allowOutsideClick: false,
+                            confirmButtonColor: '#ec4899',
+                            background: '#ffffff',
+                            color: '#374151',
+                            iconColor: '#10b981',
+                            backdrop: `rgba(236, 72, 153, 0.1) left top no-repeat`,
+                            customClass: {
+                                popup: 'rounded-2xl shadow-2xl',
+                                confirmButton: 'rounded-xl px-6 py-3 font-bold text-lg'
+                            }
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                window.location.href = 'login.html';
+                            }
+                        });
+
+                    } catch (error) {
+                        console.error('Error:', error);
+                        Swal.fire({
+                            title: 'Hubo un problema',
+                            text: error.message,
+                            icon: 'error',
+                            confirmButtonColor: '#ef4444',
+                            confirmButtonText: 'Intentar de nuevo',
+                            customClass: { popup: 'rounded-2xl' }
+                        });
+
+                        submitBtn.innerHTML = originalBtnContent;
+                        submitBtn.disabled = false;
+                    }
+                }
+            });
+
+            function updateUI() {
+                document.querySelectorAll('.step-content').forEach(el => {
+                    el.classList.add('hidden');
+                    el.classList.remove('fade-in');
+                });
+
+                const currentEl = document.getElementById(`step-${currentStep}`);
+                if (currentEl) {
+                    currentEl.classList.remove('hidden');
+                    void currentEl.offsetWidth;
+                    currentEl.classList.add('fade-in');
+                }
+
+                const percent = (currentStep / totalSteps) * 100;
+                progressBar.style.width = `${percent}%`;
+                stepIndicator.textContent = `Paso ${currentStep} de ${totalSteps}`;
+
+                prevBtn.classList.toggle('hidden', currentStep === 1);
+
+                if (currentStep === totalSteps) {
+                    nextBtn.classList.add('hidden');
+                    submitBtn.classList.remove('hidden');
+                } else {
+                    nextBtn.classList.remove('hidden');
+                    submitBtn.classList.add('hidden');
+                }
+
+                if (window.innerWidth < 768) {
+                    document.querySelector('main').scrollIntoView({ behavior: 'smooth' });
+                }
+            }
+
+            function validateStep(step) {
+                const currentEl = document.getElementById(`step-${step}`);
+                const inputs = currentEl.querySelectorAll('input[required], select[required], textarea[required]');
+                let valid = true;
+
+                inputs.forEach(input => {
+                    if (!input.value.trim()) {
+                        valid = false;
+                        input.classList.add('border-red-500', 'bg-red-50');
+                        input.addEventListener('input', () => {
+                            input.classList.remove('border-red-500', 'bg-red-50');
+                        }, { once: true });
+                    }
+                });
+
+                if (!valid) {
+                    currentEl.animate([
+                        { transform: 'translateX(0)' },
+                        { transform: 'translateX(-5px)' },
+                        { transform: 'translateX(5px)' },
+                        { transform: 'translateX(0)' }
+                    ], { duration: 300 });
+                }
+                return valid;
+            }
+        });
+    </script>
+
+</body>
+
+</html>
