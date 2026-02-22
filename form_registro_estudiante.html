@@ -561,7 +561,7 @@
 
             // 4. VERIFICAR ESTADO (¿Ya se inscribió?)
             try {
-                const checkResp = await fetch(`/api/verificar_estado/${userId}`);
+                const checkResp = await fetch(`https://cei-preescolar.onrender.com/api/verificar_estado/${userId}`);
                 const checkData = await checkResp.json();
 
                 if (checkData.completado) {
@@ -635,7 +635,7 @@
                         // AGREGAR EL USER_ID AL JSON
                         data.user_id = userId;
 
-                        const response = await fetch('/api/inscribir', {
+                        const response = await fetch('https://cei-preescolar.onrender.com/api/inscribir', {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json'

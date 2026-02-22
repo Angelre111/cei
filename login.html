@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,33 +10,49 @@
     <!-- Configuración de la fuente Inter y paleta de colores amigable -->
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
+
         body {
             font-family: 'Inter', sans-serif;
-            background-image: url(img/descarga\ \(1\)_upscayl_3x_digital-art-4x.png); 
+            background-image: url(img/descarga\ \(1\)_upscayl_3x_digital-art-4x.png);
             background-size: cover;
             background-repeat: no-repeat;
-            
-            
+
+
         }
+
         /* Colores personalizados del Home Page, ajustados a un estilo infantil */
-        .color-paragua-primary { background-color: #EC4899; /* Rosa Coral/Fucsia (Infantil) */ }
-        .text-paragua-primary { color: #EC4899; }
-        .color-paragua-secondary { background-color: #f59e0b; /* Amarillo sol (Acento) */ }
+        .color-paragua-primary {
+            background-color: #EC4899;
+            /* Rosa Coral/Fucsia (Infantil) */
+        }
+
+        .text-paragua-primary {
+            color: #EC4899;
+        }
+
+        .color-paragua-secondary {
+            background-color: #f59e0b;
+            /* Amarillo sol (Acento) */
+        }
 
         /* Estilo para inputs enfocados - Usando un verde suave/menta */
         .input-focus:focus {
-            border-color: #10B981; /* Verde menta */
-            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.5); /* Sombra verde pastel */
+            border-color: #10B981;
+            /* Verde menta */
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.5);
+            /* Sombra verde pastel */
             outline: none;
         }
     </style>
     <!-- Iconos Phosphor Icons -->
     <script src="https://unpkg.com/phosphor-icons"></script>
 </head>
+
 <body class="antialiased min-h-screen flex items-center justify-center p-4">
 
     <!-- Contenedor Central del Formulario -->
-    <div class="max-w-md w-full bg-white rounded-3xl p-8 sm:p-10 shadow-2xl transition-all duration-500 transform hover:shadow-3xl">
+    <div
+        class="max-w-md w-full bg-white rounded-3xl p-8 sm:p-10 shadow-2xl transition-all duration-500 transform hover:shadow-3xl">
 
         <!-- Encabezado y Logo -->
         <div class="text-center mb-8">
@@ -49,7 +66,8 @@
         </div>
 
         <!-- Mensaje de Estado (Para simular alertas sin usar alert()) -->
-        <div id="message-box" class="hidden p-3 rounded-lg text-sm mb-6 font-medium text-center transition-opacity duration-300">
+        <div id="message-box"
+            class="hidden p-3 rounded-lg text-sm mb-6 font-medium text-center transition-opacity duration-300">
             <!-- El contenido se inyecta con JavaScript -->
         </div>
 
@@ -58,12 +76,13 @@
 
             <!-- Campo Email/Usuario -->
             <div>
-                <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Correo Electrónico / Usuario</label>
+                <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Correo Electrónico /
+                    Usuario</label>
                 <div class="relative">
                     <i class="ph-envelope text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2"></i>
                     <input type="text" id="email" name="email" required
-                           class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl input-focus transition duration-200"
-                           placeholder="ejemplo@laparagua.edu.ve">
+                        class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl input-focus transition duration-200"
+                        placeholder="ejemplo@laparagua.edu.ve">
                 </div>
             </div>
 
@@ -73,8 +92,8 @@
                 <div class="relative">
                     <i class="ph-lock-key text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2"></i>
                     <input type="password" id="password" name="password" required
-                           class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl input-focus transition duration-200"
-                           placeholder="••••••••">
+                        class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl input-focus transition duration-200"
+                        placeholder="••••••••">
                 </div>
             </div>
 
@@ -83,7 +102,7 @@
                 <div class="flex items-center">
                     <!-- CAMBIO: Checkbox en color Rosa -->
                     <input id="remember-me" name="remember-me" type="checkbox"
-                           class="h-4 w-4 text-pink-600 border-gray-300 rounded focus:ring-pink-500">
+                        class="h-4 w-4 text-pink-600 border-gray-300 rounded focus:ring-pink-500">
                     <label for="remember-me" class="ml-2 block text-sm text-gray-900">
                         Recordarme
                     </label>
@@ -98,7 +117,7 @@
             <!-- Botón de Inicio de Sesión -->
             <div>
                 <button type="submit"
-                        class="w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-xl shadow-lg text-lg font-semibold text-white color-paragua-primary hover:bg-pink-600 transition duration-300 transform hover:scale-[1.01]">
+                    class="w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-xl shadow-lg text-lg font-semibold text-white color-paragua-primary hover:bg-pink-600 transition duration-300 transform hover:scale-[1.01]">
                     <i class="ph-sign-in mr-2 text-xl"></i> Iniciar Sesión
                 </button>
             </div>
@@ -118,7 +137,7 @@
 
     <!-- JavaScript: envío real al endpoint /api/login -->
     <script>
-        document.getElementById('login-form').addEventListener('submit', async function(event) {
+        document.getElementById('login-form').addEventListener('submit', async function (event) {
             event.preventDefault();
             const email = document.getElementById('email').value.trim();
             const password = document.getElementById('password').value;
@@ -138,7 +157,7 @@
             submitBtn.innerHTML = '<i class="ph-spinner gap-2 animate-spin mr-2"></i> Iniciando...';
 
             try {
-                const res = await fetch('/api/login', {
+                const res = await fetch('https://cei-preescolar.onrender.com/api/login', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
@@ -147,7 +166,7 @@
                 const json = await res.json().catch(() => ({}));
 
                 if (res.ok) {
-                    
+
                     setTimeout(() => window.location.href = 'representante.html', 800);
                 } else if (res.status === 400) {
                     showMessage(json.message || 'Errores en los datos enviados.', 'bg-red-100 text-red-800');
@@ -177,4 +196,5 @@
     </script>
 
 </body>
+
 </html>
