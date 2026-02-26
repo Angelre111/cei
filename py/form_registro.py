@@ -15,7 +15,12 @@ from supabase import create_client, Client, ClientOptions
 # --- CONFIGURACIÓN INICIAL ---
 load_dotenv()
 
-app = Flask(__name__)
+# Obtener la ruta del directorio raíz del proyecto (un nivel arriba de /py)
+ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+
+app = Flask(__name__, 
+            static_folder=ROOT_DIR, 
+            static_url_path='')
 app.secret_key = os.getenv('SECRET_KEY', 'dev_secret_key')
 CORS(app) # Habilitar CORS para permitir peticiones del frontend
 
@@ -238,19 +243,11 @@ def inscribir_estudiante():
         return jsonify({"error": "Error interno al procesar la inscripción"}), 500
 
 
-# =======================================================
-# RUTAS DE ARCHIVOS ESTÁTICOS (FRONTEND)
-# =======================================================
+
 
 @app.route('/')
-def index():
-    return send_from_directory(os.getcwd(), 'index.html')
-
-@app.route('/<path:filename>')
-def serve_static(filename):
-    return send_from_directory(os.getcwd(), filename)
-
-
+def home():
+    return send_from_directory(ROOT_DIR, 'index.html')
 # =======================================================
 # PUNTO DE ENTRADA
 # =======================================================

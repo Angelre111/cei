@@ -1,0 +1,69 @@
+@startuml
+left to right direction
+skinparam packageStyle rectangle
+actor Administrador
+actor Docente
+actor Representante
+
+rectangle "Sistema de Control Estudiantil CEI La Paragua" {
+  
+  ' Casos de Uso Comunes
+  usecase "Iniciar Sesión" as UC_Login
+  usecase "Recuperar Contraseña" as UC_RecPass
+
+  ' Casos de Uso Representante
+  usecase "Registrar Representante" as UC_RegRep
+  usecase "Validar Correo Electrónico" as UC_ValCorreo
+  usecase "Llenar Formulario de Inscripción" as UC_FormInsc
+  usecase "Validar Edad (2 a 5 años)" as UC_ValEdad
+  usecase "Visualizar Información del Alumno" as UC_VisInfo
+  usecase "Generar Ficha de Inscripción (PDF)" as UC_Ficha
+  usecase "Generar Constancia de Inscripción" as UC_ConstInsc
+  usecase "Generar Constancia de Estudio" as UC_ConstEst
+
+  ' Casos de Uso Administrador
+  usecase "Gestionar Usuarios y Secciones" as UC_GestAdmin
+  usecase "Asignar Estudiantes a Sección/Aula" as UC_Asignar
+  usecase "Generar Reportes Globales de Asistencia" as UC_RepGlob
+
+  ' Casos de Uso Docente
+  usecase "Gestionar Datos de Alumnos (Su Sección)" as UC_GestAlum
+  usecase "Cargar Asistencia Diaria" as UC_Asistencia
+  usecase "Generar Reporte de Asistencia (PDF)" as UC_RepAsist
+  usecase "Cargar Evaluaciones Descriptivas" as UC_CargarEval
+  usecase "Generar Boletines Descriptivos" as UC_Boletin
+  usecase "Generar Estadística Mensual" as UC_EstMensual
+}
+
+' --- Relaciones y Conexiones ---
+
+' Representante
+Representante --> UC_RegRep
+UC_RegRep .> UC_ValCorreo : <<include>>
+Representante --> UC_Login
+Representante --> UC_FormInsc
+UC_FormInsc .> UC_ValEdad : <<include>>
+Representante --> UC_VisInfo
+Representante --> UC_Ficha
+Representante --> UC_ConstInsc
+Representante --> UC_ConstEst
+
+' Administrador
+Administrador --> UC_Login
+Administrador --> UC_GestAdmin
+Administrador --> UC_Asignar
+Administrador --> UC_RepGlob
+
+' Docente
+Docente --> UC_Login
+Docente --> UC_GestAlum
+Docente --> UC_Asistencia
+Docente --> UC_RepAsist
+Docente --> UC_Boletin
+UC_Boletin .> UC_CargarEval : <<include>>
+Docente --> UC_EstMensual
+
+' Extensiones comunes
+UC_Login <. UC_RecPass : <<extend>>
+
+@enduml

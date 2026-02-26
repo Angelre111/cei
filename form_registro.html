@@ -183,6 +183,7 @@
 
     <!-- JavaScript para Simular el Registro -->
 
+    <script src="js/config.js"></script>
     <script>
         // Envío con fetch a /api/registrar (JSON). Mantiene las validaciones locales y muestra mensajes según la respuesta del servidor.
         document.getElementById('register-form').addEventListener('submit', async function (event) {
@@ -243,7 +244,7 @@
             setLoading(true);
 
             try {
-                const res = await fetch('https://cei-preescolar.onrender.com/api/registrar', {
+                const res = await fetch(`${API_BASE_URL}/api/registrar`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)

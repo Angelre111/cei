@@ -136,12 +136,14 @@
     </div>
 
     <!-- JavaScript: envío real al endpoint /api/login -->
+    <script src="js/config.js"></script>
     <script>
         document.getElementById('login-form').addEventListener('submit', async function (event) {
             event.preventDefault();
             const email = document.getElementById('email').value.trim();
             const password = document.getElementById('password').value;
             const messageBox = document.getElementById('message-box');
+
             messageBox.innerHTML = '';
             messageBox.className = 'hidden p-3 rounded-lg text-sm mb-6 font-medium text-center transition-opacity duration-300';
 
@@ -157,7 +159,7 @@
             submitBtn.innerHTML = '<i class="ph-spinner gap-2 animate-spin mr-2"></i> Iniciando...';
 
             try {
-                const res = await fetch('https://cei-preescolar.onrender.com/api/login', {
+                const res = await fetch(`${API_BASE_URL}/api/login`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
@@ -166,8 +168,22 @@
                 const json = await res.json().catch(() => ({}));
 
                 if (res.ok) {
+                    // Mensaje visual de éxito antes de redirigir
+                    showMessage('¡Bienvenido! Redirigiendo...', 'bg-green-100 text-green-800');
 
-                    setTimeout(() => window.location.href = 'representante.html', 800);
+                    // Redirección dinámica basada en el rol que devuelva tu API
+                    setTimeout(() => {
+                        const rol = json.rol || 'representante'; // Por si acaso falla, mandamos a representante
+
+                        if (rol === 'administrador') {
+                            window.location.href = 'admin.html'; // Cambia esto por tu ruta real de admin
+                        } else if (rol === 'docente') {
+                            window.location.href = 'docente.html'; // Cambia esto por tu ruta real de docente
+                        } else {
+                            window.location.href = 'representante.html';
+                        }
+                    }, 800);
+
                 } else if (res.status === 400) {
                     showMessage(json.message || 'Errores en los datos enviados.', 'bg-red-100 text-red-800');
                 } else if (res.status === 401) {
@@ -193,6 +209,7 @@
             messageBox.className = 'p-3 rounded-lg text-sm mb-6 font-medium text-center transition-opacity duration-300 ' + classes;
             setTimeout(() => messageBox.classList.remove('hidden', 'opacity-0'), 10);
         }
+
     </script>
 
 </body>
