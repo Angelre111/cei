@@ -531,55 +531,99 @@
     <script src="js/config.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
-            // 1. Inicializar cliente de Supabase (Lado Cliente) - USA LA ANON KEY
-            const _supabase = supabase.createClient('https://yfvupxrrvqfwafvozypn.supabase.co', 'sb_publishable_VnDNWpwncQFFonAktaYOqw_zAXNMtg6');
+            // 1. Inicializar cliente de Supabase (Lado Cliente) - USA CONSTANTES DE config.js
+            const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
             let userId = null;
+            let initialized = false;
 
-            // 2. Obtener el usuario de la sesión actual (venga del correo o login previo)
-            const { data: { session } } = await _supabase.auth.getSession();
+            // 2. FUNCIÓN DE INICIALIZACIÓN (Se activa cuando hay un ID de usuario)
+            async function initForm(uId) {
+                if (initialized || !uId) return;
+                initialized = true;
+                userId = uId;
+                console.log("🚀 Inicializando formulario para el usuario:", userId);
 
-            if (session) {
-                userId = session.user.id;
-            } else {
-                // Si no hay sesión, verificamos si hay un ID manual en la URL como respaldo
-                const urlParams = new URLSearchParams(window.location.search);
-                userId = urlParams.get('uid');
-            }
+                try {
+                    const checkResp = await fetch(`${API_BASE_URL}/api/verificar_estado/${userId}`);
+                    const checkData = await checkResp.json();
 
-            // 3. Seguridad: Si no hay forma de identificar al usuario, fuera de aquí
-            if (!userId) {
-                document.querySelector('main').classList.add('hidden');
-                Swal.fire({
-                    title: 'Acceso Restringido',
-                    text: 'Debes confirmar tu correo para acceder a este formulario.',
-                    icon: 'warning',
-                    confirmButtonText: 'Ir al Inicio',
-                    confirmButtonColor: '#ec4899'
-                }).then(() => { window.location.href = 'index.html'; });
-                return;
-            }
-
-            // 4. VERIFICAR ESTADO (¿Ya se inscribió?)
-            try {
-                const checkResp = await fetch(`${API_BASE_URL}/api/verificar_estado/${userId}`);
-                const checkData = await checkResp.json();
-
-                if (checkData.completado) {
-                    document.querySelector('main').innerHTML = ""; // Limpiar pantalla
-                    Swal.fire({
-                        title: '¡Ya estás inscrito!',
-                        text: 'Ya recibimos los datos de tu representado. Puedes iniciar sesión para ver el estatus.',
-                        icon: 'info',
-                        allowOutsideClick: false,
-                        confirmButtonText: 'Ir al Login',
-                        confirmButtonColor: '#ec4899'
-                    }).then(() => { window.location.href = 'login.html'; });
-                    return;
+                    if (checkData.completado) {
+                        document.querySelector('main').innerHTML = "";
+                        Swal.fire({
+                            title: '¡Ya estás inscrito!',
+                            text: 'Ya recibimos los datos de tu representado.',
+                            icon: 'info',
+                            confirmButtonText: 'Ir al Login',
+                            confirmButtonColor: '#ec4899'
+                        }).then(() => { window.location.href = 'login.html'; });
+                        return;
+                    }
+                } catch (error) {
+                    console.error("❌ Error en verificación de estado:", error);
                 }
-            } catch (error) {
-                console.error("Error en verificación:", error);
+
+                updateUI();
             }
+
+            // 3. CAPTURAR SESIÓN INICIAL Y ESCUCHAR CAMBIOS
+            const checkSession = async () => {
+                const { data: { session }, error } = await _supabase.auth.getSession();
+                console.log("🔍 Verificando sesión inicial...", session ? "Sesión encontrada" : "Sin sesión");
+                if (error) console.error("❌ Error de sesión:", error);
+                if (session) {
+                    await initForm(session.user.id);
+                }
+            };
+
+            // Detectar si hay errores en la URL (viniendo de Supabase)
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.has('error')) {
+                console.error("❌ Error en URL de retorno:", urlParams.get('error_description'));
+                Swal.fire('Error de Acceso', urlParams.get('error_description'), 'error');
+            }
+
+            // Detectar si hay un token en el hash (#) - Supabase lo usa para el login por correo
+            if (window.location.hash.includes('access_token')) {
+                console.log("🎫 Se detectó un token en el hash de la URL. Procesando...");
+            }
+
+            checkSession();
+
+            _supabase.auth.onAuthStateChange(async (event, session) => {
+                console.log("🔔 Cambio en Autenticación:", event, session ? "Hay sesión" : "Sesión nula");
+                if (session) {
+                    await initForm(session.user.id);
+                } else if (event === 'INITIAL_SESSION' && window.location.hash.includes('access_token')) {
+                    // Si hay token pero session es null, reintentamos en 500ms
+                    console.log("⏳ Reintentando captura de sesión en 500ms...");
+                    setTimeout(checkSession, 500);
+                }
+            });
+
+            // Respaldo por si no hay sesión después de 5 segundos
+            setTimeout(() => {
+                if (!userId) {
+                    const uidParam = urlParams.get('uid');
+                    if (uidParam) {
+                        console.log("🔄 Usando UID de respaldo de la URL");
+                        initForm(uidParam);
+                    } else {
+                        console.warn("⚠️ No se detectó sesión tras 5 segundos.");
+                        // Solo bloqueamos si realmente no hay rastro de token o sesión
+                        if (!window.location.hash.includes('access_token')) {
+                            document.querySelector('main').classList.add('hidden');
+                            Swal.fire({
+                                title: 'Acceso Restringido',
+                                text: 'Debes confirmar tu correo para acceder.',
+                                icon: 'warning',
+                                confirmButtonText: 'Ir al Inicio',
+                                confirmButtonColor: '#ec4899'
+                            }).then(() => { window.location.href = 'index.html'; });
+                        }
+                    }
+                }
+            }, 5000);
 
             let currentStep = 1;
             const totalSteps = 4;
@@ -590,8 +634,6 @@
             const submitBtn = document.getElementById('submitBtn');
             const progressBar = document.getElementById('progress-bar');
             const stepIndicator = document.getElementById('step-indicator');
-
-            updateUI();
 
             // --- LÓGICA DE NAVEGACIÓN ---
             nextBtn.addEventListener('click', () => {
@@ -613,6 +655,11 @@
                 e.preventDefault();
 
                 if (validateStep(currentStep)) {
+                    if (!userId) {
+                        Swal.fire('Error', 'No se ha detectado una sesión válida.', 'error');
+                        return;
+                    }
+
                     const originalBtnContent = submitBtn.innerHTML;
                     submitBtn.innerHTML = '<i class="ph ph-spinner animate-spin text-xl"></i> Enviando...';
                     submitBtn.disabled = true;

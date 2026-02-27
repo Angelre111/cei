@@ -1,0 +1,988 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portal Administrativo | CEI La Paragua</title>
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Inter Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'primary-blue': '#D2E3FC',
+                        'secondary-pink': '#F48BAF',
+                        'accent-yellow': '#FFD870',
+                        'accent-green': '#A7F0BA',
+                        'accent-purple': '#D5BCFF',
+                        'dark-text': '#1F2937',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f9ff;
+            /* fallback */
+            background-image: url('https://www.transparenttextures.com/patterns/cubes.png');
+            /* Textura sutil para no sobrecargar */
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #94a3b8;
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #64748b;
+        }
+
+        .nav-link-active {
+            background-color: #e0f2fe;
+            color: #0284c7;
+            font-weight: 600;
+        }
+
+        /* Animaciones para modales y toast */
+        .fade-in {
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+
+<body class="bg-blue-50 text-gray-800">
+
+    <div class="flex h-screen overflow-hidden">
+
+        <!-- Overlay Móvil -->
+        <div id="mobile-overlay" onclick="toggleSidebar()"
+            class="fixed inset-0 bg-black/50 z-30 hidden backdrop-blur-sm transition-opacity opacity-0 lg:hidden"></div>
+
+        <!-- ============================================ -->
+        <!-- SIDEBAR DE NAVEGACIÓN -->
+        <!-- ============================================ -->
+        <nav id="sidebar"
+            class="w-64 bg-white shadow-lg overflow-y-auto flex-shrink-0 fixed inset-y-0 left-0 z-40 transform -translate-x-full transition-transform duration-300 md:translate-x-0 md:static border-r border-gray-100 flex flex-col justify-between">
+            <div>
+                <div class="p-6">
+                    <a href="#" class="flex items-center space-x-3">
+                        <div
+                            class="flex items-center justify-center w-12 h-12 bg-blue-100 text-blue-600 rounded-full font-bold text-xl">
+                            Admin
+                        </div>
+                        <span class="text-xl font-bold text-gray-800">CEI La Paragua</span>
+                    </a>
+                </div>
+
+                <ul class="space-y-1 p-4">
+                    <li>
+                        <a href="#" data-section="section-dashboard"
+                            class="nav-link nav-link-active flex items-center space-x-3 p-3 rounded-xl transition-all duration-200">
+                            <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                                stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" />
+                            </svg>
+                            <span>Dashboard</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" data-section="section-docentes"
+                            class="nav-link flex items-center space-x-3 p-3 rounded-xl hover:bg-blue-50 transition-all duration-200">
+                            <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                                stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M4.26 10.147a60.436 60.436 0 00-.491 6.347A48.627 48.627 0 0112 20.904a48.627 48.627 0 018.232-4.41 60.46 60.46 0 00-.491-6.347m-15.482 0a50.57 50.57 0 00-2.658-.813A59.905 59.905 0 0112 3.493a59.902 59.902 0 0110.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.697 50.697 0 0112 13.489a50.702 50.702 0 017.74-3.342M6.75 15a.75.75 0 100-1.5.75.75 0 000 1.5zm0 0v-3.675A55.378 55.378 0 0112 8.443m-7.007 11.55A5.981 5.981 0 006.75 15.75v-1.5" />
+                            </svg>
+                            <span>Docentes</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" data-section="section-secciones"
+                            class="nav-link flex items-center space-x-3 p-3 rounded-xl hover:bg-blue-50 transition-all duration-200">
+                            <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                                stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
+                            </svg>
+                            <span>Secciones / Grupos</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" data-section="section-estudiantes"
+                            class="nav-link flex items-center space-x-3 p-3 rounded-xl hover:bg-blue-50 transition-all duration-200">
+                            <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                                stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" />
+                            </svg>
+                            <span>Estudiantes</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" data-section="section-anoescolar"
+                            class="nav-link flex items-center space-x-3 p-3 rounded-xl hover:bg-blue-50 transition-all duration-200">
+                            <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                                stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
+                            </svg>
+                            <span>Año Escolar</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="p-4 border-t border-gray-100">
+                <button
+                    class="w-full flex items-center justify-center space-x-2 p-3 text-sm text-red-500 hover:bg-red-50 rounded-lg transition duration-150">
+                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75" />
+                    </svg>
+                    <span>Cerrar Sesión</span>
+                </button>
+            </div>
+        </nav>
+
+        <!-- ============================================ -->
+        <!-- ÁREA DE CONTENIDO PRINCIPAL -->
+        <!-- ============================================ -->
+        <main class="flex-1 h-screen overflow-y-auto bg-gray-50/50">
+
+            <!-- Header Móvil -->
+            <div class="md:hidden bg-white p-4 shadow-sm flex justify-between items-center sticky top-0 z-20">
+                <span class="font-bold text-lg text-gray-800">Panel Administrativo</span>
+                <button onclick="toggleSidebar()" class="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition">
+                    <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Header Desktop -->
+            <header
+                class="sticky top-0 z-10 hidden md:flex items-center justify-between p-6 bg-white/80 backdrop-blur-md border-b border-gray-200 shadow-sm">
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-800">Panel de Administración</h1>
+                    <p class="text-sm text-gray-500">Gestión central del Preescolar</p>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <span
+                        class="bg-green-100 text-green-800 text-xs font-semibold px-3 py-1 rounded-full border border-green-200">
+                        Año Escolar Activo: <span id="header-ano-activo">2024-2025</span>
+                    </span>
+                    <img src="https://placehold.co/100x100/DBEAFE/1E3A8A?text=AD" alt="Admin"
+                        class="w-10 h-10 rounded-full border-2 border-blue-200">
+                </div>
+            </header>
+
+            <!-- Contenedor de Secciones -->
+            <div class="p-4 md:p-8">
+
+                <!-- ============================================ -->
+                <!-- SECCIÓN 1: DASHBOARD -->
+                <!-- ============================================ -->
+                <section id="section-dashboard" class="page-section">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                        <div
+                            class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center space-x-4">
+                            <div class="p-3 bg-blue-100 text-blue-600 rounded-xl">
+                                <svg class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                                    stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M4.26 10.147a60.436 60.436 0 00-.491 6.347A48.627 48.627 0 0112 20.904a48.627 48.627 0 018.232-4.41 60.46 60.46 0 00-.491-6.347m-15.482 0a50.57 50.57 0 00-2.658-.813A59.905 59.905 0 0112 3.493a59.902 59.902 0 0110.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.697 50.697 0 0112 13.489a50.702 50.702 0 017.74-3.342M6.75 15a.75.75 0 100-1.5.75.75 0 000 1.5zm0 0v-3.675A55.378 55.378 0 0112 8.443m-7.007 11.55A5.981 5.981 0 006.75 15.75v-1.5" />
+                                </svg>
+                            </div>
+                            <div>
+                                <p class="text-gray-500 text-sm font-medium">Docentes Registrados</p>
+                                <p class="text-3xl font-bold text-gray-800" id="dash-docentes-count">0</p>
+                            </div>
+                        </div>
+                        <div
+                            class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center space-x-4">
+                            <div class="p-3 bg-pink-100 text-pink-600 rounded-xl">
+                                <svg class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                                    stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" />
+                                </svg>
+                            </div>
+                            <div>
+                                <p class="text-gray-500 text-sm font-medium">Total Estudiantes</p>
+                                <p class="text-3xl font-bold text-gray-800" id="dash-estudiantes-count">0</p>
+                            </div>
+                        </div>
+                        <div
+                            class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center space-x-4">
+                            <div class="p-3 bg-yellow-100 text-yellow-600 rounded-xl">
+                                <svg class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                                    stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
+                                </svg>
+                            </div>
+                            <div>
+                                <p class="text-gray-500 text-sm font-medium">Secciones Activas</p>
+                                <p class="text-3xl font-bold text-gray-800" id="dash-secciones-count">0</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                        <h2 class="text-lg font-bold mb-4">Acciones Rápidas</h2>
+                        <div class="flex flex-wrap gap-4">
+                            <button class="nav-button bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg"
+                                data-target="section-docentes">+ Nuevo Docente</button>
+                            <button class="nav-button bg-pink-500 hover:bg-pink-600 text-white px-4 py-2 rounded-lg"
+                                data-target="section-secciones">+ Crear Sección</button>
+                            <button class="nav-button bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-lg"
+                                data-target="section-estudiantes">+ Registrar Estudiante</button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ============================================ -->
+                <!-- SECCIÓN 2: GESTIÓN DE DOCENTES -->
+                <!-- ============================================ -->
+                <section id="section-docentes" class="page-section hidden fade-in">
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                        <div class="flex justify-between items-center mb-6">
+                            <h2 class="text-2xl font-bold text-gray-800">Gestión de Docentes</h2>
+                        </div>
+
+                        <!-- Formulario Docentes -->
+                        <form id="form-docentes"
+                            class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8 bg-gray-50 p-4 rounded-xl border border-gray-200">
+                            <input type="hidden" id="docente-id">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Nombre Completo</label>
+                                <input type="text" id="docente-nombre" required
+                                    class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-300 outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Correo Electrónico</label>
+                                <input type="email" id="docente-email" required
+                                    class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-300 outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Especialidad/Cargo</label>
+                                <input type="text" id="docente-cargo" required placeholder="Ej: Titular Maternal"
+                                    class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-300 outline-none">
+                            </div>
+                            <div class="md:col-span-3 flex justify-end">
+                                <button type="submit"
+                                    class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700">Guardar
+                                    Docente</button>
+                            </div>
+                        </form>
+
+                        <!-- Tabla Docentes -->
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ID
+                                        </th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                            Nombre</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                            Email</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                            Cargo</th>
+                                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">
+                                            Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tabla-docentes" class="bg-white divide-y divide-gray-200">
+                                    <!-- JS content -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ============================================ -->
+                <!-- SECCIÓN 3: GESTIÓN DE SECCIONES (GRUPOS) -->
+                <!-- ============================================ -->
+                <section id="section-secciones" class="page-section hidden fade-in">
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                        <div class="flex justify-between items-center mb-6">
+                            <h2 class="text-2xl font-bold text-gray-800">Gestión de Secciones</h2>
+                        </div>
+
+                        <!-- Formulario Secciones -->
+                        <form id="form-secciones"
+                            class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8 bg-gray-50 p-4 rounded-xl border border-gray-200">
+                            <input type="hidden" id="seccion-id">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Nombre de Sección</label>
+                                <input type="text" id="seccion-nombre" required placeholder="Ej: Maternal A"
+                                    class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-300 outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Nivel</label>
+                                <select id="seccion-nivel"
+                                    class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-300 outline-none">
+                                    <option value="Maternal">Maternal</option>
+                                    <option value="Preescolar Nivel 1">Preescolar Nivel 1</option>
+                                    <option value="Preescolar Nivel 2">Preescolar Nivel 2</option>
+                                    <option value="Preescolar Nivel 3">Preescolar Nivel 3</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Capacidad Max.</label>
+                                <input type="number" id="seccion-capacidad" required min="1"
+                                    class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-300 outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Asignar Docente</label>
+                                <select id="seccion-docente" required
+                                    class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-300 outline-none">
+                                    <!-- Rellenado por JS -->
+                                </select>
+                            </div>
+                            <div class="md:col-span-4 flex justify-end">
+                                <button type="submit"
+                                    class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700">Guardar
+                                    Sección</button>
+                            </div>
+                        </form>
+
+                        <!-- Tabla Secciones -->
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                            Nombre</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                            Nivel</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                            Capacidad</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                            Docente Asignado</th>
+                                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">
+                                            Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tabla-secciones" class="bg-white divide-y divide-gray-200">
+                                    <!-- JS content -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ============================================ -->
+                <!-- SECCIÓN 4: GESTIÓN DE ESTUDIANTES -->
+                <!-- ============================================ -->
+                <section id="section-estudiantes" class="page-section hidden fade-in">
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                        <div class="flex justify-between items-center mb-6">
+                            <h2 class="text-2xl font-bold text-gray-800">Directorio de Estudiantes</h2>
+                        </div>
+
+                        <!-- Formulario Estudiantes -->
+                        <form id="form-estudiantes"
+                            class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8 bg-gray-50 p-4 rounded-xl border border-gray-200">
+                            <input type="hidden" id="estudiante-id">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Nombres</label>
+                                <input type="text" id="estudiante-nombres" required
+                                    class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-pink-300 outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Apellidos</label>
+                                <input type="text" id="estudiante-apellidos" required
+                                    class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-pink-300 outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Fecha Nacimiento</label>
+                                <input type="date" id="estudiante-fechanac" required
+                                    class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-pink-300 outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Asignar a Sección</label>
+                                <select id="estudiante-seccion" required
+                                    class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-pink-300 outline-none">
+                                    <!-- Rellenado por JS -->
+                                </select>
+                            </div>
+                            <div class="md:col-span-4 flex justify-end">
+                                <button type="submit"
+                                    class="bg-pink-500 text-white px-6 py-2 rounded-lg hover:bg-pink-600">Registrar
+                                    Estudiante</button>
+                            </div>
+                        </form>
+
+                        <!-- Tabla Estudiantes -->
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ID
+                                        </th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                            Estudiante</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Edad
+                                        </th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                            Sección (Grupo)</th>
+                                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">
+                                            Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tabla-estudiantes" class="bg-white divide-y divide-gray-200">
+                                    <!-- JS content -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ============================================ -->
+                <!-- SECCIÓN 5: CONFIGURACIÓN AÑO ESCOLAR -->
+                <!-- ============================================ -->
+                <section id="section-anoescolar" class="page-section hidden fade-in">
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                        <div class="flex justify-between items-center mb-6">
+                            <h2 class="text-2xl font-bold text-gray-800">Períodos y Año Escolar</h2>
+                        </div>
+
+                        <!-- Formulario Año Escolar (Acorde a la BD: nombre, fecha_inicio, fecha_fin, estado) -->
+                        <form id="form-ano"
+                            class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8 bg-gray-50 p-4 rounded-xl border border-gray-200">
+                            <input type="hidden" id="ano-id">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Nombre (Ej:
+                                    2024-2025)</label>
+                                <input type="text" id="ano-nombre" required
+                                    class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-purple-300 outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Fecha Inicio</label>
+                                <input type="date" id="ano-inicio" required
+                                    class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-purple-300 outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Fecha Fin</label>
+                                <input type="date" id="ano-fin" required
+                                    class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-purple-300 outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Estado</label>
+                                <select id="ano-estado" required
+                                    class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-purple-300 outline-none">
+                                    <option value="Activo">Activo</option>
+                                    <option value="Inactivo">Inactivo</option>
+                                    <option value="Planificacion">Planificación</option>
+                                </select>
+                            </div>
+                            <div class="md:col-span-4 flex justify-end">
+                                <button type="submit"
+                                    class="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700">Guardar
+                                    Período</button>
+                            </div>
+                        </form>
+
+                        <!-- Tabla Año Escolar -->
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                            Nombre</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                            Fecha Inicio</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                            Fecha Fin</th>
+                                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">
+                                            Estado</th>
+                                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">
+                                            Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tabla-ano" class="bg-white divide-y divide-gray-200">
+                                    <!-- JS content -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- TOAST NOTIFICATION -->
+    <div id="toast-notification"
+        class="fixed top-5 right-5 z-50 p-4 rounded-lg shadow-lg text-white transition-transform transform translate-x-full duration-300 ease-in-out">
+        <span id="toast-message"></span>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- LOGICA DE LA APLICACIÓN (MOCK CRUD) -->
+    <!-- ============================================ -->
+    <script>
+        // ==========================================
+        // BASE DE DATOS FICTICIA (En Memoria)
+        // ==========================================
+        let db = {
+            docentes: [
+                { id: 1, nombre: "María Pérez", email: "maria@ceiparagua.edu", cargo: "Titular Maternal" },
+                { id: 2, nombre: "Carlos Gómez", email: "carlos@ceiparagua.edu", cargo: "Educación Física" }
+            ],
+            secciones: [
+                { id: 1, nombre: "Maternal A", nivel: "Maternal", capacidad: 15, docenteId: 1 }
+            ],
+            estudiantes: [
+                { id: 1, nombres: "Sofía", apellidos: "Ruiz", fechanac: "2021-05-14", seccionId: 1 },
+                { id: 2, nombres: "Mateo", apellidos: "Díaz", fechanac: "2020-08-20", seccionId: 1 }
+            ],
+            anosEscolares: [
+                { id: 1, nombre: "2023-2024", inicio: "2023-09-01", fin: "2024-07-15", estado: "Inactivo" },
+                { id: 2, nombre: "2024-2025", inicio: "2024-09-01", fin: "2025-07-15", estado: "Activo" }
+            ]
+        };
+
+        // Generadores de IDs simples
+        const generateId = (array) => array.length > 0 ? Math.max(...array.map(i => i.id)) + 1 : 1;
+
+        // ==========================================
+        // INICIALIZACIÓN
+        // ==========================================
+        document.addEventListener('DOMContentLoaded', () => {
+            setupNavigation();
+            actualizarTodo();
+
+            // Listeners de formularios
+            document.getElementById('form-docentes').addEventListener('submit', handleDocenteSubmit);
+            document.getElementById('form-secciones').addEventListener('submit', handleSeccionSubmit);
+            document.getElementById('form-estudiantes').addEventListener('submit', handleEstudianteSubmit);
+            document.getElementById('form-ano').addEventListener('submit', handleAnoSubmit);
+        });
+
+        // ==========================================
+        // NAVEGACIÓN Y MENÚS
+        // ==========================================
+        function setupNavigation() {
+            const navLinks = document.querySelectorAll('.nav-link');
+            const navButtons = document.querySelectorAll('.nav-button');
+            const pageSections = document.querySelectorAll('.page-section');
+
+            const allNavTriggers = [...navLinks, ...navButtons];
+
+            allNavTriggers.forEach(trigger => {
+                trigger.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const targetSectionId = trigger.dataset.section || trigger.dataset.target;
+
+                    pageSections.forEach(section => section.classList.add('hidden'));
+                    document.getElementById(targetSectionId).classList.remove('hidden');
+
+                    if (trigger.classList.contains('nav-link')) {
+                        navLinks.forEach(link => link.classList.remove('nav-link-active'));
+                        trigger.classList.add('nav-link-active');
+                    }
+
+                    // Cerrar sidebar en móvil si está abierto
+                    if (window.innerWidth < 1024 && !document.getElementById('sidebar').classList.contains('-translate-x-full')) {
+                        toggleSidebar();
+                    }
+                });
+            });
+        }
+
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('mobile-overlay');
+            const isOpen = !sidebar.classList.contains('-translate-x-full');
+
+            if (!isOpen) {
+                sidebar.classList.remove('-translate-x-full');
+                overlay.classList.remove('hidden');
+                setTimeout(() => overlay.classList.remove('opacity-0'), 10);
+            } else {
+                sidebar.classList.add('-translate-x-full');
+                overlay.classList.add('opacity-0');
+                setTimeout(() => overlay.classList.add('hidden'), 300);
+            }
+        }
+
+        // ==========================================
+        // ACTUALIZACIÓN DE UI (Renders)
+        // ==========================================
+        function actualizarTodo() {
+            renderDocentes();
+            renderSecciones();
+            renderEstudiantes();
+            renderAnoEscolar();
+            actualizarSelects();
+            actualizarDashboard();
+        }
+
+        function actualizarDashboard() {
+            document.getElementById('dash-docentes-count').innerText = db.docentes.length;
+            document.getElementById('dash-estudiantes-count').innerText = db.estudiantes.length;
+            document.getElementById('dash-secciones-count').innerText = db.secciones.length;
+
+            const anoActivo = db.anosEscolares.find(a => a.estado === 'Activo');
+            document.getElementById('header-ano-activo').innerText = anoActivo ? anoActivo.nombre : 'Ninguno';
+        }
+
+        function actualizarSelects() {
+            // Select de Docentes en formulario de Secciones
+            const selectDocente = document.getElementById('seccion-docente');
+            selectDocente.innerHTML = '<option value="">Seleccione un docente...</option>';
+            db.docentes.forEach(d => {
+                selectDocente.innerHTML += `<option value="${d.id}">${d.nombre} (${d.cargo})</option>`;
+            });
+
+            // Select de Secciones en formulario de Estudiantes
+            const selectSeccion = document.getElementById('estudiante-seccion');
+            selectSeccion.innerHTML = '<option value="">Seleccione una sección...</option>';
+            db.secciones.forEach(s => {
+                selectSeccion.innerHTML += `<option value="${s.id}">${s.nombre} - ${s.nivel}</option>`;
+            });
+        }
+
+        // ==========================================
+        // LÓGICA CRUD DOCENTES
+        // ==========================================
+        function renderDocentes() {
+            const tbody = document.getElementById('tabla-docentes');
+            tbody.innerHTML = '';
+            db.docentes.forEach(d => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td class="px-6 py-4 text-sm text-gray-500">#${d.id}</td>
+                        <td class="px-6 py-4 text-sm font-medium text-gray-900">${d.nombre}</td>
+                        <td class="px-6 py-4 text-sm text-gray-500">${d.email}</td>
+                        <td class="px-6 py-4 text-sm text-gray-500">${d.cargo}</td>
+                        <td class="px-6 py-4 text-right text-sm font-medium">
+                            <button onclick="editarDocente(${d.id})" class="text-blue-600 hover:text-blue-900 mr-3">Editar</button>
+                            <button onclick="eliminarDocente(${d.id})" class="text-red-600 hover:text-red-900">Eliminar</button>
+                        </td>
+                    </tr>`;
+            });
+        }
+
+        function handleDocenteSubmit(e) {
+            e.preventDefault();
+            const id = document.getElementById('docente-id').value;
+            const nuevo = {
+                id: id ? parseInt(id) : generateId(db.docentes),
+                nombre: document.getElementById('docente-nombre').value,
+                email: document.getElementById('docente-email').value,
+                cargo: document.getElementById('docente-cargo').value
+            };
+
+            if (id) {
+                const index = db.docentes.findIndex(d => d.id === parseInt(id));
+                db.docentes[index] = nuevo;
+                showToast("Docente actualizado", "success");
+            } else {
+                db.docentes.push(nuevo);
+                showToast("Docente registrado", "success");
+            }
+
+            e.target.reset();
+            document.getElementById('docente-id').value = '';
+            actualizarTodo();
+        }
+
+        function editarDocente(id) {
+            const d = db.docentes.find(x => x.id === id);
+            document.getElementById('docente-id').value = d.id;
+            document.getElementById('docente-nombre').value = d.nombre;
+            document.getElementById('docente-email').value = d.email;
+            document.getElementById('docente-cargo').value = d.cargo;
+        }
+
+        function eliminarDocente(id) {
+            if (confirm('¿Seguro que desea eliminar este docente?')) {
+                db.docentes = db.docentes.filter(d => d.id !== id);
+                actualizarTodo();
+                showToast("Docente eliminado", "success");
+            }
+        }
+
+        // ==========================================
+        // LÓGICA CRUD SECCIONES
+        // ==========================================
+        function renderSecciones() {
+            const tbody = document.getElementById('tabla-secciones');
+            tbody.innerHTML = '';
+            db.secciones.forEach(s => {
+                const docente = db.docentes.find(d => d.id === parseInt(s.docenteId));
+                const nombreDocente = docente ? docente.nombre : '<span class="text-red-500">Sin asignar</span>';
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td class="px-6 py-4 text-sm font-medium text-gray-900">${s.nombre}</td>
+                        <td class="px-6 py-4 text-sm text-gray-500">${s.nivel}</td>
+                        <td class="px-6 py-4 text-sm text-gray-500">${s.capacidad}</td>
+                        <td class="px-6 py-4 text-sm text-gray-500">${nombreDocente}</td>
+                        <td class="px-6 py-4 text-right text-sm font-medium">
+                            <button onclick="editarSeccion(${s.id})" class="text-blue-600 hover:text-blue-900 mr-3">Editar</button>
+                            <button onclick="eliminarSeccion(${s.id})" class="text-red-600 hover:text-red-900">Eliminar</button>
+                        </td>
+                    </tr>`;
+            });
+        }
+
+        function handleSeccionSubmit(e) {
+            e.preventDefault();
+            const id = document.getElementById('seccion-id').value;
+            const nuevo = {
+                id: id ? parseInt(id) : generateId(db.secciones),
+                nombre: document.getElementById('seccion-nombre').value,
+                nivel: document.getElementById('seccion-nivel').value,
+                capacidad: document.getElementById('seccion-capacidad').value,
+                docenteId: document.getElementById('seccion-docente').value
+            };
+
+            if (id) {
+                const index = db.secciones.findIndex(x => x.id === parseInt(id));
+                db.secciones[index] = nuevo;
+                showToast("Sección actualizada", "success");
+            } else {
+                db.secciones.push(nuevo);
+                showToast("Sección creada", "success");
+            }
+
+            e.target.reset();
+            document.getElementById('seccion-id').value = '';
+            actualizarTodo();
+        }
+
+        function editarSeccion(id) {
+            const s = db.secciones.find(x => x.id === id);
+            document.getElementById('seccion-id').value = s.id;
+            document.getElementById('seccion-nombre').value = s.nombre;
+            document.getElementById('seccion-nivel').value = s.nivel;
+            document.getElementById('seccion-capacidad').value = s.capacidad;
+            document.getElementById('seccion-docente').value = s.docenteId;
+        }
+
+        function eliminarSeccion(id) {
+            if (confirm('¿Eliminar esta sección?')) {
+                db.secciones = db.secciones.filter(x => x.id !== id);
+                actualizarTodo();
+                showToast("Sección eliminada", "success");
+            }
+        }
+
+        // ==========================================
+        // LÓGICA CRUD ESTUDIANTES
+        // ==========================================
+        function calcularEdad(fechaNacimiento) {
+            const hoy = new Date();
+            const nac = new Date(fechaNacimiento);
+            let edad = hoy.getFullYear() - nac.getFullYear();
+            const m = hoy.getMonth() - nac.getMonth();
+            if (m < 0 || (m === 0 && hoy.getDate() < nac.getDate())) { edad--; }
+            return edad;
+        }
+
+        function renderEstudiantes() {
+            const tbody = document.getElementById('tabla-estudiantes');
+            tbody.innerHTML = '';
+            db.estudiantes.forEach(e => {
+                const seccion = db.secciones.find(s => s.id === parseInt(e.seccionId));
+                const nombreSeccion = seccion ? seccion.nombre : '<span class="text-red-500">No asignado</span>';
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td class="px-6 py-4 text-sm text-gray-500">#${e.id}</td>
+                        <td class="px-6 py-4 text-sm font-medium text-gray-900">${e.nombres} ${e.apellidos}</td>
+                        <td class="px-6 py-4 text-sm text-gray-500">${calcularEdad(e.fechanac)} años</td>
+                        <td class="px-6 py-4 text-sm text-gray-500">${nombreSeccion}</td>
+                        <td class="px-6 py-4 text-right text-sm font-medium">
+                            <button onclick="editarEstudiante(${e.id})" class="text-blue-600 hover:text-blue-900 mr-3">Editar</button>
+                            <button onclick="eliminarEstudiante(${e.id})" class="text-red-600 hover:text-red-900">Eliminar</button>
+                        </td>
+                    </tr>`;
+            });
+        }
+
+        function handleEstudianteSubmit(e) {
+            e.preventDefault();
+            const id = document.getElementById('estudiante-id').value;
+            const nuevo = {
+                id: id ? parseInt(id) : generateId(db.estudiantes),
+                nombres: document.getElementById('estudiante-nombres').value,
+                apellidos: document.getElementById('estudiante-apellidos').value,
+                fechanac: document.getElementById('estudiante-fechanac').value,
+                seccionId: document.getElementById('estudiante-seccion').value
+            };
+
+            if (id) {
+                const index = db.estudiantes.findIndex(x => x.id === parseInt(id));
+                db.estudiantes[index] = nuevo;
+                showToast("Estudiante actualizado", "success");
+            } else {
+                db.estudiantes.push(nuevo);
+                showToast("Estudiante registrado", "success");
+            }
+
+            e.target.reset();
+            document.getElementById('estudiante-id').value = '';
+            actualizarTodo();
+        }
+
+        function editarEstudiante(id) {
+            const est = db.estudiantes.find(x => x.id === id);
+            document.getElementById('estudiante-id').value = est.id;
+            document.getElementById('estudiante-nombres').value = est.nombres;
+            document.getElementById('estudiante-apellidos').value = est.apellidos;
+            document.getElementById('estudiante-fechanac').value = est.fechanac;
+            document.getElementById('estudiante-seccion').value = est.seccionId;
+        }
+
+        function eliminarEstudiante(id) {
+            if (confirm('¿Eliminar estudiante?')) {
+                db.estudiantes = db.estudiantes.filter(x => x.id !== id);
+                actualizarTodo();
+                showToast("Estudiante eliminado", "success");
+            }
+        }
+
+        // ==========================================
+        // LÓGICA CRUD AÑO ESCOLAR
+        // ==========================================
+        function renderAnoEscolar() {
+            const tbody = document.getElementById('tabla-ano');
+            tbody.innerHTML = '';
+            db.anosEscolares.forEach(a => {
+                let badgeClass = "bg-gray-100 text-gray-800";
+                if (a.estado === "Activo") badgeClass = "bg-green-100 text-green-800";
+                if (a.estado === "Planificacion") badgeClass = "bg-yellow-100 text-yellow-800";
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td class="px-6 py-4 text-sm font-bold text-gray-900">${a.nombre}</td>
+                        <td class="px-6 py-4 text-sm text-gray-500">${a.inicio}</td>
+                        <td class="px-6 py-4 text-sm text-gray-500">${a.fin}</td>
+                        <td class="px-6 py-4 text-center">
+                            <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${badgeClass}">
+                                ${a.estado}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 text-right text-sm font-medium">
+                            <button onclick="editarAno(${a.id})" class="text-blue-600 hover:text-blue-900 mr-3">Editar</button>
+                            <button onclick="eliminarAno(${a.id})" class="text-red-600 hover:text-red-900">Eliminar</button>
+                        </td>
+                    </tr>`;
+            });
+        }
+
+        function handleAnoSubmit(e) {
+            e.preventDefault();
+            const id = document.getElementById('ano-id').value;
+            const estadoNuevo = document.getElementById('ano-estado').value;
+
+            // Si se guarda uno como "Activo", poner los demás en Inactivo
+            if (estadoNuevo === 'Activo') {
+                db.anosEscolares.forEach(a => { if (a.id !== parseInt(id)) a.estado = 'Inactivo'; });
+            }
+
+            const nuevo = {
+                id: id ? parseInt(id) : generateId(db.anosEscolares),
+                nombre: document.getElementById('ano-nombre').value,
+                inicio: document.getElementById('ano-inicio').value,
+                fin: document.getElementById('ano-fin').value,
+                estado: estadoNuevo
+            };
+
+            if (id) {
+                const index = db.anosEscolares.findIndex(x => x.id === parseInt(id));
+                db.anosEscolares[index] = nuevo;
+                showToast("Año Escolar actualizado", "success");
+            } else {
+                db.anosEscolares.push(nuevo);
+                showToast("Año Escolar registrado", "success");
+            }
+
+            e.target.reset();
+            document.getElementById('ano-id').value = '';
+            actualizarTodo();
+        }
+
+        function editarAno(id) {
+            const a = db.anosEscolares.find(x => x.id === id);
+            document.getElementById('ano-id').value = a.id;
+            document.getElementById('ano-nombre').value = a.nombre;
+            document.getElementById('ano-inicio').value = a.inicio;
+            document.getElementById('ano-fin').value = a.fin;
+            document.getElementById('ano-estado').value = a.estado;
+        }
+
+        function eliminarAno(id) {
+            if (confirm('¿Eliminar registro de año escolar?')) {
+                db.anosEscolares = db.anosEscolares.filter(x => x.id !== id);
+                actualizarTodo();
+                showToast("Registro eliminado", "success");
+            }
+        }
+
+        // ==========================================
+        // NOTIFICACIONES (TOAST)
+        // ==========================================
+        function showToast(message, type = "success") {
+            const toast = document.getElementById('toast-notification');
+            const messageSpan = document.getElementById('toast-message');
+
+            messageSpan.innerText = message;
+            toast.classList.remove('bg-green-500', 'bg-red-500', 'translate-x-full');
+
+            if (type === "success") { toast.classList.add('bg-green-500'); }
+            else { toast.classList.add('bg-red-500'); }
+
+            toast.classList.remove('translate-x-full');
+            toast.classList.add('translate-x-0');
+
+            setTimeout(() => {
+                toast.classList.remove('translate-x-0');
+                toast.classList.add('translate-x-full');
+            }, 3000);
+        }
+
+    </script>
+</body>
+
+</html>

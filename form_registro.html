@@ -183,114 +183,11 @@
 
     <!-- JavaScript para Simular el Registro -->
 
+    <!-- Supabase SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="js/config.js"></script>
-    <script>
-        // Envío con fetch a /api/registrar (JSON). Mantiene las validaciones locales y muestra mensajes según la respuesta del servidor.
-        document.getElementById('register-form').addEventListener('submit', async function (event) {
-            event.preventDefault();
+    <script src="js/validar_form_regis.js"></script>
 
-            const nameInput = document.getElementById('name').value.trim();
-            const emailInput = document.getElementById('email').value.trim();
-            const phoneInput = document.getElementById('phone').value.trim();
-            const passwordInput = document.getElementById('password').value;
-            const confirmPasswordInput = document.getElementById('confirm-password').value;
-            const termsChecked = document.getElementById('terms').checked;
-            const messageBox = document.getElementById('message-box');
-            const submitBtn = this.querySelector('button[type="submit"]');
-
-            // Limpiar mensaje anterior (restablece clases base antes de aplicar nuevas)
-            messageBox.innerHTML = '';
-            messageBox.className = 'hidden p-3 rounded-lg text-sm mb-6 font-medium text-center transition-opacity duration-300';
-
-            // Validaciones básicas en cliente
-            if (!nameInput || !emailInput || !phoneInput || !passwordInput || !confirmPasswordInput) {
-                showMessage('Por favor, completa todos los campos requeridos.', 'bg-yellow-100 text-yellow-800');
-                return;
-            }
-            if (passwordInput.length < 8) {
-                showMessage('La contraseña debe tener al menos 8 caracteres.', 'bg-red-100 text-red-800');
-                return;
-            }
-            if (passwordInput !== confirmPasswordInput) {
-                showMessage('Las contraseñas no coinciden.', 'bg-red-100 text-red-800');
-                return;
-            }
-            if (!termsChecked) {
-                showMessage('Debes aceptar los Términos y Condiciones.', 'bg-yellow-100 text-yellow-800');
-                return;
-            }
-
-            // Preparar payload con las llaves que espera el backend
-            const payload = {
-                nombre_completo: nameInput,
-                email: emailInput,
-                telefono: phoneInput,
-                contrasena: passwordInput
-            };
-
-            // Funciones UI
-            function setLoading(loading) {
-                if (loading) {
-                    submitBtn.disabled = true;
-                    submitBtn.classList.add('opacity-60', 'cursor-not-allowed');
-                    submitBtn.innerHTML = '<i class="ph-spinner gap-2 animate-spin mr-2"></i> Enviando...';
-                } else {
-                    submitBtn.disabled = false;
-                    submitBtn.classList.remove('opacity-60', 'cursor-not-allowed');
-                    submitBtn.innerHTML = '<i class="ph-user-plus mr-2 text-xl"></i> Registrarme';
-                }
-            }
-
-            setLoading(true);
-
-            try {
-                const res = await fetch(`${API_BASE_URL}/api/registrar`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-
-                // intentar parsear JSON (si el servidor responde JSON)
-                let json = {};
-                try { json = await res.json(); } catch (e) { /* respuesta no JSON */ }
-
-                if (res.ok) {
-                    if (json.success && json.email_sent === false) {
-                        // Caso: Usuario creado pero falló el correo (Warning)
-                        showMessage(json.message || 'Registro guardado, pero no se envió el correo. Contacte soporte.', 'bg-yellow-100 text-yellow-800');
-                    } else {
-                        // Caso: Éxito total
-                        showMessage(json.message || 'Registro exitoso. Revisa tu correo para verificar tu cuenta.', 'bg-green-100 text-green-800');
-                        setTimeout(() => {
-                            document.getElementById('register-form').reset();
-                        }, 2000);
-                    }
-                } else if (res.status === 409) {
-                    showMessage(json.message || 'Este correo electrónico ya está registrado.', 'bg-yellow-100 text-yellow-800');
-                } else if (res.status === 400) {
-                    showMessage(json.message || 'Datos inválidos. Revisa los campos.', 'bg-red-100 text-red-800');
-                } else {
-                    showMessage(json.message || 'Error en el servidor. Intenta nuevamente más tarde.', 'bg-red-100 text-red-800');
-                }
-
-            } catch (err) {
-                console.error('Error de red al enviar el formulario:', err);
-                showMessage('Error de red o el servidor no está disponible. Por favor, inténtelo de nuevo más tarde.', 'bg-red-100 text-red-800');
-            } finally {
-                setLoading(false);
-            }
-        });
-
-        // Muestra mensajes en el contenedor de estado, reemplazando clases previas
-        function showMessage(message, classes) {
-            const messageBox = document.getElementById('message-box');
-            messageBox.innerHTML = message;
-            // restablecer clases base y añadir las de estado
-            messageBox.className = 'p-3 rounded-lg text-sm mb-6 font-medium text-center transition-opacity duration-300 ' + classes;
-            // mostrar con transición
-            setTimeout(() => messageBox.classList.remove('hidden', 'opacity-0'), 10);
-        }
-    </script>
 
 </body>
 
