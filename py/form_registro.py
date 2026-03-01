@@ -219,7 +219,7 @@ def crear_personal():
             "estado": estado_inicial # <--- Guardamos como 'pendiente' a los docentes
         }
         
-        supabase.table("usuarios").insert(datos_usuario).execute()
+        supabase.table("usuarios").upsert(datos_usuario).execute()
 
         # 6. Preparamos un mensaje de respuesta dinámico
         mensaje_exito = f'{rol_front} registrado exitosamente en el sistema.'
