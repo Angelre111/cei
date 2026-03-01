@@ -17,6 +17,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <script>
         tailwind.config = {
@@ -154,18 +156,7 @@
                     </a>
                 </li>
 
-                <li>
-                    <a href="#" data-section="section-docentes"
-                        class="nav-link flex items-center space-x-3 p-3 rounded-xl hover:bg-blue-50 transition-all duration-200">
-                        <!-- Icono Docentes -->
-                        <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                            stroke-width="1.5" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M4.26 10.147a60.436 60.436 0 00-.491 6.347A48.627 48.627 0 0112 20.904a48.627 48.627 0 018.232-4.41 60.46 60.46 0 00-.491-6.347m-15.482 0a50.57 50.57 0 00-2.658-.813A59.905 59.905 0 0112 3.493a59.902 59.902 0 0110.499 5.258 50.55 50.55 0 00-2.658.813m-15.482 0A50.697 50.697 0 0112 13.489a50.702 50.702 0 017.74-3.342M6.75 15a.75.75 0 100-1.5.75.75 0 000 1.5zm0 0v-3.675A55.378 55.378 0 0112 8.443m-7.007 11.55A5.981 5.981 0 006.75 15.75v-1.5" />
-                        </svg>
-                        <span>Gestión Académica</span>
-                    </a>
-                </li>
+
                 <li>
                     <a href="#" data-section="section-alumnos"
                         class="nav-link flex items-center space-x-3 p-3 rounded-xl hover:bg-blue-50 transition-all duration-200">
@@ -179,15 +170,14 @@
                     </a>
                 </li>
                 <li>
-                    <a href="#" data-section="section-finanzas"
+                    <a href="#" data-section="section-secciones"
                         class="nav-link flex items-center space-x-3 p-3 rounded-xl hover:bg-blue-50 transition-all duration-200">
                         <!-- Icono Finanzas -->
-                        <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                            stroke-width="1.5" stroke="currentColor">
+                        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 00-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 01-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 003 15h-.75M15 10.5a3 3 0 11-6 0 3 3 0 016 0zm3 0h.008v.008h-.008V10.5zm-12 0h.008v.008h-.008V10.5z" />
+                                d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
                         </svg>
-                        <span>Finanzas</span>
+                        <span>Grupos/Secciones</span>
                     </a>
                 </li>
                 <li>
@@ -224,46 +214,29 @@
 
             <!-- Header Móvil -->
             <div class="md:hidden bg-white p-4 shadow-sm flex justify-between items-center sticky top-0 z-20">
-                <span class="font-bold text-lg text-gray-800">CEI La Paragua</span>
+                <span class="font-bold text-lg text-gray-800">Panel Administrativo</span>
                 <button onclick="toggleSidebar()" class="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition">
-                    <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                        stroke-width="1.5" stroke="currentColor">
+                    <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round"
                             d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
                     </svg>
                 </button>
             </div>
 
-            <!-- Header del Contenido (Desktop) -->
+            <!-- Header Desktop -->
             <header
-                class="sticky top-0 z-10 hidden md:flex items-center justify-between p-4 bg-blue-50/80 backdrop-blur-sm border-b border-blue-100">
+                class="sticky top-0 z-10 hidden md:flex items-center justify-between p-6 bg-white/80 backdrop-blur-md border-b border-gray-200 shadow-sm">
                 <div>
-                    <h1 class="text-2xl font-bold text-gray-800">Panel de Dirección</h1>
-                    <p class="text-gray-500">Administrador: <span class="font-medium text-secondary-pink">Lic.
-                            Rodríguez</span></p>
+                    <h1 class="text-2xl font-bold text-gray-800">Panel de Administración</h1>
+                    <p class="text-sm text-gray-500">Gestión central del Preescolar</p>
                 </div>
                 <div class="flex items-center space-x-4">
-                    <div class="relative">
-                        <input type="text" placeholder="Buscar..."
-                            class="px-4 py-2 pr-10 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-300">
-                        <svg class="w-5 h-5 text-gray-400 absolute right-3 top-1/2 -translate-y-1/2"
-                            xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                            stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
-                        </svg>
-                    </div>
-                    <button class="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-100 rounded-full relative">
-                        <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                            stroke-width="1.5" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-1.905l-1.05-1.05a.75.75 0 00-1.06 0l-1.06 1.05v1.905c0 1.36.224 2.67.65 3.879l-1.06 1.06a.75.75 0 000 1.06l1.06 1.06a.75.75 0 001.06 0l1.06-1.06zM6.467 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0112 9.75v-1.905l-1.05-1.05a.75.75 0 00-1.06 0l-1.06 1.05v1.905c0 1.36.224 2.67.65 3.879l-1.06 1.06a.75.75 0 000 1.06l1.06 1.06a.75.75 0 001.06 0l1.06-1.06zM12 21a.75.75 0 00.75-.75V18a.75.75 0 00-1.5 0v2.25A.75.75 0 0012 21z" />
-                        </svg>
-                        <span
-                            class="absolute top-1 right-1 w-2.5 h-2.5 bg-secondary-pink rounded-full border-2 border-white"></span>
-                    </button>
-                    <img src="https://placehold.co/100x100/334155/FFFFFF?text=A" alt="Admin"
-                        class="w-10 h-10 rounded-full border-2 border-purple-200">
+                    <span
+                        class="bg-green-100 text-green-800 text-xs font-semibold px-3 py-1 rounded-full border border-green-200">
+                        Año Escolar Activo: <span id="header-ano-activo">2024-2025</span>
+                    </span>
+                    <img src="https://placehold.co/100x100/DBEAFE/1E3A8A?text=AD" alt="Admin"
+                        class="w-10 h-10 rounded-full border-2 border-blue-200">
                 </div>
             </header>
 
@@ -303,69 +276,63 @@
                                     </svg>
                                 </div>
                                 <div>
-                                    <p class="text-sm text-gray-500 font-medium">Docentes Activos</p>
+                                    <p class="text-sm text-gray-500 font-medium">Docentes Registradas</p>
                                     <h3 class="text-3xl font-bold text-gray-800" id="dash-total-teachers">0</h3>
                                 </div>
                             </div>
                         </div>
                         <!-- Stat Card 3 -->
-                        <div
-                            class="bg-white p-6 rounded-2xl shadow-md transition-all hover:shadow-lg border border-yellow-50">
-                            <div class="flex items-center space-x-4">
-                                <div class="p-4 bg-yellow-100 text-yellow-600 rounded-xl">
-                                    <svg class="w-8 h-8" xmlns="http://www.w3.org/2000/svg" fill="none"
-                                        viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                            d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                    </svg>
-                                </div>
-                                <div>
-                                    <p class="text-sm text-gray-500 font-medium">Pagos Pendientes</p>
-                                    <h3 class="text-3xl font-bold text-gray-800">5</h3>
-                                </div>
-                            </div>
-                        </div>
+
                     </div>
 
                     <!-- Accesos Rápidos -->
-                    <h2 class="text-lg font-bold text-gray-700 mb-4">Gestión Rápida</h2>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <!-- Card: Inscribir Alumno -->
-                        <button data-target="section-alumnos"
-                            class="nav-button group relative overflow-hidden bg-white p-6 rounded-2xl shadow-md hover:shadow-lg transition-all text-left">
-                            <div
-                                class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                                <svg class="w-24 h-24 text-blue-500" xmlns="http://www.w3.org/2000/svg"
-                                    viewBox="0 0 24 24" fill="currentColor">
-                                    <path
-                                        d="M6.25 6.375a4.125 4.125 0 118.25 0 4.125 4.125 0 01-8.25 0zM3.25 19.125a7.125 7.125 0 0114.25 0v.003l-.001.119a.75.75 0 01-.363.63 13.067 13.067 0 01-6.761 1.873c-2.472 0-4.786-.684-6.76-1.873a.75.75 0 01-.364-.63l-.001-.122zM19.75 7.5a.75.75 0 00-1.5 0v2.25H16a.75.75 0 000 1.5h2.25v2.25a.75.75 0 001.5 0v-2.25H22a.75.75 0 000-1.5h-2.25V7.5z" />
-                                </svg>
-                            </div>
-                            <h3 class="text-lg font-bold text-blue-600 mb-1">Inscribir Nuevo Alumno</h3>
-                            <p class="text-sm text-gray-500">Registrar datos personales y asignar grupo.</p>
-                            <span
-                                class="mt-4 inline-block px-4 py-2 bg-blue-100 text-blue-600 rounded-lg text-sm font-semibold">Ir
-                                al Registro</span>
-                        </button>
+                    <div class="space-y-6">
 
-                        <!-- Card: Crear Usuario -->
-                        <button data-target="section-usuarios"
-                            class="nav-button group relative overflow-hidden bg-white p-6 rounded-2xl shadow-md hover:shadow-lg transition-all text-left">
-                            <div
-                                class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                                <svg class="w-24 h-24 text-accent-purple" xmlns="http://www.w3.org/2000/svg"
-                                    viewBox="0 0 24 24" fill="currentColor">
-                                    <path
-                                        d="M4.5 6.375a4.125 4.125 0 118.25 0 4.125 4.125 0 01-8.25 0zM1.495 10.515a.75.75 0 000 1.5l5.166.002a7.148 7.148 0 01.352-1.502H1.495zM1.495 13.5a.75.75 0 000 1.5H3.6c.158-.518.377-1.014.646-1.488l.006-.012H1.495zM22.5 10.515a.75.75 0 000 1.5h-5.516c.148.487.266.988.352 1.502l5.164-.002zM22.5 13.5a.75.75 0 000 1.5h-2.106l.006.012c.27.474.488.97.646 1.488h1.454zM15.544 19.141a7.125 7.125 0 01-12.588 0l-.003.018a.75.75 0 01-.263.928 12.35 12.35 0 006.557 1.913c2.476 0 4.796-.687 6.557-1.913a.75.75 0 01-.26-.946z" />
-                                </svg>
-                            </div>
-                            <h3 class="text-lg font-bold text-purple-500 mb-1">Registrar Usuario</h3>
-                            <p class="text-sm text-gray-500">Crear accesos para Administradores y Docentes.</p>
-                            <span
-                                class="mt-4 inline-block px-4 py-2 bg-purple-100 text-purple-600 rounded-lg text-sm font-semibold">Gestionar
-                                Accesos</span>
-                        </button>
-                    </div>
+                        <!-- Contenedor blanco detrás del título -->
+                        <div
+                            class="inline-flex items-center gap-3 bg-white/90 backdrop-blur-md px-10 py-3 rounded-2xl shadow-sm border border-white/50">
+                            <!-- Barra decorativa para anclar la vista -->
+                            <div class="w-1.5 h-7 bg-secondary-pink rounded-full"></div>
+                            <h2 class="text-2xl font-extrabold text-slate-900 tracking-tight">Gestión Rápida</h2>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <!-- Card: Inscribir Alumno -->
+                            <button data-target="section-alumnos"
+                                class="nav-button group relative overflow-hidden bg-white p-6 rounded-2xl shadow-md hover:shadow-lg transition-all text-left">
+                                <div
+                                    class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                                    <svg class="w-24 h-24 text-blue-500" xmlns="http://www.w3.org/2000/svg"
+                                        viewBox="0 0 24 24" fill="currentColor">
+                                        <path
+                                            d="M6.25 6.375a4.125 4.125 0 118.25 0 4.125 4.125 0 01-8.25 0zM3.25 19.125a7.125 7.125 0 0114.25 0v.003l-.001.119a.75.75 0 01-.363.63 13.067 13.067 0 01-6.761 1.873c-2.472 0-4.786-.684-6.76-1.873a.75.75 0 01-.364-.63l-.001-.122zM19.75 7.5a.75.75 0 00-1.5 0v2.25H16a.75.75 0 000 1.5h2.25v2.25a.75.75 0 001.5 0v-2.25H22a.75.75 0 000-1.5h-2.25V7.5z" />
+                                    </svg>
+                                </div>
+                                <h3 class="text-lg font-bold text-blue-600 mb-1">Inscribir Nuevo Alumno</h3>
+                                <p class="text-sm text-gray-500">Registrar datos personales y asignar grupo.</p>
+                                <span
+                                    class="mt-4 inline-block px-4 py-2 bg-blue-100 text-blue-600 rounded-lg text-sm font-semibold">Ir
+                                    al Registro</span>
+                            </button>
+
+                            <!-- Card: Crear Usuario -->
+                            <button data-target="section-usuarios"
+                                class="nav-button group relative overflow-hidden bg-white p-6 rounded-2xl shadow-md hover:shadow-lg transition-all text-left">
+                                <div
+                                    class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                                    <svg class="w-24 h-24 text-accent-purple" xmlns="http://www.w3.org/2000/svg"
+                                        viewBox="0 0 24 24" fill="currentColor">
+                                        <path
+                                            d="M4.5 6.375a4.125 4.125 0 118.25 0 4.125 4.125 0 01-8.25 0zM1.495 10.515a.75.75 0 000 1.5l5.166.002a7.148 7.148 0 01.352-1.502H1.495zM1.495 13.5a.75.75 0 000 1.5H3.6c.158-.518.377-1.014.646-1.488l.006-.012H1.495zM22.5 10.515a.75.75 0 000 1.5h-5.516c.148.487.266.988.352 1.502l5.164-.002zM22.5 13.5a.75.75 0 000 1.5h-2.106l.006.012c.27.474.488.97.646 1.488h1.454zM15.544 19.141a7.125 7.125 0 01-12.588 0l-.003.018a.75.75 0 01-.263.928 12.35 12.35 0 006.557 1.913c2.476 0 4.796-.687 6.557-1.913a.75.75 0 01-.26-.946z" />
+                                    </svg>
+                                </div>
+                                <h3 class="text-lg font-bold text-purple-500 mb-1">Registrar Usuario</h3>
+                                <p class="text-sm text-gray-500">Crear accesos para Administradores y Docentes.</p>
+                                <span
+                                    class="mt-4 inline-block px-4 py-2 bg-purple-100 text-purple-600 rounded-lg text-sm font-semibold">Gestionar
+                                    Accesos</span>
+                            </button>
+                        </div>
                 </section>
 
                 <!-- ============================================ -->
@@ -394,7 +361,9 @@
                         <div id="form-user-container" class="hidden bg-purple-50 p-6 border-b border-purple-100">
                             <h3 class="font-bold text-gray-700 mb-4">Registrar Credenciales de Acceso</h3>
                             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                                <input type="text" id="user-name" placeholder="Nombre Completo"
+                                <input type="text" id="user-first-name" placeholder="Nombre"
+                                    class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-300 outline-none">
+                                <input type="text" id="user-last-name" placeholder="Apellido"
                                     class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-300 outline-none">
                                 <input type="email" id="user-email" placeholder="Correo Electrónico"
                                     class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-300 outline-none">
@@ -435,67 +404,7 @@
                 </section>
 
 
-                <!-- ============================================ -->
-                <!-- SECCIÓN 2: GESTIÓN DE DOCENTES (Académica) -->
-                <!-- ============================================ -->
-                <section id="section-docentes" class="page-section hidden fade-in">
-                    <div class="bg-white rounded-2xl shadow-md border border-gray-100 overflow-hidden">
-                        <div class="p-6 border-b border-gray-100 flex justify-between items-center">
-                            <div>
-                                <h2 class="text-xl font-bold text-gray-800">Personal Docente (Académico)</h2>
-                                <p class="text-sm text-gray-500">Asignación de grupos y secciones.</p>
-                            </div>
-                            <button
-                                onclick="document.getElementById('form-teacher-container').classList.toggle('hidden')"
-                                class="px-4 py-2 bg-secondary-pink text-white rounded-lg font-semibold hover:bg-pink-500 transition shadow-md flex items-center gap-2">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M12 4v16m8-8H4"></path>
-                                </svg>
-                                Nuevo Docente
-                            </button>
-                        </div>
 
-                        <!-- Formulario Docente (Toggle) -->
-                        <div id="form-teacher-container" class="hidden bg-blue-50 p-6 border-b border-blue-100">
-                            <h3 class="font-bold text-gray-700 mb-4">Registrar Docente</h3>
-                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                <input type="text" id="teacher-name" placeholder="Nombre Completo"
-                                    class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-300 outline-none">
-                                <input type="email" id="teacher-email" placeholder="Correo Electrónico"
-                                    class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-300 outline-none">
-                                <select id="teacher-group"
-                                    class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-300 outline-none bg-white">
-                                    <option value="">Asignar Grupo...</option>
-                                    <option value="Maternal (1-2 años)">Maternal (1-2 años)</option>
-                                    <option value="Pre-Kinder (3-4 años)">Pre-Kinder (3-4 años)</option>
-                                    <option value="Kinder (4-5 años)">Kinder (4-5 años)</option>
-                                </select>
-                            </div>
-                            <div class="mt-4 flex justify-end">
-                                <button id="btn-add-teacher"
-                                    class="px-6 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition shadow-md">Guardar</button>
-                            </div>
-                        </div>
-
-                        <!-- Tabla Docentes -->
-                        <div class="overflow-x-auto">
-                            <table class="w-full text-left border-collapse">
-                                <thead class="bg-gray-50 text-gray-500 uppercase text-xs font-semibold">
-                                    <tr>
-                                        <th class="px-6 py-4">Nombre</th>
-                                        <th class="px-6 py-4">Grupo Asignado</th>
-                                        <th class="px-6 py-4">Estado</th>
-                                        <th class="px-6 py-4 text-right">Acciones</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="teacher-table-body" class="divide-y divide-gray-100">
-                                    <!-- JS populated -->
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </section>
 
                 <!-- ============================================ -->
                 <!-- SECCIÓN 3: REGISTRO DE ALUMNOS -->
@@ -590,29 +499,78 @@
                         </div>
                     </div>
                 </section>
-
                 <!-- ============================================ -->
-                <!-- SECCIÓN 4: FINANZAS (Visualización) -->
+                <!-- SECCIÓN 3: GESTIÓN DE SECCIONES (GRUPOS) -->
                 <!-- ============================================ -->
-                <section id="section-finanzas" class="page-section hidden fade-in">
-                    <div class="bg-white p-6 rounded-2xl shadow-md border border-gray-100 text-center py-20">
-                        <div
-                            class="w-20 h-20 bg-accent-yellow/30 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <svg class="w-10 h-10 text-yellow-600" xmlns="http://www.w3.org/2000/svg" fill="none"
-                                viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                    d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
+                <section id="section-secciones" class="page-section hidden fade-in">
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                        <div class="flex justify-between items-center mb-6">
+                            <h2 class="text-2xl font-bold text-gray-800">Gestión de Secciones</h2>
                         </div>
-                        <h2 class="text-2xl font-bold text-gray-800">Módulo Financiero</h2>
-                        <p class="text-gray-500 max-w-md mx-auto mt-2">Este módulo permite verificar la solvencia de los
-                            estudiantes.</p>
-                        <button
-                            class="mt-6 px-6 py-3 bg-accent-yellow text-gray-800 font-bold rounded-lg hover:bg-yellow-400 transition shadow-md">
-                            Ver Reporte de Morosos
-                        </button>
+
+                        <!-- Formulario Secciones -->
+                        <form id="form-secciones"
+                            class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8 bg-gray-50 p-4 rounded-xl border border-gray-200">
+                            <input type="hidden" id="seccion-id">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Nombre de Sección</label>
+                                <input type="text" id="seccion-nombre" required placeholder="Ej: Maternal A"
+                                    class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-300 outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Nivel</label>
+                                <select id="seccion-nivel"
+                                    class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-300 outline-none">
+                                    <option value="Maternal">Maternal</option>
+                                    <option value="Preescolar Nivel 1">Preescolar Nivel 1</option>
+                                    <option value="Preescolar Nivel 2">Preescolar Nivel 2</option>
+                                    <option value="Preescolar Nivel 3">Preescolar Nivel 3</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Capacidad Max.</label>
+                                <input type="number" id="seccion-capacidad" required min="1"
+                                    class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-300 outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Asignar Docente</label>
+                                <select id="seccion-docente" required
+                                    class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-300 outline-none">
+                                    <!-- Rellenado por JS -->
+                                </select>
+                            </div>
+                            <div class="md:col-span-4 flex justify-end">
+                                <button type="submit"
+                                    class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700">Guardar
+                                    Sección</button>
+                            </div>
+                        </form>
+
+                        <!-- Tabla Secciones -->
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                            Nombre</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                            Nivel</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                            Capacidad</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                            Docente Asignado</th>
+                                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">
+                                            Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tabla-secciones" class="bg-white divide-y divide-gray-200">
+                                    <!-- JS content -->
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </section>
+
 
                 <!-- ============================================ -->
                 <!-- SECCIÓN 5: CONFIG (Visualización) -->
@@ -836,28 +794,7 @@
                 }
             });
 
-            // Add User (System)
-            document.getElementById('btn-add-user').addEventListener('click', () => {
-                const name = document.getElementById('user-name').value;
-                const email = document.getElementById('user-email').value;
-                const role = document.getElementById('user-role').value;
-                const password = document.getElementById('user-password').value;
 
-                if (name && email && role && password) {
-                    systemUsers.push({ id: Date.now(), name, email, role, status: "Activo" });
-                    renderUsers();
-                    // Limpiar
-                    document.getElementById('user-name').value = '';
-                    document.getElementById('user-email').value = '';
-                    document.getElementById('user-password').value = '';
-                    document.getElementById('user-role').value = '';
-
-                    showToast(`Usuario ${role} creado`, 'success');
-                    document.getElementById('form-user-container').classList.add('hidden');
-                } else {
-                    showToast('Todos los campos son obligatorios', 'error');
-                }
-            });
 
             // Add Student
             document.getElementById('btn-add-student').addEventListener('click', () => {
@@ -974,6 +911,7 @@
         }
 
     </script>
+    <script src="js/admin_users.js"></script>
 </body>
 
 </html>

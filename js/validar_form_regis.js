@@ -5,7 +5,9 @@ const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 document.getElementById('register-form').addEventListener('submit', async (e) => {
   e.preventDefault();
 
-  const nameInput = document.getElementById('name').value.trim();
+  // Capturamos nombres y apellidos por separado
+  const nombresInput = document.getElementById('nombres').value.trim();
+  const apellidosInput = document.getElementById('apellidos').value.trim();
   const emailInput = document.getElementById('email').value.trim();
   const phoneInput = document.getElementById('phone').value.trim();
   const passwordInput = document.getElementById('password').value;
@@ -22,7 +24,7 @@ document.getElementById('register-form').addEventListener('submit', async (e) =>
   }
 
   // Validaciones básicas
-  if (!nameInput || !emailInput || !phoneInput || !passwordInput || !confirmPasswordInput) {
+  if (!nombresInput || !apellidosInput || !emailInput || !phoneInput || !passwordInput || !confirmPasswordInput) {
     showMessage('Por favor, completa todos los campos requeridos.', 'bg-yellow-100 text-yellow-800');
     return;
   }
@@ -52,7 +54,8 @@ document.getElementById('register-form').addEventListener('submit', async (e) =>
       password: passwordInput,
       options: {
         data: {
-          full_name: nameInput,
+          first_name: nombresInput, // Enviamos el nombre
+          last_name: apellidosInput, // Enviamos el apellido
           phone: phoneInput
         },
         // Redirección después de confirmar el correo

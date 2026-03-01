@@ -93,15 +93,25 @@
         <!-- Formulario de Registro -->
         <form id="register-form" class="space-y-4">
 
-            <!-- Campo Nombre Completo -->
-            <div>
-                <label for="name" class="block text-sm font-medium text-gray-700 mb-1">Nombre Completo del
-                    Representante</label>
-                <div class="relative">
-                    <i class="ph-user-circle text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2"></i>
-                    <input type="text" id="name" name="name" required
-                        class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl input-focus transition duration-200"
-                        placeholder="Ej: Ana María Rodríguez">
+            <!-- Campo Nombres y Apellidos -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label for="nombres" class="block text-sm font-medium text-gray-700 mb-1">Nombres</label>
+                    <div class="relative">
+                        <i class="ph-user-circle text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2"></i>
+                        <input type="text" id="nombres" name="nombres" required
+                            class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl input-focus transition duration-200"
+                            placeholder="Ej: Ana María">
+                    </div>
+                </div>
+                <div>
+                    <label for="apellidos" class="block text-sm font-medium text-gray-700 mb-1">Apellidos</label>
+                    <div class="relative">
+                        <i class="ph-user-circle text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2"></i>
+                        <input type="text" id="apellidos" name="apellidos" required
+                            class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl input-focus transition duration-200"
+                            placeholder="Ej: Rodríguez">
+                    </div>
                 </div>
             </div>
 

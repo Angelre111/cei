@@ -46,6 +46,8 @@
     </style>
     <!-- Iconos Phosphor Icons -->
     <script src="https://unpkg.com/phosphor-icons"></script>
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 
 <body class="antialiased min-h-screen flex items-center justify-center p-4">
@@ -168,22 +170,32 @@
                 const json = await res.json().catch(() => ({}));
 
                 if (res.ok) {
-                    // Mensaje visual de éxito antes de redirigir
-                    showMessage('¡Bienvenido! Redirigiendo...', 'bg-green-100 text-green-800');
+                    const rol = json.rol || 'representante';
 
-                    // Redirección dinámica basada en el rol que devuelva tu API
-                    setTimeout(() => {
-                        const rol = json.rol || 'representante'; // Por si acaso falla, mandamos a representante
-
+                    Swal.fire({
+                        title: '¡Bienvenido!',
+                        text: 'Inicio de sesión exitoso. Redirigiendo...',
+                        icon: 'success',
+                        timer: 1500,
+                        timerProgressBar: true,
+                        showConfirmButton: false,
+                        allowOutsideClick: false,
+                        background: '#ffffff',
+                        color: '#374151',
+                        iconColor: '#10b981',
+                        backdrop: `rgba(236, 72, 153, 0.1) left top no-repeat`,
+                        customClass: {
+                            popup: 'rounded-2xl shadow-2xl',
+                        }
+                    }).then(() => {
                         if (rol === 'administrador') {
-                            window.location.href = 'admin.html'; // Cambia esto por tu ruta real de admin
+                            window.location.href = 'admin.html';
                         } else if (rol === 'docente') {
-                            window.location.href = 'docente.html'; // Cambia esto por tu ruta real de docente
+                            window.location.href = 'docente.html';
                         } else {
                             window.location.href = 'representante.html';
                         }
-                    }, 800);
-
+                    });
                 } else if (res.status === 400) {
                     showMessage(json.message || 'Errores en los datos enviados.', 'bg-red-100 text-red-800');
                 } else if (res.status === 401) {

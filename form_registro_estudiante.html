@@ -583,9 +583,11 @@
                 Swal.fire('Error de Acceso', urlParams.get('error_description'), 'error');
             }
 
-            // Detectar si hay un token en el hash (#) - Supabase lo usa para el login por correo
-            if (window.location.hash.includes('access_token')) {
-                console.log("🎫 Se detectó un token en el hash de la URL. Procesando...");
+            // NUEVO: Detectar si es una redirección de Auth (soporta Implicit Flow y PKCE)
+            const isAuthRedirect = window.location.hash.includes('access_token') || urlParams.has('code');
+
+            if (isAuthRedirect) {
+                console.log("🎫 Se detectó un token o código de verificación en la URL. Procesando...");
             }
 
             checkSession();
@@ -594,14 +596,14 @@
                 console.log("🔔 Cambio en Autenticación:", event, session ? "Hay sesión" : "Sesión nula");
                 if (session) {
                     await initForm(session.user.id);
-                } else if (event === 'INITIAL_SESSION' && window.location.hash.includes('access_token')) {
-                    // Si hay token pero session es null, reintentamos en 500ms
-                    console.log("⏳ Reintentando captura de sesión en 500ms...");
-                    setTimeout(checkSession, 500);
+                } else if (event === 'INITIAL_SESSION' && isAuthRedirect) {
+                    // Si hay token/código pero session es null, reintentamos en 1 segundo
+                    console.log("⏳ Reintentando captura de sesión...");
+                    setTimeout(checkSession, 1000);
                 }
             });
 
-            // Respaldo por si no hay sesión después de 5 segundos
+            // Respaldo por si no hay sesión después de 6 segundos
             setTimeout(() => {
                 if (!userId) {
                     const uidParam = urlParams.get('uid');
@@ -609,21 +611,31 @@
                         console.log("🔄 Usando UID de respaldo de la URL");
                         initForm(uidParam);
                     } else {
-                        console.warn("⚠️ No se detectó sesión tras 5 segundos.");
-                        // Solo bloqueamos si realmente no hay rastro de token o sesión
-                        if (!window.location.hash.includes('access_token')) {
+                        console.warn("⚠️ No se detectó sesión tras el tiempo de espera.");
+
+                        // Validamos usando nuestra nueva variable isAuthRedirect
+                        if (!isAuthRedirect) {
                             document.querySelector('main').classList.add('hidden');
                             Swal.fire({
                                 title: 'Acceso Restringido',
-                                text: 'Debes confirmar tu correo para acceder.',
+                                text: 'Debes iniciar sesión para acceder a la ficha del CEI La Paragua.',
                                 icon: 'warning',
                                 confirmButtonText: 'Ir al Inicio',
                                 confirmButtonColor: '#ec4899'
                             }).then(() => { window.location.href = 'index.html'; });
+                        } else {
+                            // Si había un código pero falló la sesión (ej. código expirado)
+                            Swal.fire({
+                                title: 'Error de Verificación',
+                                text: 'El enlace expiró o fue abierto en un navegador distinto al del registro.',
+                                icon: 'error',
+                                confirmButtonText: 'Ir a Iniciar Sesión',
+                                confirmButtonColor: '#ec4899'
+                            }).then(() => { window.location.href = 'login.html'; });
                         }
                     }
                 }
-            }, 5000);
+            }, 6000); // Aumentamos 1 segundo extra para dar más tiempo a Supabase
 
             let currentStep = 1;
             const totalSteps = 4;

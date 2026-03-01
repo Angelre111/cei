@@ -85,31 +85,34 @@ class InscripcionSchema(BaseModel):
 def registrar_usuario():
     """Registra un nuevo usuario en Supabase Auth."""
     data = request.json
-    nombre_completo = data.get('nombre_completo')
+    
+    # 1. Capturamos los campos separados
+    nombres = data.get('nombres')
+    apellidos = data.get('apellidos')
     email = data.get('email')
     telefono = data.get('telefono')
     contrasena = data.get('contrasena')
 
-    if not all([nombre_completo, email, telefono, contrasena]):
+    # 2. Validamos que no falte ninguno
+    if not all([nombres, apellidos, email, telefono, contrasena]):
         return jsonify({'success': False, 'message': 'Faltan datos obligatorios.'}), 400
 
     try:
-        # Crea usuario en Auth (El trigger en BD se encarga del resto)
+        # 3. Enviamos a Supabase Auth usando first_name y last_name
         auth_response = supabase.auth.sign_up({
             "email": email,
             "password": contrasena,
             "options": {
                 "data": {
-                    "full_name": nombre_completo,
+                    "first_name": nombres,
+                    "last_name": apellidos,
                     "phone": telefono
                 },
                 "email_redirect_to": os.getenv('REDIRECT_URL', 'http://127.0.0.1:5000/form_registro_estudiante.html')  
             }
         })
         
-        # Verificar si hubo error implícito (usuario ya existe suele lanzar excepción, pero por si acaso)
         if not auth_response.user and not auth_response.session:
-             # Ocurre si la confirmación de email es obligatoria
              pass 
 
         return jsonify({
@@ -159,6 +162,84 @@ def login_usuario():
     except Exception as e:
         print(f"⚠️ Error Login: {e}")
         return jsonify({'success': False, 'message': 'Credenciales inválidas o error en el servidor'}), 401
+
+
+@app.route('/api/crear_personal', methods=['POST'])
+def crear_personal():
+    """Ruta para que un admin cree cuentas de otros administradores o docentes. Bloquea representantes."""
+    data = request.json
+    
+    nombres = data.get('nombres')
+    apellidos = data.get('apellidos')
+    email = data.get('email')
+    rol_front = data.get('rol') 
+    password = data.get('password')
+
+    # 1. Validaciones básicas
+    if not all([nombres, apellidos, email, rol_front, password]):
+        return jsonify({'success': False, 'message': 'Todos los campos son obligatorios.'}), 400
+
+    # Convertimos el rol del frontend ("Administrador") al formato del ENUM ("administrador")
+    rol_db = rol_front.lower()
+
+    # 2. Validación estricta de seguridad (Bloqueamos representantes)
+    if rol_db not in ['administrador', 'docente']:
+        return jsonify({
+            'success': False, 
+            'message': 'Acción denegada. Por este módulo solo se pueden crear Administradores o Docentes.'
+        }), 403
+
+    # 3. Lógica Condicional: Auto-confirmar y Estado Inicial
+    # Si es administrador, se confirma directo y queda activo. Si es docente, requiere verificación y queda pendiente.
+    es_admin = (rol_db == 'administrador')
+    estado_inicial = 'activo' if es_admin else 'pendiente'
+
+    try:
+        # 4. Crear el usuario en Supabase Auth
+        auth_response = supabase.auth.admin.create_user({
+            "email": email,
+            "password": password,
+            "email_confirm": es_admin, # <--- Aquí aplicamos la regla condicional
+            "user_metadata": {
+                "first_name": nombres,
+                "last_name": apellidos,
+                "role": rol_db
+            }
+        })
+
+        nuevo_user_id = auth_response.user.id
+
+        # 5. Guardar los datos en tu tabla pública 'usuarios'
+        datos_usuario = {
+            "id": nuevo_user_id,
+            "nombres": nombres,
+            "apellidos": apellidos,
+            "email": email,
+            "rol": rol_db,
+            "estado": estado_inicial # <--- Guardamos como 'pendiente' a los docentes
+        }
+        
+        supabase.table("usuarios").insert(datos_usuario).execute()
+
+        # 6. Preparamos un mensaje de respuesta dinámico
+        mensaje_exito = f'{rol_front} registrado exitosamente en el sistema.'
+        if not es_admin:
+            mensaje_exito += ' Se ha enviado un correo para que el docente verifique su cuenta.'
+
+        return jsonify({
+            'success': True, 
+            'message': mensaje_exito
+        }), 201
+
+    except Exception as e:
+        error_msg = str(e)
+        print(f"❌ Error al crear personal: {error_msg}")
+        
+        # Si Supabase nos dice que el correo ya existe
+        if "already exists" in error_msg.lower() or "unique constraint" in error_msg.lower():
+            return jsonify({'success': False, 'message': 'Este correo electrónico ya está registrado.'}), 409
+            
+        return jsonify({'success': False, 'message': 'Error interno del servidor al crear el usuario.'}), 500
 
 
 # =======================================================
