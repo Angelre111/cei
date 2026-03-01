@@ -328,7 +328,11 @@ def inscribir_estudiante():
 
 @app.route('/')
 def home():
-    return send_from_directory(ROOT_DIR, 'index.html')
+    """Ruta de Health Check para que Render sepa que la API está viva."""
+    return jsonify({
+        "status": "online", 
+        "mensaje": "API del Sistema de Gestión Escolar funcionando correctamente."
+    }), 200
 # =======================================================
 # PUNTO DE ENTRADA
 # =======================================================
