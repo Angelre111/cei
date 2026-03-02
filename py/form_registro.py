@@ -128,7 +128,7 @@ def registrar_usuario():
 
 @app.route('/api/login', methods=['POST'])
 def login_usuario():
-    """Inicia sesión y devuelve el token de acceso."""
+    """Inicia sesión, verifica el rol/estado estrictamente y no asigna roles por defecto."""
     data = request.get_json(silent=True)
     if not data:
         return jsonify({'success': False, 'message': 'Datos no proporcionados'}), 400
@@ -140,28 +140,73 @@ def login_usuario():
         return jsonify({'success': False, 'message': 'Email y contraseña requeridos'}), 400
 
     try:
+        # 1. Autenticar con Supabase Auth
         response = supabase.auth.sign_in_with_password({
             "email": email, 
             "password": password
         })
+        
+        user_id = response.user.id
+        print(f"🔍 Autenticado en Auth - ID: {user_id}")
 
-        # Guardar sesión en Flask (opcional, útil si usas templates jinja)
-        session['user_id'] = response.user.id
+        # 2. Consultar la tabla 'usuarios' buscando primero por ID
+        user_data = supabase.table("usuarios").select("rol, estado").eq("id", user_id).execute()
+        
+        # Respaldo: Si falla por ID, buscamos por email (evita problemas de desincronización)
+        if not user_data.data or len(user_data.data) == 0:
+            print(f"⚠️ No se encontró por ID. Buscando por email: {email}")
+            user_data = supabase.table("usuarios").select("rol, estado").eq("email", email).execute()
+
+        # 3. FLUJO ESTRICTO: Si sigue sin existir, BLOQUEAMOS (No hay rol por defecto)
+        if not user_data.data or len(user_data.data) == 0:
+            print(f"❌ Login denegado: El usuario {email} no tiene registro en la tabla pública.")
+            return jsonify({
+                'success': False, 
+                'message': 'Tu perfil no está registrado en el sistema. Contacta al administrador.'
+            }), 403
+
+        # 4. Extraer los valores exactos de la base de datos
+        rol_usuario = user_data.data[0].get('rol')
+        estado_usuario = user_data.data[0].get('estado')
+
+        # Bloquear si la cuenta está inactiva
+        if estado_usuario == 'inactivo':
+             return jsonify({'success': False, 'message': 'Tu cuenta está inactiva. Verifique su cuenta antes de ingresar'}), 403
+
+        # Guardar sesión en Flask
+        session['user_id'] = user_id
         session['access_token'] = response.session.access_token
 
+        # 5. Enviar respuesta exitosa al Frontend con el rol real
         return jsonify({
             'success': True,
             'message': 'Inicio de sesión exitoso',
             'token': response.session.access_token,
+            'rol': rol_usuario,
             'user': {
-                'id': response.user.id,
+                'id': user_id,
                 'email': response.user.email
             }
         }), 200
 
     except Exception as e:
+        error_msg = str(e).lower()
         print(f"⚠️ Error Login: {e}")
-        return jsonify({'success': False, 'message': 'Credenciales inválidas o error en el servidor'}), 401
+        
+        # Si el error es claramente de credenciales de Supabase
+        if "invalid login credentials" in error_msg:
+            return jsonify({
+                'success': False, 
+                'message': 'Correo o contraseña incorrectos.'
+            }), 401
+            
+        # Para cualquier otro error (conexión, base de datos, error de código)
+        return jsonify({
+            'success': False, 
+            'message': 'Error interno de servidor. Por favor intente más tarde.'
+        }), 500
+
+
 
 
 @app.route('/api/crear_personal', methods=['POST'])

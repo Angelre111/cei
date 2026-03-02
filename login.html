@@ -67,11 +67,8 @@
             <p class="text-gray-500 mt-2">Accede a la plataforma privada para padres y personal.</p>
         </div>
 
-        <!-- Mensaje de Estado (Para simular alertas sin usar alert()) -->
-        <div id="message-box"
-            class="hidden p-3 rounded-lg text-sm mb-6 font-medium text-center transition-opacity duration-300">
-            <!-- El contenido se inyecta con JavaScript -->
-        </div>
+        <!-- Mensaje de Estado (Eliminado para usar SweetAlert) -->
+
 
         <!-- Formulario de Inicio de Sesión -->
         <form id="login-form" class="space-y-6">
@@ -144,13 +141,14 @@
             event.preventDefault();
             const email = document.getElementById('email').value.trim();
             const password = document.getElementById('password').value;
-            const messageBox = document.getElementById('message-box');
-
-            messageBox.innerHTML = '';
-            messageBox.className = 'hidden p-3 rounded-lg text-sm mb-6 font-medium text-center transition-opacity duration-300';
 
             if (!email || !password) {
-                showMessage('Por favor, ingresa tu usuario y contraseña.', 'bg-yellow-100 text-yellow-800');
+                Swal.fire({
+                    title: 'Campos incompletos',
+                    text: 'Por favor, ingresa tu usuario y contraseña.',
+                    icon: 'warning',
+                    confirmButtonColor: '#EC4899'
+                });
                 return;
             }
 
@@ -170,11 +168,18 @@
                 const json = await res.json().catch(() => ({}));
 
                 if (res.ok) {
-                    const rol = json.rol || 'representante';
+                    console.log('Respuesta del Servidor:', json);
+                    // Normalizar el rol a minúsculas
+                    const rol = (json.rol || 'representante').toLowerCase();
+
+                    // GUARDAR SESIÓN EN EL NAVEGADOR
+                    localStorage.setItem('auth_token', json.token);
+                    localStorage.setItem('user_rol', rol);
+                    localStorage.setItem('user_email', json.user.email);
 
                     Swal.fire({
                         title: '¡Bienvenido!',
-                        text: 'Inicio de sesión exitoso. Redirigiendo...',
+                        text: `Inicio de sesión exitoso.`,
                         icon: 'success',
                         timer: 1500,
                         timerProgressBar: true,
@@ -196,33 +201,51 @@
                             window.location.href = 'representante.html';
                         }
                     });
-                } else if (res.status === 400) {
-                    showMessage(json.message || 'Errores en los datos enviados.', 'bg-red-100 text-red-800');
-                } else if (res.status === 401) {
-                    showMessage(json.message || 'Usuario o contraseña incorrectos.', 'bg-red-100 text-red-800');
                 } else if (res.status === 403) {
-                    showMessage(json.message || 'Cuenta no verificada. Revisa tu correo.', 'bg-yellow-100 text-yellow-800');
+                    Swal.fire({
+                        title: 'Acceso Restringido',
+                        text: json.message || 'Por favor verifique su cuenta antes de ingresar',
+                        icon: 'warning',
+                        confirmButtonColor: '#f59e0b'
+                    });
+                } else if (res.status === 401) {
+                    Swal.fire({
+                        title: 'Credenciales Incorrectas',
+                        text: json.message || 'Usuario o contraseña no válidos.',
+                        icon: 'error',
+                        confirmButtonColor: '#EC4899'
+                    });
+                } else if (res.status === 500) {
+                    Swal.fire({
+                        title: 'Error de Servidor',
+                        text: json.message || 'Ocurrió un error técnico. Intente más tarde.',
+                        icon: 'error',
+                        confirmButtonColor: '#1f2937' // Un tono más oscuro para errores de servidor
+                    });
                 } else {
-                    showMessage(json.message || 'Error del servidor. Intenta más tarde.', 'bg-red-100 text-red-800');
+                    Swal.fire({
+                        title: 'Error Inesperado',
+                        text: json.message || 'No se pudo procesar el inicio de sesión.',
+                        icon: 'error',
+                        confirmButtonColor: '#EC4899'
+                    });
                 }
             } catch (err) {
                 console.error('Error de red:', err);
-                showMessage('Error de red. Asegúrate que el servidor está corriendo.', 'bg-red-100 text-red-800');
+                Swal.fire({
+                    title: 'Error de conexión',
+                    text: 'No se pudo conectar con el servidor. Intente más tarde.',
+                    icon: 'error',
+                    confirmButtonColor: '#EC4899'
+                });
             } finally {
                 submitBtn.disabled = false;
                 submitBtn.classList.remove('opacity-60', 'cursor-not-allowed');
                 submitBtn.innerHTML = '<i class="ph-sign-in mr-2 text-xl"></i> Iniciar Sesión';
             }
         });
-
-        function showMessage(message, classes) {
-            const messageBox = document.getElementById('message-box');
-            messageBox.innerHTML = message;
-            messageBox.className = 'p-3 rounded-lg text-sm mb-6 font-medium text-center transition-opacity duration-300 ' + classes;
-            setTimeout(() => messageBox.classList.remove('hidden', 'opacity-0'), 10);
-        }
-
     </script>
+
 
 </body>
 

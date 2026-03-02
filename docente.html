@@ -92,6 +92,18 @@
             /* Amarillo sol (Acento) */
         }
     </style>
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        const token = localStorage.getItem('auth_token');
+        const userRol = localStorage.getItem('user_rol');
+
+        // Si no hay token, o el rol NO es docente, lo expulsamos al login
+        if (!token || userRol !== 'docente') {
+            window.location.replace('login.html');
+        }
+    </script>
 </head>
 
 <body class="bg-blue-50">
@@ -179,10 +191,10 @@
                 </li>
             </ul>
             <div class="fixed bottom-5 left-10 pt-6 border-t border-gray-100">
-                <button onclick="//logout()"
-                    class="w-full text-center p-3 text-sm text-gray-500 hover:text-secondary-pink transition duration-150 rounded-lg">
+                <button onclick="logout()"
+                    class="w-full text-center p-3 text-sm text-gray-500 hover:text-secondary-pink transition duration-150 rounded-lg flex items-center justify-center">
                     <span data-lucide="log-out" class="w-4 h-4 mr-2 inline-block"></span>
-                    <a href="/">Cerrar Sesión</a>
+                    <span>Cerrar Sesión</span>
                 </button>
             </div>
         </nav>
@@ -767,6 +779,28 @@
             }, 3000);
         }
 
+        // ============================================
+        // CIERRE DE SESIÓN
+        // ============================================
+        function logout() {
+            Swal.fire({
+                title: '¿Cerrar Sesión?',
+                text: "Saldrás del portal docente.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#EC4899',
+                cancelButtonColor: '#9ca3af',
+                confirmButtonText: 'Sí, salir',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    localStorage.removeItem('auth_token');
+                    localStorage.removeItem('user_rol');
+                    localStorage.removeItem('user_email');
+                    window.location.replace('login.html');
+                }
+            });
+        }
     </script>
 
 </body>

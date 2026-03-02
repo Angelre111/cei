@@ -21,6 +21,16 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <script>
+        const token = localStorage.getItem('auth_token');
+        const userRol = localStorage.getItem('user_rol');
+
+        // Si no hay token, o el rol NO es administrador, lo expulsamos al login
+        if (!token || userRol !== 'administrador') {
+            window.location.replace('login.html'); // Usamos replace para que no puedan volver atrás
+        }
+    </script>
+
+    <script>
         tailwind.config = {
             theme: {
                 extend: {
@@ -195,7 +205,7 @@
             </ul>
 
             <div class="fixed bottom-5 left-10 pt-6 border-t border-gray-100">
-                <button onclick="//logout()"
+                <button onclick="logout()"
                     class="w-full text-center p-3 text-sm text-gray-500 hover:text-secondary-pink transition duration-150 rounded-lg flex items-center justify-center">
                     <svg class="w-4 h-4 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                         stroke-width="1.5" stroke="currentColor">
@@ -910,6 +920,32 @@
             }
         }
 
+        // ============================================
+        // CIERRE DE SESIÓN
+        // ============================================
+        function logout() {
+            // 1. Mostrar confirmación con SweetAlert
+            Swal.fire({
+                title: '¿Cerrar Sesión?',
+                text: "Saldrás del panel administrativo.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#EC4899', // Color paragua
+                cancelButtonColor: '#9ca3af',
+                confirmButtonText: 'Sí, salir',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // 2. Limpiar todo el almacenamiento local
+                    localStorage.removeItem('auth_token');
+                    localStorage.removeItem('user_rol');
+                    localStorage.removeItem('user_email');
+
+                    // 3. Redirigir al login
+                    window.location.replace('login.html');
+                }
+            });
+        }
     </script>
     <script src="js/admin_users.js"></script>
 </body>
