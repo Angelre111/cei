@@ -84,14 +84,10 @@
             </p>
         </div>
 
-        <!-- Mensaje de Estado (Para simular alertas sin usar alert()) -->
-        <div id="message-box"
-            class="hidden p-3 rounded-lg text-sm mb-6 font-medium text-center transition-opacity duration-300">
-            <!-- El contenido se inyecta con JavaScript -->
-        </div>
+
 
         <!-- Formulario de Registro -->
-        <form id="register-form" class="space-y-4">
+        <form id="register-form" class="space-y-4" novalidate>
 
             <!-- Campo Nombres y Apellidos -->
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -193,6 +189,8 @@
 
     <!-- JavaScript para Simular el Registro -->
 
+    <!-- SweetAlert2 SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <!-- Supabase SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="js/config.js"></script>

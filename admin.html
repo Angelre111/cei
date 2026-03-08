@@ -191,6 +191,16 @@
                     </a>
                 </li>
                 <li>
+                    <a href="#" data-section="section-periodos"
+                        class="nav-link flex items-center space-x-3 p-3 rounded-xl hover:bg-blue-50 transition-all duration-200">
+                        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
+                        </svg>
+                        <span>Períodos Académicos</span>
+                    </a>
+                </li>
+                <li>
                     <a href="#" data-section="section-config"
                         class="nav-link flex items-center space-x-3 p-3 rounded-xl hover:bg-blue-50 transition-all duration-200">
                         <!-- Icono Config -->
@@ -241,9 +251,9 @@
                     <p class="text-sm text-gray-500">Gestión central del Preescolar</p>
                 </div>
                 <div class="flex items-center space-x-4">
-                    <span
-                        class="bg-green-100 text-green-800 text-xs font-semibold px-3 py-1 rounded-full border border-green-200">
-                        Año Escolar Activo: <span id="header-ano-activo">2024-2025</span>
+                    <span id="header-ano-container"
+                        class="text-xs font-semibold px-3 py-1 rounded-full border transition-colors bg-gray-100 text-gray-500 border-gray-200">
+                        Año Escolar: <span id="header-ano-activo" class="font-bold">...</span>
                     </span>
                     <img src="https://placehold.co/100x100/DBEAFE/1E3A8A?text=AD" alt="Admin"
                         class="w-10 h-10 rounded-full border-2 border-blue-200">
@@ -257,7 +267,7 @@
                 <!-- ============================================ -->
                 <section id="section-dashboard" class="page-section fade-in">
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                        <!-- Stat Card 1 -->
+                        <!-- Stat Card 1: Alumnos -->
                         <div
                             class="bg-white p-6 rounded-2xl shadow-md transition-all hover:shadow-lg border border-blue-50">
                             <div class="flex items-center space-x-4">
@@ -274,7 +284,7 @@
                                 </div>
                             </div>
                         </div>
-                        <!-- Stat Card 2 -->
+                        <!-- Stat Card 2: Docentes -->
                         <div
                             class="bg-white p-6 rounded-2xl shadow-md transition-all hover:shadow-lg border border-pink-50">
                             <div class="flex items-center space-x-4">
@@ -287,16 +297,38 @@
                                 </div>
                                 <div>
                                     <p class="text-sm text-gray-500 font-medium">Docentes Registradas</p>
-                                    <h3 class="text-3xl font-bold text-gray-800" id="dash-total-teachers">0</h3>
+                                    <h3 class="text-3xl font-bold text-gray-800" id="dash-total-teachers">
+                                        <span
+                                            class="inline-block w-10 h-7 bg-gray-200 rounded-lg animate-pulse align-middle"></span>
+                                    </h3>
                                 </div>
                             </div>
                         </div>
-                        <!-- Stat Card 3 -->
+                        <!-- Stat Card 3: Administradores -->
+                        <div
+                            class="bg-white p-6 rounded-2xl shadow-md transition-all hover:shadow-lg border border-purple-50">
+                            <div class="flex items-center space-x-4">
+                                <div class="p-4 bg-purple-100 text-purple-600 rounded-xl">
+                                    <svg class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-gray-500 font-medium">Administradores</p>
+                                    <h3 class="text-3xl font-bold text-gray-800" id="dash-total-admins">
+                                        <span
+                                            class="inline-block w-10 h-7 bg-gray-200 rounded-lg animate-pulse align-middle"></span>
+                                    </h3>
+                                </div>
+                            </div>
+                        </div>
 
                     </div>
 
                     <!-- Accesos Rápidos -->
                     <div class="space-y-6">
+
 
                         <!-- Contenedor blanco detrás del título -->
                         <div
@@ -356,7 +388,7 @@
                                 <h2 class="text-xl font-bold text-gray-800">Usuarios del Sistema</h2>
                                 <p class="text-sm text-gray-500">Gestiona los accesos de Administradores y Docentes.</p>
                             </div>
-                            <button onclick="document.getElementById('form-user-container').classList.toggle('hidden')"
+                            <button onclick="abrirModalCrearUsuario()"
                                 class="w-full md:w-auto px-4 py-2 bg-accent-purple text-gray-800 rounded-lg font-semibold hover:bg-purple-300 transition shadow-md flex items-center justify-center gap-2">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -367,29 +399,109 @@
                             </button>
                         </div>
 
-                        <!-- Formulario Usuario (Toggle) -->
-                        <div id="form-user-container" class="hidden bg-purple-50 p-6 border-b border-purple-100">
-                            <h3 class="font-bold text-gray-700 mb-4">Registrar Credenciales de Acceso</h3>
-                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                                <input type="text" id="user-first-name" placeholder="Nombre"
-                                    class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-300 outline-none">
-                                <input type="text" id="user-last-name" placeholder="Apellido"
-                                    class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-300 outline-none">
-                                <input type="email" id="user-email" placeholder="Correo Electrónico"
-                                    class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-300 outline-none">
-                                <select id="user-role"
-                                    class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-300 outline-none bg-white">
-                                    <option value="">Seleccionar Rol...</option>
-                                    <option value="Administrador">Administrador</option>
-                                    <option value="Docente">Docente</option>
-                                </select>
-                                <input type="password" id="user-password" placeholder="Contraseña Temporal"
-                                    class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-300 outline-none">
+                        <!-- Barra de Búsqueda de Usuarios -->
+                        <div class="px-6 py-4 bg-gray-50/50 border-b border-gray-100 flex items-center">
+                            <div class="relative w-full max-w-md group">
+                                <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                                    <svg class="w-5 h-5 text-gray-400 group-focus-within:text-purple-500 transition-colors"
+                                        fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                                    </svg>
+                                </div>
+                                <input type="text" id="user-search-input"
+                                    class="block w-full pl-11 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-200 focus:border-purple-400 transition-all shadow-sm"
+                                    placeholder="Buscar por nombre, correo o estado...">
                             </div>
-                            <div class="mt-4 flex justify-end">
-                                <button id="btn-add-user"
-                                    class="px-6 py-2 bg-purple-600 text-white rounded-lg font-medium hover:bg-purple-700 transition shadow-md">Crear
-                                    Usuario</button>
+                            <div class="ml-4 text-xs text-gray-400 font-medium hidden md:block" id="user-search-count">
+                                Mostrando todos los usuarios
+                            </div>
+                        </div>
+
+                        <!-- Modal Crear Usuario -->
+                        <div id="modal-crear-usuario"
+                            class="fixed inset-0 bg-black/60 z-50 hidden flex items-center justify-center backdrop-blur-sm transition-opacity opacity-0"
+                            style="transition: opacity 0.3s ease;">
+                            <div id="modal-crear-usuario-content"
+                                class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl mx-4 overflow-hidden transform scale-95 transition-transform duration-300">
+                                <div
+                                    class="px-6 py-5 border-b border-purple-100 flex justify-between items-center bg-purple-50/50">
+                                    <h3 class="font-bold text-gray-800 text-lg flex items-center gap-2">
+                                        <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z">
+                                            </path>
+                                        </svg>
+                                        Registrar Nuevo Usuario
+                                    </h3>
+                                    <button onclick="cerrarModalCrearUsuario()"
+                                        class="text-gray-400 hover:text-red-500 transition-colors p-1.5 hover:bg-white rounded-lg focus:outline-none focus:ring-2 focus:ring-red-200">
+                                        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M6 18L18 6M6 6l12 12"></path>
+                                        </svg>
+                                    </button>
+                                </div>
+                                <div class="p-6 md:p-8">
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
+                                        <div>
+                                            <label
+                                                class="block text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Nombre</label>
+                                            <input type="text" id="user-first-name" placeholder="Ej: Juan"
+                                                class="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-400 focus:border-purple-400 outline-none transition-all bg-gray-50 focus:bg-white text-sm">
+                                        </div>
+                                        <div>
+                                            <label
+                                                class="block text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Apellido</label>
+                                            <input type="text" id="user-last-name" placeholder="Ej: Pérez"
+                                                class="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-400 focus:border-purple-400 outline-none transition-all bg-gray-50 focus:bg-white text-sm">
+                                        </div>
+                                        <div>
+                                            <label
+                                                class="block text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Correo
+                                                Electrónico</label>
+                                            <input type="email" id="user-email" placeholder="correo@ejemplo.com"
+                                                class="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-400 focus:border-purple-400 outline-none transition-all bg-gray-50 focus:bg-white text-sm">
+                                        </div>
+                                        <div>
+                                            <label
+                                                class="block text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Rol
+                                                en el Sistema</label>
+                                            <select id="user-role"
+                                                class="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-400 focus:border-purple-400 outline-none transition-all bg-gray-50 focus:bg-white text-sm">
+                                                <option value="">Seleccionar Rol...</option>
+                                                <option value="Administrador">Administrador</option>
+                                                <option value="Docente">Docente</option>
+                                            </select>
+                                        </div>
+                                        <div class="md:col-span-2">
+                                            <label
+                                                class="block text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Contraseña
+                                                Temporal</label>
+                                            <input type="password" id="user-password" placeholder="Mínimo 6 caracteres"
+                                                class="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-400 focus:border-purple-400 outline-none transition-all bg-gray-50 focus:bg-white text-sm">
+                                            <p class="text-[11px] text-gray-400 mt-1.5 flex items-center gap-1.5">
+                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor"
+                                                    viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                        stroke-width="2"
+                                                        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z">
+                                                    </path>
+                                                </svg>
+                                                El usuario deberá usar esta contraseña en su primer inicio de sesión.
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div class="mt-8 pt-5 border-t border-gray-100 flex justify-end gap-3">
+                                        <button onclick="cerrarModalCrearUsuario()"
+                                            class="px-5 py-2.5 text-gray-600 font-semibold hover:bg-gray-100 rounded-xl transition-colors text-sm">Cancelar</button>
+                                        <button id="btn-add-user"
+                                            class="px-6 py-2.5 bg-purple-600 text-white rounded-xl font-semibold hover:bg-purple-700 transition shadow-md shadow-purple-600/20 flex items-center gap-2 text-sm">
+                                            Confirmar y Crear
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
@@ -399,7 +511,6 @@
                                 <thead class="bg-gray-50 text-gray-500 uppercase text-xs font-semibold">
                                     <tr>
                                         <th class="px-6 py-4">Usuario</th>
-                                        <th class="px-6 py-4">Email / Login</th>
                                         <th class="px-6 py-4">Rol</th>
                                         <th class="px-6 py-4">Estado</th>
                                         <th class="px-6 py-4 text-right">Acciones</th>
@@ -420,167 +531,395 @@
                 <!-- SECCIÓN 3: REGISTRO DE ALUMNOS -->
                 <!-- ============================================ -->
                 <section id="section-alumnos" class="page-section hidden fade-in">
-                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <div class="bg-white rounded-2xl shadow-md border border-gray-100 overflow-hidden">
 
-                        <!-- Columna Izquierda: Formulario -->
-                        <div class="lg:col-span-1">
-                            <div class="bg-white p-6 rounded-2xl shadow-md border border-gray-100 sticky top-24">
-                                <h2 class="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">
-                                    <span
-                                        class="w-8 h-8 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-sm font-bold">1</span>
-                                    Inscribir Alumno
-                                </h2>
-
-                                <form id="form-student" class="space-y-4">
-                                    <div>
-                                        <label class="text-xs font-bold text-gray-500 uppercase">Nombre del
-                                            Estudiante</label>
-                                        <input type="text" id="student-name"
-                                            class="w-full mt-1 px-4 py-2 border border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition"
-                                            placeholder="Ej: Sofía Pérez">
-                                    </div>
-
-                                    <div>
-                                        <label class="text-xs font-bold text-gray-500 uppercase">Representante</label>
-                                        <input type="text" id="student-rep"
-                                            class="w-full mt-1 px-4 py-2 border border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition"
-                                            placeholder="Nombre del Padre/Madre">
-                                    </div>
-
-                                    <div>
-                                        <label class="text-xs font-bold text-gray-500 uppercase">Grupo / Nivel</label>
-                                        <select id="student-group"
-                                            class="w-full mt-1 px-4 py-2 border border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none bg-white">
-                                            <option value="Maternal">Maternal (1-2 años)</option>
-                                            <option value="Pre-Kinder">Pre-Kinder (3-4 años)</option>
-                                            <option value="Kinder">Kinder (4-5 años)</option>
-                                        </select>
-                                    </div>
-
-                                    <div>
-                                        <label class="text-xs font-bold text-gray-500 uppercase">Estado de Pago</label>
-                                        <select id="student-payment"
-                                            class="w-full mt-1 px-4 py-2 border border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none bg-white">
-                                            <option value="Solvente">Solvente</option>
-                                            <option value="Pendiente">Pendiente</option>
-                                        </select>
-                                    </div>
-
-                                    <button type="button" id="btn-add-student"
-                                        class="w-full py-3 mt-4 bg-accent-yellow text-gray-800 font-bold rounded-xl hover:bg-yellow-400 shadow-md transition transform hover:-translate-y-0.5">
-                                        Registrar Inscripción
-                                    </button>
-                                </form>
+                        <!-- Encabezado -->
+                        <div
+                            class="p-6 border-b border-gray-100 flex flex-col md:flex-row justify-between items-center gap-4">
+                            <div>
+                                <h2 class="text-xl font-bold text-gray-800">Matr&iacute;cula General</h2>
+                                <p class="text-sm text-gray-500">Consulta y gestiona los alumnos inscritos en el
+                                    sistema.</p>
                             </div>
+                            <button onclick="abrirModalRegistrarAlumno()"
+                                class="w-full md:w-auto px-4 py-2 bg-accent-yellow text-gray-800 rounded-lg font-semibold hover:bg-yellow-400 transition shadow-md flex items-center justify-center gap-2">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M12 4v16m8-8H4"></path>
+                                </svg>
+                                Registrar Alumno
+                            </button>
                         </div>
 
-                        <!-- Columna Derecha: Lista de Alumnos -->
-                        <div class="lg:col-span-2">
-                            <div class="bg-white rounded-2xl shadow-md border border-gray-100 overflow-hidden">
-                                <div class="p-6 border-b border-gray-100 flex justify-between items-center">
-                                    <h2 class="text-xl font-bold text-gray-800">Matrícula General</h2>
-                                    <button onclick="downloadStudentPDF()"
-                                        class="text-sm text-secondary-pink font-semibold hover:underline flex items-center gap-1">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <!-- Modal Registrar Alumno -->
+                        <div id="modal-registrar-alumno"
+                            class="fixed inset-0 bg-black/60 z-50 hidden flex items-center justify-center backdrop-blur-sm opacity-0"
+                            style="transition: opacity 0.3s ease;">
+                            <div id="modal-registrar-alumno-content"
+                                class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl mx-4 overflow-hidden transform scale-95 transition-transform duration-300">
+                                <div
+                                    class="px-6 py-5 border-b border-yellow-100 flex justify-between items-center bg-yellow-50/50">
+                                    <h3 class="font-bold text-gray-800 text-lg flex items-center gap-2">
+                                        <svg class="w-6 h-6 text-yellow-500" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4">
+                                                d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z">
                                             </path>
                                         </svg>
-                                        Descargar PDF
+                                        Inscribir Nuevo Alumno
+                                    </h3>
+                                    <button onclick="cerrarModalRegistrarAlumno()"
+                                        class="text-gray-400 hover:text-red-500 transition-colors p-1.5 hover:bg-white rounded-lg">
+                                        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M6 18L18 6M6 6l12 12"></path>
+                                        </svg>
                                     </button>
                                 </div>
-                                <div class="overflow-x-auto">
-                                    <table class="w-full text-left">
-                                        <thead class="bg-gray-50 text-gray-500 text-xs uppercase font-semibold">
-                                            <tr>
-                                                <th class="px-6 py-3">Estudiante</th>
-                                                <th class="px-6 py-3">Grupo</th>
-                                                <th class="px-6 py-3">Representante</th>
-                                                <th class="px-6 py-3">Pago</th>
-                                                <th class="px-6 py-3 text-right"></th>
-                                            </tr>
-                                        </thead>
-                                        <tbody id="student-table-body" class="divide-y divide-gray-100 text-sm">
-                                            <!-- JS populated -->
-                                        </tbody>
-                                    </table>
+                                <div class="p-6 md:p-8">
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
+                                        <div>
+                                            <label
+                                                class="block text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Nombre
+                                                del Estudiante</label>
+                                            <input type="text" id="student-name"
+                                                placeholder="Ej: Sof&iacute;a P&eacute;rez"
+                                                class="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 outline-none transition-all bg-gray-50 focus:bg-white text-sm">
+                                        </div>
+                                        <div>
+                                            <label
+                                                class="block text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Representante</label>
+                                            <input type="text" id="student-rep" placeholder="Nombre del Padre/Madre"
+                                                class="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 outline-none transition-all bg-gray-50 focus:bg-white text-sm">
+                                        </div>
+                                        <div>
+                                            <label
+                                                class="block text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Grupo
+                                                / Nivel</label>
+                                            <select id="student-group"
+                                                class="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 outline-none transition-all bg-gray-50 focus:bg-white text-sm">
+                                                <option value="Maternal">Maternal (1-2 a&ntilde;os)</option>
+                                                <option value="Pre-Kinder">Pre-Kinder (3-4 a&ntilde;os)</option>
+                                                <option value="Kinder">Kinder (4-5 a&ntilde;os)</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label
+                                                class="block text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Cédula
+                                                Escolar</label>
+                                            <input type="text" id="student-cedula" placeholder="Ej: E-12345678"
+                                                class="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 outline-none transition-all bg-gray-50 focus:bg-white text-sm">
+                                        </div>
+                                    </div>
+                                    <div class="mt-8 pt-5 border-t border-gray-100 flex justify-end gap-3">
+                                        <button onclick="cerrarModalRegistrarAlumno()"
+                                            class="px-5 py-2.5 text-gray-600 font-semibold hover:bg-gray-100 rounded-xl transition-colors text-sm">Cancelar</button>
+                                        <button id="btn-add-student"
+                                            class="px-6 py-2.5 bg-yellow-400 text-gray-800 rounded-xl font-semibold hover:bg-yellow-500 transition shadow-md flex items-center gap-2 text-sm">
+                                            Confirmar Inscripci&oacute;n
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                </section>
-                <!-- ============================================ -->
-                <!-- SECCIÓN 3: GESTIÓN DE SECCIONES (GRUPOS) -->
-                <!-- ============================================ -->
-                <section id="section-secciones" class="page-section hidden fade-in">
-                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-                        <div class="flex justify-between items-center mb-6">
-                            <h2 class="text-2xl font-bold text-gray-800">Gestión de Secciones</h2>
-                        </div>
 
-                        <!-- Formulario Secciones -->
-                        <form id="form-secciones"
-                            class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8 bg-gray-50 p-4 rounded-xl border border-gray-200">
-                            <input type="hidden" id="seccion-id">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Nombre de Sección</label>
-                                <input type="text" id="seccion-nombre" required placeholder="Ej: Maternal A"
-                                    class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-300 outline-none">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Nivel</label>
-                                <select id="seccion-nivel"
-                                    class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-300 outline-none">
-                                    <option value="Maternal">Maternal</option>
-                                    <option value="Preescolar Nivel 1">Preescolar Nivel 1</option>
-                                    <option value="Preescolar Nivel 2">Preescolar Nivel 2</option>
-                                    <option value="Preescolar Nivel 3">Preescolar Nivel 3</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Capacidad Max.</label>
-                                <input type="number" id="seccion-capacidad" required min="1"
-                                    class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-300 outline-none">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Asignar Docente</label>
-                                <select id="seccion-docente" required
-                                    class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-300 outline-none">
-                                    <!-- Rellenado por JS -->
-                                </select>
-                            </div>
-                            <div class="md:col-span-4 flex justify-end">
-                                <button type="submit"
-                                    class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700">Guardar
-                                    Sección</button>
-                            </div>
-                        </form>
-
-                        <!-- Tabla Secciones -->
+                        <!-- Tabla Alumnos -->
                         <div class="overflow-x-auto">
-                            <table class="min-w-full divide-y divide-gray-200">
-                                <thead class="bg-gray-50">
+                            <table class="w-full text-left border-collapse">
+                                <thead class="bg-gray-50 text-gray-500 uppercase text-xs font-semibold">
                                     <tr>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                                            Nombre</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                                            Nivel</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                                            Capacidad</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                                            Docente Asignado</th>
-                                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">
-                                            Acciones</th>
+                                        <th class="px-6 py-4">Cédula Escolar</th>
+                                        <th class="px-6 py-4">Estudiante</th>
+                                        <th class="px-6 py-4">Grupo</th>
+                                        <th class="px-6 py-4">Representante</th>
+                                        <th class="px-6 py-4 text-right">Acciones</th>
                                     </tr>
                                 </thead>
-                                <tbody id="tabla-secciones" class="bg-white divide-y divide-gray-200">
-                                    <!-- JS content -->
+                                <tbody id="student-table-body" class="divide-y divide-gray-100 text-sm">
+                                    <tr>
+                                        <td colspan="5" class="px-6 py-10 text-center text-gray-400 text-sm">No hay
+                                            alumnos registrados todavía.</td>
+                                    </tr>
                                 </tbody>
                             </table>
                         </div>
                     </div>
                 </section>
 
+                <!-- ============================================ -->
+                <!-- SECCIÓN 3: GESTIÓN DE SECCIONES (GRUPOS) -->
+                <!-- ============================================ -->
+                <section id="section-secciones" class="page-section hidden fade-in">
+                    <div class="bg-white rounded-2xl shadow-md border border-gray-100 overflow-hidden">
+
+                        <!-- Encabezado -->
+                        <div
+                            class="p-6 border-b border-gray-100 flex flex-col md:flex-row justify-between items-center gap-4">
+                            <div>
+                                <h2 class="text-xl font-bold text-gray-800">Gestión de Secciones</h2>
+                                <p class="text-sm text-gray-500">Administra los grupos y secciones del año escolar.</p>
+                            </div>
+                            <button onclick="abrirModalCrearSeccion()"
+                                class="w-full md:w-auto px-4 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition shadow-md flex items-center justify-center gap-2">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M12 4v16m8-8H4"></path>
+                                </svg>
+                                Nueva Sección
+                            </button>
+                        </div>
+
+                        <!-- Modal Crear Sección -->
+                        <div id="modal-crear-seccion"
+                            class="fixed inset-0 bg-black/60 z-50 hidden flex items-center justify-center backdrop-blur-sm opacity-0"
+                            style="transition: opacity 0.3s ease;">
+                            <div id="modal-crear-seccion-content"
+                                class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl mx-4 overflow-hidden transform scale-95 transition-transform duration-300">
+                                <div
+                                    class="px-6 py-5 border-b border-blue-100 flex justify-between items-center bg-blue-50/50">
+                                    <h3 class="font-bold text-gray-800 text-lg flex items-center gap-2">
+                                        <svg class="w-6 h-6 text-blue-500" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4">
+                                            </path>
+                                        </svg>
+                                        Nueva Sección
+                                    </h3>
+                                    <button onclick="cerrarModalCrearSeccion()"
+                                        class="text-gray-400 hover:text-red-500 transition-colors p-1.5 hover:bg-white rounded-lg">
+                                        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M6 18L18 6M6 6l12 12"></path>
+                                        </svg>
+                                    </button>
+                                </div>
+                                <div class="p-6 md:p-8">
+                                    <input type="hidden" id="seccion-id">
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
+                                        <!-- Período Escolar -->
+                                        <div class="md:col-span-2">
+                                            <label
+                                                class="block text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Período
+                                                Académico</label>
+                                            <select id="seccion-periodo"
+                                                class="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-400 focus:border-blue-400 outline-none transition-all bg-gray-50 focus:bg-white text-sm">
+                                                <option value="">Cargando períodos...</option>
+                                            </select>
+                                        </div>
+                                        <!-- Nivel Escolar -->
+                                        <div>
+                                            <label
+                                                class="block text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Nivel</label>
+                                            <select id="seccion-nivel"
+                                                class="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-400 focus:border-blue-400 outline-none transition-all bg-gray-50 focus:bg-white text-sm">
+                                                <option value="MATERNAL">MATERNAL</option>
+                                                <option value="1ER GRUPO">1ER GRUPO</option>
+                                                <option value="2DO GRUPO">2DO GRUPO</option>
+                                                <option value="3ER GRUPO">3ER GRUPO</option>
+                                            </select>
+                                        </div>
+                                        <!-- Letra / Grupo -->
+                                        <div>
+                                            <label
+                                                class="block text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Grupo</label>
+                                            <select id="seccion-letra"
+                                                class="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-400 focus:border-blue-400 outline-none transition-all bg-gray-50 focus:bg-white text-sm">
+                                                <option value="SECCION A">SECCION A</option>
+                                                <option value="SECCION B">SECCION B</option>
+                                                <option value="SECCION C">SECCION C</option>
+                                                <option value="SECCION D">SECCION D</option>
+                                                <option value="SECCION U">SECCION U</option>
+                                            </select>
+                                        </div>
+                                        <!-- Docentes -->
+                                        <div class="md:col-span-2">
+                                            <div class="flex items-center justify-between mb-2">
+                                                <label
+                                                    class="block text-[11px] font-bold text-gray-500 uppercase tracking-widest">Docentes</label>
+                                                <button type="button" onclick="agregarSelectDocente()"
+                                                    class="text-xs font-semibold text-blue-600 hover:text-blue-800 flex items-center gap-1 transition-colors px-2 py-1 bg-blue-50 rounded-md hover:bg-blue-100">
+                                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor"
+                                                        viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                            stroke-width="2" d="M12 4v16m8-8H4"></path>
+                                                    </svg>
+                                                    Añadir otro docente
+                                                </button>
+                                            </div>
+                                            <div id="seccion-docentes-container" class="space-y-3">
+                                                <!-- Llenado dinámicamente por JS -->
+                                            </div>
+                                        </div>
+                                        <!-- Capacidad -->
+                                        <div>
+                                            <label
+                                                class="block text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Capacidad
+                                                Máx.</label>
+                                            <input type="number" id="seccion-capacidad" value="30" min="1" max="50"
+                                                class="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-400 focus:border-blue-400 outline-none transition-all bg-gray-50 focus:bg-white text-sm">
+                                        </div>
+                                    </div>
+                                    <div class="mt-8 pt-5 border-t border-gray-100 flex justify-end gap-3">
+                                        <button onclick="cerrarModalCrearSeccion()"
+                                            class="px-5 py-2.5 text-gray-600 font-semibold hover:bg-gray-100 rounded-xl transition-colors text-sm">Cancelar</button>
+                                        <button id="btn-guardar-seccion"
+                                            class="px-6 py-2.5 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition shadow-md shadow-blue-600/20 flex items-center gap-2 text-sm">
+                                            Guardar Sección
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tabla Secciones -->
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse">
+                                <thead class="bg-gray-50 text-gray-500 uppercase text-xs font-semibold">
+                                    <tr>
+                                        <th class="px-6 py-4">Período</th>
+                                        <th class="px-6 py-4">Nivel</th>
+                                        <th class="px-6 py-4">Grupo/Letra</th>
+                                        <th class="px-6 py-4">Capacidad</th>
+                                        <th class="px-6 py-4">Docentes Asignados</th>
+                                        <th class="px-6 py-4 text-right">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tabla-secciones" class="divide-y divide-gray-100 text-sm">
+                                    <tr>
+                                        <td colspan="5" class="px-6 py-10 text-center text-gray-400 text-sm">No hay
+                                            secciones registradas todavía.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ============================================ -->
+                <!-- SECCIÓN: PERÍODOS ACADÉMICOS -->
+                <!-- ============================================ -->
+                <section id="section-periodos" class="page-section hidden fade-in">
+                    <div class="bg-white rounded-2xl shadow-md border border-gray-100 overflow-hidden">
+
+                        <!-- Encabezado -->
+                        <div
+                            class="p-6 border-b border-gray-100 flex flex-col md:flex-row justify-between items-center gap-4">
+                            <div>
+                                <h2 class="text-xl font-bold text-gray-800">Períodos Académicos</h2>
+                                <p class="text-sm text-gray-500">Gestiona los años/períodos escolares del sistema.</p>
+                            </div>
+                            <button onclick="abrirModalPeriodo()"
+                                class="w-full md:w-auto px-4 py-2 bg-indigo-600 text-white rounded-lg font-semibold hover:bg-indigo-700 transition shadow-md flex items-center justify-center gap-2">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M12 4v16m8-8H4"></path>
+                                </svg>
+                                Nuevo Período
+                            </button>
+                        </div>
+
+                        <!-- Modal Crear/Editar Período -->
+                        <div id="modal-periodo"
+                            class="fixed inset-0 bg-black/60 z-50 hidden flex items-center justify-center backdrop-blur-sm opacity-0"
+                            style="transition: opacity 0.3s ease;">
+                            <div id="modal-periodo-content"
+                                class="bg-white rounded-2xl shadow-2xl w-full max-w-xl mx-4 overflow-hidden transform scale-95 transition-transform duration-300">
+                                <div
+                                    class="px-6 py-5 border-b border-indigo-100 flex justify-between items-center bg-indigo-50/50">
+                                    <h3 class="font-bold text-gray-800 text-lg flex items-center gap-2">
+                                        <svg class="w-6 h-6 text-indigo-500" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5">
+                                            </path>
+                                        </svg>
+                                        <span id="modal-periodo-titulo-texto">Nuevo Período Académico</span>
+                                    </h3>
+                                    <button onclick="cerrarModalPeriodo()"
+                                        class="text-gray-400 hover:text-red-500 transition-colors p-1.5 hover:bg-white rounded-lg">
+                                        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M6 18L18 6M6 6l12 12"></path>
+                                        </svg>
+                                    </button>
+                                </div>
+                                <div class="p-6 md:p-8">
+                                    <input type="hidden" id="periodo-edit-id">
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
+                                        <div class="md:col-span-2">
+                                            <label
+                                                class="block text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Nombre
+                                                del Período</label>
+                                            <input type="text" id="periodo-nombre" placeholder="Ej: 2024-2025"
+                                                class="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 outline-none transition-all bg-gray-50 focus:bg-white text-sm">
+                                        </div>
+                                        <div>
+                                            <label
+                                                class="block text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Fecha
+                                                de Inicio</label>
+                                            <input type="date" id="periodo-fecha-inicio"
+                                                class="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 outline-none transition-all bg-gray-50 focus:bg-white text-sm">
+                                        </div>
+                                        <div>
+                                            <label
+                                                class="block text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Fecha
+                                                de Fin</label>
+                                            <input type="date" id="periodo-fecha-fin"
+                                                class="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 outline-none transition-all bg-gray-50 focus:bg-white text-sm">
+                                        </div>
+                                        <div class="md:col-span-2">
+                                            <label
+                                                class="block text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Estado</label>
+                                            <select id="periodo-estado"
+                                                class="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 outline-none transition-all bg-gray-50 focus:bg-white text-sm">
+                                                <option value="planificacion">Planificación</option>
+                                                <option value="activo">Activo</option>
+                                                <option value="finalizado">Finalizado</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="mt-8 pt-5 border-t border-gray-100 flex justify-end gap-3">
+                                        <button onclick="cerrarModalPeriodo()"
+                                            class="px-5 py-2.5 text-gray-600 font-semibold hover:bg-gray-100 rounded-xl transition-colors text-sm">Cancelar</button>
+                                        <button id="btn-guardar-periodo"
+                                            class="px-6 py-2.5 bg-indigo-600 text-white rounded-xl font-semibold hover:bg-indigo-700 transition shadow-md text-sm">
+                                            Guardar Período
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tabla Períodos -->
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse">
+                                <thead class="bg-gray-50 text-gray-500 uppercase text-xs font-semibold">
+                                    <tr>
+                                        <th class="px-6 py-4">Nombre</th>
+                                        <th class="px-6 py-4">Fecha Inicio</th>
+                                        <th class="px-6 py-4">Fecha Fin</th>
+                                        <th class="px-6 py-4">Estado</th>
+                                        <th class="px-6 py-4 text-right">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tabla-periodos" class="divide-y divide-gray-100 text-sm">
+                                    <tr>
+                                        <td colspan="5" class="px-6 py-10 text-center text-gray-400 text-sm">
+                                            <svg class="w-8 h-8 mx-auto mb-2 text-gray-300" fill="none"
+                                                stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                                    d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5">
+                                                </path>
+                                            </svg>
+                                            No hay períodos registrados todavía.
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
 
                 <!-- ============================================ -->
                 <!-- SECCIÓN 5: CONFIG (Visualización) -->
@@ -623,38 +962,82 @@
         <span id="toast-message"></span>
     </div>
 
+    <!-- MODAL PERÍODOS ACADÉMICOS (fuera de cualquier sección para evitar herencia de display:none) -->
+    <div id="modal-periodo"
+        class="fixed inset-0 bg-black/60 z-50 hidden items-center justify-center backdrop-blur-sm opacity-0"
+        style="transition: opacity 0.3s ease;">
+        <div id="modal-periodo-content"
+            class="bg-white rounded-2xl shadow-2xl w-full max-w-xl mx-4 overflow-hidden transform scale-95 transition-transform duration-300">
+            <div class="px-6 py-5 border-b border-indigo-100 flex justify-between items-center bg-indigo-50/50">
+                <h3 id="modal-periodo-titulo" class="font-bold text-gray-800 text-lg flex items-center gap-2">
+                    <svg class="w-6 h-6 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5">
+                        </path>
+                    </svg>
+                    <span id="modal-periodo-titulo-texto">Nuevo Período Académico</span>
+                </h3>
+                <button onclick="cerrarModalPeriodo()"
+                    class="text-gray-400 hover:text-red-500 transition-colors p-1.5 hover:bg-white rounded-lg">
+                    <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
+                        </path>
+                    </svg>
+                </button>
+            </div>
+            <div class="p-6 md:p-8">
+                <input type="hidden" id="periodo-edit-id">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
+                    <div>
+                        <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Fecha
+                            de Inicio</label>
+                        <input type="date" id="periodo-fecha-inicio"
+                            class="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 outline-none transition-all bg-gray-50 focus:bg-white text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Fecha
+                            de Fin</label>
+                        <input type="date" id="periodo-fecha-fin"
+                            class="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 outline-none transition-all bg-gray-50 focus:bg-white text-sm">
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Nombre
+                            del Período (Auto-generado)</label>
+                        <input type="text" id="periodo-nombre" placeholder="Ej: 2025-2026" readonly
+                            class="w-full px-4 py-2.5 border border-gray-300 rounded-xl outline-none text-sm bg-gray-100 cursor-not-allowed text-gray-600 font-medium">
+                    </div>
+                    <div class="md:col-span-2">
+                        <label
+                            class="block text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Estado</label>
+                        <select id="periodo-estado"
+                            class="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 outline-none transition-all bg-gray-50 focus:bg-white text-sm">
+                            <option value="planificacion">Planificación</option>
+                            <option value="activo">Activo</option>
+                            <option value="finalizado">Finalizado</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="mt-8 pt-5 border-t border-gray-100 flex justify-end gap-3">
+                    <button onclick="cerrarModalPeriodo()"
+                        class="px-5 py-2.5 text-gray-600 font-semibold hover:bg-gray-100 rounded-xl transition-colors text-sm">Cancelar</button>
+                    <button id="btn-guardar-periodo"
+                        class="px-6 py-2.5 bg-indigo-600 text-white rounded-xl font-semibold hover:bg-indigo-700 transition shadow-md text-sm">
+                        Guardar Período
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- SCRIPTS LÓGICA -->
     <script>
         const { jsPDF } = window.jspdf;
 
-        // --- DATA ---
-        let teachers = [
-            { id: 1, name: "Maria Pérez", group: "Maternal", email: "maria@ceiparagua.com", status: "Activo" },
-            { id: 2, name: "Carlos Ruiz", group: "Pre-Kinder", email: "carlos@ceiparagua.com", status: "Activo" },
-            { id: 3, name: "Ana López", group: "Kinder", email: "ana@ceiparagua.com", status: "Permiso" }
-        ];
-
-        let students = [
-            { id: 1, name: "Sofía Pérez", group: "Maternal", rep: "Juan Pérez", payment: "Solvente" },
-            { id: 2, name: "Mateo González", group: "Maternal", rep: "Luisa González", payment: "Pendiente" },
-            { id: 3, name: "Valentina Rodríguez", group: "Pre-Kinder", rep: "Pedro Rodríguez", payment: "Solvente" },
-            { id: 4, name: "Thiago Silva", group: "Kinder", rep: "Carla Silva", payment: "Solvente" },
-        ];
-
-        let systemUsers = [
-            { id: 101, name: "Lic. Rodríguez", email: "director@ceiparagua.com", role: "Administrador", status: "Activo" },
-            { id: 102, name: "Maria Pérez", email: "maria@ceiparagua.com", role: "Docente", status: "Activo" },
-            { id: 103, name: "Carlos Ruiz", email: "carlos@ceiparagua.com", role: "Docente", status: "Activo" }
-        ];
+        // Datos cargados dinámicamente desde la API — sin arrays estáticos
 
         // --- INIT ---
         document.addEventListener('DOMContentLoaded', () => {
             initNavigation();
-            renderDashboard();
-            renderTeachers();
-            renderStudents();
-            renderUsers(); // Renderizamos usuarios al inicio
-            setupForms();
         });
 
         // --- NAVIGATION ---
@@ -675,10 +1058,17 @@
                     // Mostrar target
                     document.getElementById(targetId).classList.remove('hidden');
 
-                    // Actualizar sidebar (solo si es link)
+                    // Actualizar sidebar (para ambos: links y botones)
+                    links.forEach(l => l.classList.remove('nav-link-active'));
+
                     if (trigger.classList.contains('nav-link')) {
-                        links.forEach(l => l.classList.remove('nav-link-active'));
                         trigger.classList.add('nav-link-active');
+                    } else if (trigger.classList.contains('nav-button')) {
+                        // Si se hizo click en un botón del dashboard, buscar el link equivalente en el sidebar y activarlo
+                        const correspondingLink = Array.from(links).find(l => l.dataset.section === targetId);
+                        if (correspondingLink) {
+                            correspondingLink.classList.add('nav-link-active');
+                        }
                     }
                 });
             });
@@ -686,169 +1076,93 @@
 
         // --- RENDERS ---
         function renderDashboard() {
-            document.getElementById('dash-total-students').innerText = students.length;
-            document.getElementById('dash-total-teachers').innerText = teachers.length;
+            // Los contadores de alumnos, docentes y admins los actualiza admin_users.js dinámicamente
         }
 
         function renderTeachers() {
-            const tbody = document.getElementById('teacher-table-body');
-            tbody.innerHTML = '';
-            teachers.forEach(t => {
-                tbody.innerHTML += `
-                    <tr class="hover:bg-gray-50 border-b border-gray-50">
-                        <td class="px-6 py-4 flex items-center gap-3">
-                            <div class="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-xs">
-                                ${t.name.charAt(0)}
-                            </div>
-                            <div>
-                                <p class="font-medium text-gray-800">${t.name}</p>
-                                <p class="text-xs text-gray-400">${t.email}</p>
-                            </div>
-                        </td>
-                        <td class="px-6 py-4 text-sm text-gray-600">
-                            <span class="px-2 py-1 rounded bg-gray-100 border border-gray-200">${t.group}</span>
-                        </td>
-                        <td class="px-6 py-4">
-                            <span class="px-2 py-1 rounded-full text-xs font-semibold ${t.status === 'Activo' ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'}">
-                                ${t.status}
-                            </span>
-                        </td>
-                        <td class="px-6 py-4 text-right">
-                            <button onclick="deleteTeacher(${t.id})" class="text-secondary-pink hover:text-red-600 transition p-1 hover:bg-red-50 rounded">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                            </button>
-                        </td>
-                    </tr>
-                `;
-            });
+            // Pendiente de integración con API — sin datos estáticos
         }
 
-        function renderUsers() {
-            const tbody = document.getElementById('user-table-body');
-            tbody.innerHTML = '';
-            systemUsers.forEach(u => {
-                // Color badge logic
-                const roleBadge = u.role === 'Administrador'
-                    ? 'bg-purple-100 text-purple-700'
-                    : 'bg-pink-100 text-pink-700';
-
-                tbody.innerHTML += `
-                    <tr class="hover:bg-gray-50 border-b border-gray-50">
-                        <td class="px-6 py-4 flex items-center gap-3">
-                            <div class="w-8 h-8 rounded-full bg-gray-100 text-gray-600 flex items-center justify-center font-bold text-xs">
-                                ${u.name.charAt(0)}
-                            </div>
-                            <span class="font-medium text-gray-800">${u.name}</span>
-                        </td>
-                        <td class="px-6 py-4 text-gray-500 text-sm">${u.email}</td>
-                        <td class="px-6 py-4">
-                            <span class="px-2 py-1 rounded-full text-xs font-semibold ${roleBadge}">
-                                ${u.role}
-                            </span>
-                        </td>
-                        <td class="px-6 py-4">
-                            <span class="w-2 h-2 inline-block rounded-full bg-green-500 mr-1"></span>
-                            <span class="text-sm text-gray-600">${u.status}</span>
-                        </td>
-                        <td class="px-6 py-4 text-right">
-                             <button onclick="deleteUser(${u.id})" class="text-gray-400 hover:text-red-500 transition">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                            </button>
-                        </td>
-                    </tr>
-                `;
-            });
-        }
-
-
-        function renderStudents() {
-            const tbody = document.getElementById('student-table-body');
-            tbody.innerHTML = '';
-            students.forEach(s => {
-                tbody.innerHTML += `
-                    <tr class="hover:bg-gray-50 border-b border-gray-50 group">
-                        <td class="px-6 py-4 font-medium text-gray-800">${s.name}</td>
-                        <td class="px-6 py-4 text-gray-500">${s.group}</td>
-                        <td class="px-6 py-4 text-gray-500 text-xs">${s.rep}</td>
-                        <td class="px-6 py-4">
-                             <span class="px-2 py-1 rounded-full text-xs font-semibold ${s.payment === 'Solvente' ? 'bg-blue-100 text-blue-700' : 'bg-red-100 text-red-700'}">
-                                ${s.payment}
-                            </span>
-                        </td>
-                        <td class="px-6 py-4 text-right opacity-0 group-hover:opacity-100 transition">
-                            <button onclick="deleteStudent(${s.id})" class="text-gray-400 hover:text-red-500">Eliminar</button>
-                        </td>
-                    </tr>
-                `;
-            });
-            renderDashboard(); // Actualizar contador
-        }
 
         // --- ACTIONS ---
-        function setupForms() {
-            // Add Teacher
-            document.getElementById('btn-add-teacher').addEventListener('click', () => {
-                const name = document.getElementById('teacher-name').value;
-                const email = document.getElementById('teacher-email').value;
-                const group = document.getElementById('teacher-group').value;
-
-                if (name && email && group) {
-                    teachers.push({ id: Date.now(), name, email, group, status: "Activo" });
-                    renderTeachers();
-                    document.getElementById('teacher-name').value = '';
-                    document.getElementById('teacher-email').value = '';
-                    showToast('Docente registrado correctamente', 'success');
-                    document.getElementById('form-teacher-container').classList.add('hidden');
-                } else {
-                    showToast('Por favor complete todos los campos', 'error');
-                }
-            });
+        // (Las funciones de modales de secciones y períodos están en sus respectivos archivos .js)
 
 
+        // setupForms() — lógica de formularios inline eliminada (reemplazada por modales)
 
-            // Add Student
-            document.getElementById('btn-add-student').addEventListener('click', () => {
-                const name = document.getElementById('student-name').value;
-                const rep = document.getElementById('student-rep').value;
-                const group = document.getElementById('student-group').value;
-                const payment = document.getElementById('student-payment').value;
-
-                if (name && rep) {
-                    students.push({ id: Date.now(), name, group, rep, payment });
-                    renderStudents();
-                    // Limpiar form
-                    document.getElementById('student-name').value = '';
-                    document.getElementById('student-rep').value = '';
-                    showToast('Alumno inscrito exitosamente', 'success');
-                } else {
-                    showToast('Faltan datos obligatorios', 'error');
-                }
-            });
+        // ── Modal: Registrar Alumno ────────────────────────────
+        function abrirModalRegistrarAlumno() {
+            const modal = document.getElementById('modal-registrar-alumno');
+            const content = document.getElementById('modal-registrar-alumno-content');
+            document.getElementById('student-name').value = '';
+            document.getElementById('student-rep').value = '';
+            document.getElementById('student-group').value = 'Maternal';
+            document.getElementById('student-cedula').value = '';
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                content.classList.remove('scale-95');
+                content.classList.add('scale-100');
+            }, 10);
         }
 
-        function deleteTeacher(id) {
-            if (confirm('¿Eliminar docente?')) {
-                teachers = teachers.filter(t => t.id !== id);
-                renderTeachers();
-                showToast('Docente eliminado', 'error');
+        function cerrarModalRegistrarAlumno() {
+            const modal = document.getElementById('modal-registrar-alumno');
+            const content = document.getElementById('modal-registrar-alumno-content');
+            modal.classList.add('opacity-0');
+            content.classList.remove('scale-100');
+            content.classList.add('scale-95');
+            setTimeout(() => modal.classList.add('hidden'), 300);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const btnAddStudent = document.getElementById('btn-add-student');
+            if (btnAddStudent) {
+                btnAddStudent.addEventListener('click', () => {
+                    const name = document.getElementById('student-name').value.trim();
+                    const rep = document.getElementById('student-rep').value.trim();
+                    const group = document.getElementById('student-group').value;
+                    const cedula = document.getElementById('student-cedula').value.trim();
+                    if (!name || !rep) {
+                        Swal.fire({ title: 'Campos incompletos', text: 'El nombre y el representante son obligatorios.', icon: 'warning', confirmButtonColor: '#ca8a04' });
+                        return;
+                    }
+                    // Aquí se integrará con la API cuando esté disponible
+                    const tbody = document.getElementById('student-table-body');
+                    const inicial = name.charAt(0).toUpperCase();
+                    // Si solo hay el placeholder, limpiarlo
+                    if (tbody.querySelector('td[colspan]')) tbody.innerHTML = '';
+                    tbody.innerHTML += `
+                        <tr class="hover:bg-gray-50 border-b border-gray-50 transition-colors">
+                            <td class="px-6 py-4 text-gray-500 text-sm font-mono">${cedula || '—'}</td>
+                            <td class="px-6 py-4">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-9 h-9 rounded-full bg-yellow-100 text-yellow-700 flex items-center justify-center font-bold text-sm flex-shrink-0">${inicial}</div>
+                                    <p class="font-medium text-gray-800">${name}</p>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 text-gray-500 text-sm"><span class="px-2 py-1 rounded bg-gray-100 border border-gray-200 text-xs">${group}</span></td>
+                            <td class="px-6 py-4 text-gray-500 text-xs">${rep}</td>
+                            <td class="px-6 py-4 text-right"></td>
+                        </tr>`;
+                    cerrarModalRegistrarAlumno();
+                    Swal.fire({ icon: 'success', title: '¡Alumno registrado!', text: `${name} fue añadido correctamente.`, confirmButtonColor: '#ca8a04', timer: 2500, timerProgressBar: true });
+                });
             }
+        });
+
+        function deleteTeacher(id) {
+            // Pendiente de integración con API — sin datos estáticos
         }
 
         function deleteUser(id) {
-            if (confirm('¿Eliminar acceso de usuario?')) {
-                systemUsers = systemUsers.filter(u => u.id !== id);
-                renderUsers();
-                showToast('Usuario eliminado', 'error');
-            }
+            // Manejado por admin_users.js
         }
 
         function deleteStudent(id) {
-            if (confirm('¿Eliminar registro de alumno?')) {
-                students = students.filter(s => s.id !== id);
-                renderStudents();
-                showToast('Registro eliminado', 'error');
-            }
+            // Pendiente de integración con API — sin datos estáticos
         }
+
 
         function downloadStudentPDF() {
             const doc = new jsPDF();
@@ -856,17 +1170,7 @@
             doc.text("Reporte General de Matrícula", 14, 22);
             doc.setFontSize(11);
             doc.text(`Generado: ${new Date().toLocaleDateString()}`, 14, 30);
-
-            const tableData = students.map(s => [s.name, s.group, s.rep, s.payment]);
-
-            doc.autoTable({
-                startY: 40,
-                head: [['Estudiante', 'Grupo', 'Representante', 'Estatus']],
-                body: tableData,
-                theme: 'grid',
-                headStyles: { fillColor: [244, 139, 175] } // secondary-pink
-            });
-
+            // La tabla la maneja admin_users dinámicamente
             doc.save('matricula_general.pdf');
             showToast('PDF descargado', 'success');
         }
@@ -940,6 +1244,7 @@
                     localStorage.removeItem('auth_token');
                     localStorage.removeItem('user_rol');
                     localStorage.removeItem('user_email');
+                    localStorage.removeItem('user_id');
 
                     // 3. Redirigir al login
                     window.location.replace('login.html');
@@ -947,7 +1252,10 @@
             });
         }
     </script>
+    <script src="js/auth.js"></script>
     <script src="js/admin_users.js"></script>
+    <script src="js/admin_periodos.js"></script>
+    <script src="js/admin_secciones.js"></script>
 </body>
 
 </html>

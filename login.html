@@ -174,8 +174,10 @@
 
                     // GUARDAR SESIÓN EN EL NAVEGADOR
                     localStorage.setItem('auth_token', json.token);
+                    localStorage.setItem('refresh_token', json.refresh_token || '');
                     localStorage.setItem('user_rol', rol);
                     localStorage.setItem('user_email', json.user.email);
+                    localStorage.setItem('user_id', json.user.id);
 
                     Swal.fire({
                         title: '¡Bienvenido!',
@@ -198,7 +200,27 @@
                         } else if (rol === 'docente') {
                             window.location.href = 'docente.html';
                         } else {
-                            window.location.href = 'representante.html';
+                            // REPRESENTANTE: verificar si ya completó la ficha del estudiante
+                            if (json.ficha_completada === false) {
+                                // Ficha pendiente → llevar directo al formulario
+                                Swal.fire({
+                                    title: '¡Falta un paso!',
+                                    text: 'Por favor completa la ficha de inscripción de tu representado para continuar.',
+                                    icon: 'info',
+                                    confirmButtonText: 'Completar ficha',
+                                    confirmButtonColor: '#EC4899',
+                                    allowOutsideClick: false,
+                                    customClass: {
+                                        popup: 'rounded-2xl shadow-xl',
+                                        confirmButton: 'rounded-xl px-6 py-2 font-bold'
+                                    }
+                                }).then(() => {
+                                    window.location.href = 'form_registro_estudiante.html';
+                                });
+                            } else {
+                                // Ficha ya completada → ir al panel del representante
+                                window.location.href = 'representante.html';
+                            }
                         }
                     });
                 } else if (res.status === 403) {

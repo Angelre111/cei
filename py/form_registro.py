@@ -2,8 +2,11 @@
 # SISTEMA DE GESTIÓN ESCOLAR (API BACKEND)
 # =======================================================
 import os
+import traceback
+import threading
 from typing import Optional, List
 from datetime import datetime
+from functools import wraps
 
 # --- LIBRERÍAS DE TERCEROS ---
 from flask import Flask, request, jsonify, send_from_directory, session
@@ -22,18 +25,104 @@ app = Flask(__name__,
             static_folder=ROOT_DIR, 
             static_url_path='')
 app.secret_key = os.getenv('SECRET_KEY', 'dev_secret_key')
-CORS(app) # Habilitar CORS para permitir peticiones del frontend
+# CORS: En producción, solo permitir el dominio real del frontend
+ALLOWED_ORIGINS = os.getenv('ALLOWED_ORIGINS', 'http://127.0.0.1:5000').split(',')
+CORS(app, origins=ALLOWED_ORIGINS)
+
+
+# =======================================================
+# SEGURIDAD: DECORADOR DE AUTENTICACIÓN
+# =======================================================
+
+def require_auth(f):
+    """
+    Decorador que protege una ruta verificando el token JWT de Supabase.
+    El frontend debe enviar el header: Authorization: Bearer <token>
+    """
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        # 1. Leer el header 'Authorization' de la petición
+        auth_header = request.headers.get('Authorization')
+
+        # 2. Si no existe el header o no tiene el formato correcto, rechazar
+        if not auth_header or not auth_header.startswith('Bearer '):
+            return jsonify({
+                'success': False,
+                'message': 'Acceso denegado. Se requiere autenticación (token no proporcionado).'
+            }), 401
+
+        # 3. Extraer el token (quitamos el prefijo 'Bearer ')
+        token = auth_header.split(' ')[1]
+
+        # 4. Validar con supabase_auth con timeout de 8 segundos
+        #    (sin esto, si Supabase tarda, Flask bloquea el hilo indefinidamente)
+        result_container = [None]  # compartir resultado entre hilos
+        error_container  = [None]
+
+        def _validate():
+            try:
+                result_container[0] = supabase_auth.auth.get_user(token)
+            except Exception as ex:
+                error_container[0] = ex
+
+        t = threading.Thread(target=_validate, daemon=True)
+        t.start()
+        t.join(timeout=8)  # esperar máximo 8 segundos
+
+        if t.is_alive():
+            # La llamada a Supabase tardó más de 8s — server-side timeout
+            print("❌ require_auth: timeout al validar token con Supabase (>8s)")
+            return jsonify({
+                'success': False,
+                'message': 'El servidor tardó demasiado al validar tu sesión. Intenta de nuevo.'
+            }), 503
+
+        if error_container[0]:
+            print(f"🔒 Token rechazado: {error_container[0]}")
+            return jsonify({
+                'success': False,
+                'message': 'Token inválido o expirado. Por favor inicia sesión nuevamente.'
+            }), 401
+
+        user_response = result_container[0]
+        if not user_response or not user_response.user:
+            return jsonify({
+                'success': False,
+                'message': 'Token inválido.'
+            }), 401
+
+        # 5. Token válido. Guardamos el usuario en 'request'.
+        request.current_user = user_response.user
+
+        # 6. Todo OK: dejamos pasar la petición a la ruta real
+        return f(*args, **kwargs)
+
+    return decorated_function
 
 # Configuración de Supabase
-SUPABASE_URL = os.getenv('SUPABASE_URL')
-# Usamos SERVICE_ROLE para el backend para tener permisos administrativos (bypass RLS)
+SUPABASE_URL             = os.getenv('SUPABASE_URL')
 SUPABASE_SERVICE_ROLE_KEY = os.getenv('SUPABASE_SERVICE_ROLE_KEY')
+SUPABASE_ANON_KEY         = os.getenv('SUPABASE_ANON_KEY')
 
 if not SUPABASE_URL or not SUPABASE_SERVICE_ROLE_KEY:
-    raise ValueError("❌ Faltan las credenciales de Supabase (URL o SERVICE_ROLE_KEY) en el archivo .env")
+    raise ValueError("❌ Faltan las credenciales de Supabase en el archivo .env")
 
-# Inicializar Cliente de Supabase con Service Role
+# ─────────────────────────────────────────────────────────
+# DOS CLIENTES SEPARADOS — MUY IMPORTANTE:
+#
+# La librería supabase-py muta el estado interno del cliente
+# cuando se llama a auth.get_user(token). Esto reemplaza el
+# SERVICE_ROLE_KEY con el JWT del usuario, lo que hace fallar
+# las llamadas admin.* posteriores con "User not allowed".
+#
+# Solución: cliente separado solo para validar tokens.
+# ─────────────────────────────────────────────────────────
+
+# Cliente ADMIN — SERVICE_ROLE — Para BD y operaciones admin
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
+
+# Cliente AUTH — ANON KEY — Solo para validar tokens de usuarios
+supabase_auth: Client = create_client(SUPABASE_URL, SUPABASE_ANON_KEY or SUPABASE_SERVICE_ROLE_KEY)
 
 
 # =======================================================
@@ -83,37 +172,52 @@ class InscripcionSchema(BaseModel):
 
 @app.route('/api/registrar', methods=['POST'])
 def registrar_usuario():
-    """Registra un nuevo usuario en Supabase Auth."""
+    """Registra un nuevo REPRESENTANTE en Supabase Auth y en la tabla usuarios."""
     data = request.json
     
-    # 1. Capturamos los campos separados
+    # 1. Capturamos los campos exactos que manda tu HTML
     nombres = data.get('nombres')
     apellidos = data.get('apellidos')
     email = data.get('email')
-    telefono = data.get('telefono')
-    contrasena = data.get('contrasena')
+    telefono = data.get('phone')      # <--- Ajustado al HTML
+    contrasena = data.get('password') # <--- Ajustado al HTML
 
     # 2. Validamos que no falte ninguno
     if not all([nombres, apellidos, email, telefono, contrasena]):
         return jsonify({'success': False, 'message': 'Faltan datos obligatorios.'}), 400
 
     try:
-        # 3. Enviamos a Supabase Auth usando first_name y last_name
-        auth_response = supabase.auth.sign_up({
+        # 3. Crear el usuario en el sistema de Autenticación de Supabase
+        auth_response = supabase_auth.auth.sign_up({
             "email": email,
             "password": contrasena,
             "options": {
                 "data": {
                     "first_name": nombres,
                     "last_name": apellidos,
-                    "phone": telefono
+                    "phone": telefono,
+                    "role": "representante" # Metadato útil
                 },
-                "email_redirect_to": os.getenv('REDIRECT_URL', 'http://127.0.0.1:5000/form_registro_estudiante.html')  
+                # Aquí Supabase enviará el correo con el token mágico
+                "email_redirect_to": os.getenv('REDIRECT_URL', 'http://127.0.0.1:5000/login.html')  
             }
         })
         
-        if not auth_response.user and not auth_response.session:
-             pass 
+        # 4. Guardar directamente en tu tabla pública 'usuarios'
+        if auth_response.user:
+            nuevo_user_id = auth_response.user.id
+            
+            datos_usuario = {
+                "id": nuevo_user_id,
+                "nombres": nombres,
+                "apellidos": apellidos,
+                "email": email,
+                "rol": "representante", # <--- Le asignamos su rol
+                "estado": "pendiente"   # <--- Pendiente hasta que verifique su correo
+            }
+            
+            # Usamos el cliente admin (service_role) para insertar en la tabla
+            supabase.table("usuarios").insert(datos_usuario).execute()
 
         return jsonify({
             'success': True, 
@@ -123,7 +227,9 @@ def registrar_usuario():
     except Exception as e:
         error_msg = str(e)
         print(f"❌ Error Registro: {error_msg}")
-        return jsonify({'success': False, 'message': error_msg}), 400
+        if "already registered" in error_msg.lower() or "already exists" in error_msg.lower():
+            return jsonify({'success': False, 'message': 'Este correo electrónico ya está registrado.'}), 409
+        return jsonify({'success': False, 'message': 'No se pudo completar el registro. Intenta de nuevo.'}), 500
 
 
 @app.route('/api/login', methods=['POST'])
@@ -140,8 +246,8 @@ def login_usuario():
         return jsonify({'success': False, 'message': 'Email y contraseña requeridos'}), 400
 
     try:
-        # 1. Autenticar con Supabase Auth
-        response = supabase.auth.sign_in_with_password({
+        # 1. Autenticar con Supabase Auth (usamos el cliente secundario para no mutar el admin)
+        response = supabase_auth.auth.sign_in_with_password({
             "email": email, 
             "password": password
         })
@@ -177,12 +283,20 @@ def login_usuario():
         session['user_id'] = user_id
         session['access_token'] = response.session.access_token
 
-        # 5. Enviar respuesta exitosa al Frontend con el rol real
+        # 5. Para representantes, verificar si ya completaron la ficha del estudiante
+        ficha_completada = None
+        if rol_usuario == 'representante':
+            ficha_res = supabase.table("inscripciones").select("id").eq("user_id", user_id).execute()
+            ficha_completada = len(ficha_res.data) > 0
+
+        # 6. Enviar respuesta exitosa al Frontend con el rol real
         return jsonify({
             'success': True,
             'message': 'Inicio de sesión exitoso',
             'token': response.session.access_token,
+            'refresh_token': response.session.refresh_token,
             'rol': rol_usuario,
+            'ficha_completada': ficha_completada,  # None para admin/docentes, True/False para representantes
             'user': {
                 'id': user_id,
                 'email': response.user.email
@@ -210,8 +324,14 @@ def login_usuario():
 
 
 @app.route('/api/crear_personal', methods=['POST'])
+@require_auth
 def crear_personal():
     """Ruta para que un admin cree cuentas de otros administradores o docentes. Bloquea representantes."""
+    # SEGURIDAD: Verificar que el usuario autenticado sea administrador
+    user_id_solicitante = request.current_user.id
+    perfil = supabase.table("usuarios").select("rol").eq("id", user_id_solicitante).single().execute()
+    if not perfil.data or perfil.data.get("rol") != "administrador":
+        return jsonify({'success': False, 'message': 'Acción denegada. Solo los administradores pueden realizar esta acción.'}), 403
     data = request.json
     
     nombres = data.get('nombres')
@@ -288,10 +408,96 @@ def crear_personal():
 
 
 # =======================================================
+# RUTAS DE GESTIÓN DE USUARIOS
+# =======================================================
+
+@app.route('/api/usuarios', methods=['GET'])
+@require_auth
+def listar_usuarios():
+    """Devuelve la lista de administradores y docentes para el panel admin."""
+    try:
+        response = supabase.table("usuarios") \
+            .select("id, nombres, apellidos, email, rol, estado") \
+            .in_("rol", ["administrador", "docente"]) \
+            .order("created_at", desc=True) \
+            .execute()
+
+        return jsonify({'success': True, 'usuarios': response.data}), 200
+
+    except Exception as e:
+        print(f"❌ Error al listar usuarios: {e}")
+        return jsonify({'success': False, 'message': 'Error al obtener usuarios.'}), 500
+
+
+@app.route('/api/usuarios/<user_id>', methods=['PUT'])
+@require_auth
+def editar_usuario(user_id):
+    """Actualiza los datos editables de un usuario (nombres, apellidos, estado)."""
+    # Solo administradores pueden editar
+    solicitante_id = request.current_user.id
+    perfil = supabase.table("usuarios").select("rol").eq("id", solicitante_id).single().execute()
+    if not perfil.data or perfil.data.get("rol") != "administrador":
+        return jsonify({'success': False, 'message': 'Acción denegada. Solo administradores.'}), 403
+
+    data = request.get_json()
+    campos_permitidos = ['nombres', 'apellidos', 'estado', 'rol']
+    datos_update = {k: v for k, v in data.items() if k in campos_permitidos and v is not None}
+
+    # Validación estricta del rol si viene en la petición
+    if 'rol' in datos_update and datos_update['rol'] not in ['administrador', 'docente']:
+        return jsonify({'success': False, 'message': 'Rol inválido. Solo se permite "administrador" o "docente".'}), 400
+
+    # Seguridad: Un admin no puede cambiar su propio rol ni estado (se quedaría sin acceso)
+    if solicitante_id == user_id and ('rol' in datos_update or 'estado' in datos_update):
+        return jsonify({'success': False, 'message': 'No puedes cambiar tu propio rol ni estado.'}), 400
+
+    if not datos_update:
+        return jsonify({'success': False, 'message': 'No hay campos válidos para actualizar.'}), 400
+
+    try:
+        supabase.table("usuarios").update(datos_update).eq("id", user_id).execute()
+        return jsonify({'success': True, 'message': 'Usuario actualizado correctamente.'}), 200
+
+    except Exception as e:
+        print(f"❌ Error al editar usuario: {e}")
+        return jsonify({'success': False, 'message': 'Error al actualizar el usuario.'}), 500
+
+
+@app.route('/api/usuarios/<user_id>', methods=['DELETE'])
+@require_auth
+def eliminar_usuario(user_id):
+    """Elimina un usuario del sistema: primero de la tabla pública, luego de Supabase Auth."""
+    # Solo administradores pueden eliminar
+    solicitante_id = request.current_user.id
+
+    # Evitar que un admin se elimine a sí mismo
+    if solicitante_id == user_id:
+        return jsonify({'success': False, 'message': 'No puedes eliminar tu propia cuenta.'}), 400
+
+    perfil = supabase.table("usuarios").select("rol").eq("id", solicitante_id).single().execute()
+    if not perfil.data or perfil.data.get("rol") != "administrador":
+        return jsonify({'success': False, 'message': 'Acción denegada. Solo administradores.'}), 403
+
+    try:
+        # 1. Eliminar de la tabla pública primero
+        supabase.table("usuarios").delete().eq("id", user_id).execute()
+
+        # 2. Eliminar de Supabase Auth (requiere service_role)
+        supabase.auth.admin.delete_user(user_id)
+
+        return jsonify({'success': True, 'message': 'Usuario eliminado del sistema correctamente.'}), 200
+
+    except Exception as e:
+        print(f"❌ Error al eliminar usuario: {e}")
+        return jsonify({'success': False, 'message': 'Error al eliminar el usuario.'}), 500
+
+
+# =======================================================
 # RUTAS DE GESTIÓN (INSCRIPCIONES)
 # =======================================================
 
 @app.route('/api/verificar_estado/<user_id>', methods=['GET'])
+@require_auth
 def verificar_estado(user_id):
     """Verifica si un usuario ya ha completado su inscripción."""
     try:
@@ -307,28 +513,73 @@ def verificar_estado(user_id):
         return jsonify({'completado': False}), 200 # En caso de duda, dejamos pasar
 
 @app.route('/api/inscribir', methods=['POST'])
+@require_auth
 def inscribir_estudiante():
-    """Procesa el formulario de inscripción validado."""
+    """Procesa el formulario de inscripción y lo divide en las tablas hijos e inscripciones."""
     try:
-        # 1. Validar datos con Pydantic
+        # 1. Validar datos con Pydantic (El frontend sigue enviando el mismo JSON)
         raw_data = request.get_json()
         datos = InscripcionSchema(**raw_data)
 
-        # 2. Doble verificación de seguridad en el servidor
-        verif = supabase.table("inscripciones").select("id").eq("user_id", datos.user_id).execute()
-        if len(verif.data) > 0:
-             return jsonify({"error": "El formulario ya fue enviado previamente."}), 409
+        # Usamos SIEMPRE el ID del usuario autenticado
+        user_id_real = request.current_user.id
 
-        # 3. Mapear a estructura de base de datos
-        datos_db = {
-            "user_id": datos.user_id, # <--- IMPORTANTE: Guardamos quién lo llenó
-            "nombres_estudiante": datos.nino_nombres,
-            "apellidos_estudiante": datos.nino_apellidos,
+        # 2. Verificar si este usuario ya llenó una ficha
+        verif = supabase.table("inscripciones").select("id").eq("user_id", user_id_real).execute()
+        if len(verif.data) > 0:
+             return jsonify({"error": "Ya has completado una ficha de inscripción previamente."}), 409
+
+        # 3. BÚSQUEDA INTELIGENTE DEL PERÍODO ACADÉMICO
+        # Prioridad 1: Buscar estrictamente el año escolar 'activo'
+        periodo_res = supabase.table("periodos_academicos") \
+            .select("id") \
+            .eq("estado", "activo") \
+            .execute()
+            
+        periodo_id = None
+        
+        if periodo_res.data and len(periodo_res.data) > 0:
+            # Si hay uno activo, usamos ese sin dudarlo
+            periodo_id = periodo_res.data[0]['id']
+        else:
+            # Prioridad 2: Si NO hay activo, buscamos el de 'planificacion' más reciente
+            planificacion_res = supabase.table("periodos_academicos") \
+                .select("id") \
+                .eq("estado", "planificacion") \
+                .order("created_at", desc=True) \
+                .limit(1) \
+                .execute()
+                
+            if planificacion_res.data and len(planificacion_res.data) > 0:
+                periodo_id = planificacion_res.data[0]['id']
+            else:
+                # Prioridad 3 (Seguridad): Si no hay ni activo ni en planificación, bloqueamos la inscripción
+                return jsonify({
+                    "error": "El proceso de inscripciones está cerrado. No hay un período escolar habilitado en este momento."
+                }), 403
+
+        # 4. PASO A: Guardar los datos permanentes en la tabla 'hijos'
+        datos_hijo = {
+            "nombre": datos.nino_nombres,
+            "apellidos": datos.nino_apellidos,
             "fecha_nacimiento": datos.nino_fecha_nacimiento,
-            "edad_estudiante": datos.nino_edad,
             "sexo": datos.nino_sexo,
-            "lugar_nacimiento": datos.nino_lugar_nac,
             "cedula_escolar": datos.nino_cedula_escolar,
+            "estado_alumno": "Activo",
+            "representante_id": user_id_real 
+        }
+        res_hijo = supabase.table("hijos").insert(datos_hijo).execute()
+        nuevo_hijo_id = res_hijo.data[0]['id'] # Capturamos el ID del niño recién creado
+
+        # 5. PASO B: Guardar la ficha médica/socioeconómica en 'inscripciones'
+        # Nota que ya NO enviamos nombres, sexo, etc., porque ya están en 'hijos'
+        datos_inscripcion = {
+            "hijo_id": nuevo_hijo_id,          # <- Enlace con el niño
+            "periodo_ingreso_id": periodo_id,  # <- Enlace con el año escolar
+            "user_id": user_id_real,           # <- Enlace con la cuenta del padre
+            
+            "edad_estudiante": datos.nino_edad,
+            "lugar_nacimiento": datos.nino_lugar_nac,
             "direccion_habitacion": datos.nino_direccion,
             
             "nombre_madre": datos.madre_nombre,
@@ -353,26 +604,360 @@ def inscribir_estudiante():
             "diagnostico_inicial": datos.conducta
         }
 
-        # 4. Insertar en Supabase
-        response = supabase.table("inscripciones").insert(datos_db).execute()
+        response = supabase.table("inscripciones").insert(datos_inscripcion).execute()
+        nuevo_id_inscripcion = response.data[0]['id']
         
-        # Obtener ID del registro creado
-        nuevo_id = response.data[0]['id'] if response.data else "registrado"
-        
-        return jsonify({"mensaje": "Inscripción exitosa", "id": nuevo_id}), 201
+        return jsonify({"mensaje": "Inscripción exitosa", "id": nuevo_id_inscripcion}), 201
 
     except ValidationError as e:
         return jsonify({"error": "Datos inválidos", "detalles": e.errors()}), 422
     
     except Exception as e:
         print(f"❌ Error Servidor: {e}")
-        return jsonify({"error": "Error interno al procesar la inscripción"}), 500
+        print(traceback.format_exc())  # <-- traza completa para depuración
+        return jsonify({"error": str(e) or "Error interno al procesar la inscripción"}), 500
 
 
+
+
+
+# =======================================================
+# REFRESH TOKEN
+# =======================================================
+
+@app.route('/api/refresh', methods=['POST'])
+def refresh_token():
+    """
+    Renueva el access_token usando el refresh_token de Supabase.
+    El frontend lo llama automáticamente cuando recibe un 401.
+    No requiere @require_auth porque el access_token ya está expirado.
+    """
+    data = request.get_json(silent=True)
+    if not data or not data.get('refresh_token'):
+        return jsonify({'success': False, 'message': 'refresh_token requerido.'}), 400
+
+    try:
+        # Supabase refresca la sesión y devuelve nuevos tokens
+        session = supabase_auth.auth.refresh_session(data['refresh_token'])
+
+        if not session or not session.session:
+            return jsonify({'success': False, 'message': 'Sesión inválida o expirada.'}), 401
+
+        return jsonify({
+            'success': True,
+            'token': session.session.access_token,
+            'refresh_token': session.session.refresh_token
+        }), 200
+
+    except Exception as e:
+        print(f"❌ Error al refrescar token: {e}")
+        return jsonify({'success': False, 'message': 'No se pudo renovar la sesión. Por favor inicia sesión nuevamente.'}), 401
+
+
+# =======================================================
+# RUTAS DE PERÍODOS ACADÉMICOS
+# =======================================================
+
+ESTADOS_VALIDOS = ['planificacion', 'activo', 'finalizado']
+
+class PeriodoSchema(BaseModel):
+    nombre: str
+    fecha_inicio: str   # formato YYYY-MM-DD
+    fecha_fin: str      # formato YYYY-MM-DD
+    estado: Optional[str] = 'planificacion'
+
+def _verificar_admin(user_id: str):
+    """Helper: retorna True si el usuario es administrador, False si no."""
+    perfil = supabase.table("usuarios").select("rol").eq("id", user_id).single().execute()
+    return perfil.data and perfil.data.get("rol") == "administrador"
+
+
+@app.route('/api/periodos', methods=['GET'])
+@require_auth
+def listar_periodos():
+    """Lista todos los períodos académicos ordenados por fecha de inicio descendente."""
+    if not _verificar_admin(request.current_user.id):
+        return jsonify({'success': False, 'message': 'Acción denegada. Solo administradores.'}), 403
+    try:
+        response = supabase.table("periodos_academicos") \
+            .select("id, nombre, fecha_inicio, fecha_fin, estado, created_at") \
+            .order("fecha_inicio", desc=True) \
+            .execute()
+        return jsonify({'success': True, 'periodos': response.data}), 200
+    except Exception as e:
+        print(f"❌ Error al listar períodos: {e}")
+        return jsonify({'success': False, 'message': 'Error al obtener períodos académicos.'}), 500
+
+
+@app.route('/api/periodos', methods=['POST'])
+@require_auth
+def crear_periodo():
+    """Crea un nuevo período académico. Solo administradores."""
+    if not _verificar_admin(request.current_user.id):
+        return jsonify({'success': False, 'message': 'Acción denegada. Solo administradores.'}), 403
+
+    try:
+        raw = request.get_json()
+        datos = PeriodoSchema(**raw)
+    except Exception as e:
+        return jsonify({'success': False, 'message': f'Datos inválidos: {e}'}), 400
+
+    # Validar estado
+    if datos.estado not in ESTADOS_VALIDOS:
+        return jsonify({'success': False,
+                        'message': f'Estado inválido. Permitidos: {", ".join(ESTADOS_VALIDOS)}'}), 400
+
+    # Validar fechas (fecha_fin > fecha_inicio — Supabase también lo valida, pero mejor anticipar)
+    try:
+        from datetime import date
+        fi = date.fromisoformat(datos.fecha_inicio)
+        ff = date.fromisoformat(datos.fecha_fin)
+        if ff <= fi:
+            return jsonify({'success': False,
+                            'message': 'La fecha de fin debe ser posterior a la fecha de inicio.'}), 400
+    except ValueError:
+        return jsonify({'success': False, 'message': 'Formato de fecha inválido. Use YYYY-MM-DD.'}), 400
+
+    try:
+        response = supabase.table("periodos_academicos").insert({
+            "nombre": datos.nombre.strip(),
+            "fecha_inicio": datos.fecha_inicio,
+            "fecha_fin": datos.fecha_fin,
+            "estado": datos.estado
+        }).execute()
+
+        return jsonify({'success': True,
+                        'message': f'Período "{datos.nombre}" creado correctamente.',
+                        'periodo': response.data[0] if response.data else {}}), 201
+
+    except Exception as e:
+        error_msg = str(e)
+        print(f"❌ Error al crear período: {error_msg}")
+        if "periodo_nombre_unico" in error_msg or "unique" in error_msg.lower():
+            return jsonify({'success': False,
+                            'message': f'Ya existe un período con el nombre "{datos.nombre}".'}), 409
+        if "fechas_validas" in error_msg:
+            return jsonify({'success': False,
+                            'message': 'La fecha de fin debe ser posterior a la fecha de inicio.'}), 400
+        if "estado_valido" in error_msg:
+            return jsonify({'success': False,
+                            'message': f'Estado inválido. Permitidos: {", ".join(ESTADOS_VALIDOS)}'}), 400
+        return jsonify({'success': False, 'message': 'Error interno al crear el período.'}), 500
+
+
+@app.route('/api/periodos/<periodo_id>', methods=['PUT'])
+@require_auth
+def actualizar_periodo(periodo_id):
+    """Actualiza nombre, fechas y/o estado de un período. Solo administradores."""
+    if not _verificar_admin(request.current_user.id):
+        return jsonify({'success': False, 'message': 'Acción denegada. Solo administradores.'}), 403
+
+    data = request.get_json()
+    if not data:
+        return jsonify({'success': False, 'message': 'No se enviaron datos para actualizar.'}), 400
+
+    campos_permitidos = ['nombre', 'fecha_inicio', 'fecha_fin', 'estado']
+    datos_update = {k: v for k, v in data.items() if k in campos_permitidos and v is not None}
+
+    if not datos_update:
+        return jsonify({'success': False, 'message': 'No hay campos válidos para actualizar.'}), 400
+
+    # Validar estado si viene
+    if 'estado' in datos_update and datos_update['estado'] not in ESTADOS_VALIDOS:
+        return jsonify({'success': False,
+                        'message': f'Estado inválido. Permitidos: {", ".join(ESTADOS_VALIDOS)}'}), 400
+
+    # Validar fechas si vienen ambas
+    if 'fecha_inicio' in datos_update and 'fecha_fin' in datos_update:
+        try:
+            from datetime import date
+            fi = date.fromisoformat(datos_update['fecha_inicio'])
+            ff = date.fromisoformat(datos_update['fecha_fin'])
+            if ff <= fi:
+                return jsonify({'success': False,
+                                'message': 'La fecha de fin debe ser posterior a la fecha de inicio.'}), 400
+        except ValueError:
+            return jsonify({'success': False, 'message': 'Formato de fecha inválido. Use YYYY-MM-DD.'}), 400
+
+    try:
+        supabase.table("periodos_academicos").update(datos_update).eq("id", periodo_id).execute()
+        return jsonify({'success': True, 'message': 'Período actualizado correctamente.'}), 200
+    except Exception as e:
+        error_msg = str(e)
+        print(f"❌ Error al actualizar período: {error_msg}")
+        if "periodo_nombre_unico" in error_msg or "unique" in error_msg.lower():
+            return jsonify({'success': False, 'message': 'Ya existe un período con ese nombre.'}), 409
+        if "fechas_validas" in error_msg or "estado_valido" in error_msg:
+            return jsonify({'success': False, 'message': 'Datos inválidos (constraint de BD).'}), 400
+        return jsonify({'success': False, 'message': 'Error interno al actualizar el período.'}), 500
+
+
+@app.route('/api/periodos/<periodo_id>', methods=['DELETE'])
+@require_auth
+def eliminar_periodo(periodo_id):
+    """Elimina un período académico. Bloqueado si tiene secciones asociadas."""
+    if not _verificar_admin(request.current_user.id):
+        return jsonify({'success': False, 'message': 'Acción denegada. Solo administradores.'}), 403
+
+    try:
+        # Verificar que no tenga secciones asociadas antes de eliminar
+        secciones = supabase.table("secciones") \
+            .select("id", count="exact") \
+            .eq("periodo_id", periodo_id) \
+            .execute()
+
+        if secciones.count and secciones.count > 0:
+            return jsonify({
+                'success': False,
+                'message': f'No se puede eliminar: el período tiene {secciones.count} sección(es) asociada(s). Elimina primero las secciones.'
+            }), 409
+
+        supabase.table("periodos_academicos").delete().eq("id", periodo_id).execute()
+        return jsonify({'success': True, 'message': 'Período eliminado correctamente.'}), 200
+
+    except Exception as e:
+        print(f"❌ Error al eliminar período: {e}")
+        return jsonify({'success': False, 'message': 'Error interno al eliminar el período.'}), 500
+
+
+# =======================================================
+# RUTAS DE SECCIONES
+# =======================================================
+
+NIVELES_PERMITIDOS = ['MATERNAL', '1ER GRUPO', '2DO GRUPO', '3ER GRUPO']
+LETRAS_PERMITIDAS = ['SECCION A', 'SECCION B', 'SECCION C', 'SECCION D', 'SECCION U']
+
+class SeccionSchema(BaseModel):
+    periodo_id: str
+    nivel: str
+    letra: str
+    capacidad_maxima: int = 30
+    docentes_ids: List[str] = []
+
+@app.route('/api/secciones', methods=['GET'])
+@require_auth
+def listar_secciones():
+    """Obtiene todas las secciones con su período y docente asociado."""
+    if not _verificar_admin(request.current_user.id):
+        return jsonify({'success': False, 'message': 'Solo administradores.'}), 403
+    try:
+        # Hacemos JOIN con periodos_academicos
+        # También buscamos el docente asociado a través de docentes_secciones
+        response = supabase.table("secciones") \
+            .select("id, nivel, letra, capacidad_maxima, periodo_id, periodos_academicos(nombre), docentes_secciones(docente_id, usuarios(nombres, apellidos))") \
+            .execute()
+        
+        # Formatear respuesta para el frontend
+        secciones = []
+        for s in response.data:
+            docentes_info = []
+            if s.get("docentes_secciones"):
+                for doc_sec in s["docentes_secciones"]:
+                    if doc_sec.get("usuarios"):
+                        docentes_info.append({
+                            "id": doc_sec["docente_id"],
+                            "nombre_completo": f'{doc_sec["usuarios"]["nombres"]} {doc_sec["usuarios"]["apellidos"]}'
+                        })
+
+            periodo_nombre = s["periodos_academicos"]["nombre"] if s.get("periodos_academicos") else "Desconocido"
+
+            secciones.append({
+                "id": s["id"],
+                "nivel": s["nivel"],
+                "letra": s["letra"],
+                "capacidad_maxima": s["capacidad_maxima"],
+                "periodo_id": s["periodo_id"],
+                "periodo_nombre": periodo_nombre,
+                "docentes": docentes_info
+            })
+
+        return jsonify({'success': True, 'secciones': secciones}), 200
+    except Exception as e:
+        print(f"❌ Error listar_secciones: {e}")
+        return jsonify({'success': False, 'message': 'Error interno al obtener secciones.'}), 500
+
+
+@app.route('/api/secciones', methods=['POST'])
+@require_auth
+def crear_seccion():
+    if not _verificar_admin(request.current_user.id):
+        return jsonify({'success': False, 'message': 'Solo administradores.'}), 403
+
+    try:
+        datos = SeccionSchema(**request.get_json())
+    except ValidationError as e:
+        return jsonify({'success': False, 'message': f'Datos inválidos: {e}'}), 400
+
+    if datos.nivel not in NIVELES_PERMITIDOS:
+        return jsonify({'success': False, 'message': f'Nivel inválido. Permitidos: {NIVELES_PERMITIDOS}'}), 400
+    if datos.letra not in LETRAS_PERMITIDAS:
+        return jsonify({'success': False, 'message': f'Letra inválida. Permitidos: {LETRAS_PERMITIDAS}'}), 400
+
+    try:
+        # Verificar si existe el período
+        periodo = supabase.table("periodos_academicos").select("id").eq("id", datos.periodo_id).single().execute()
+        if not periodo.data:
+            return jsonify({'success': False, 'message': 'Período académico no encontrado.'}), 404
+
+        # 1. Insertar la Sección
+        nueva_seccion = {
+            "periodo_id": datos.periodo_id,
+            "nivel": datos.nivel,
+            "letra": datos.letra,
+            "capacidad_maxima": datos.capacidad_maxima
+        }
+        res_seccion = supabase.table("secciones").insert(nueva_seccion).execute()
+        seccion_id = res_seccion.data[0]['id']
+
+        # 2. Insertar todos los docentes en docentes_secciones
+        if datos.docentes_ids:
+            docentes_unicos = list(set([d for d in datos.docentes_ids if d]))
+            insert_docentes = []
+            
+            for d_id in docentes_unicos:
+                insert_docentes.append({
+                    "seccion_id": seccion_id,
+                    "docente_id": d_id,
+                    "rol_en_aula": "Titular"
+                })
+            
+            if insert_docentes:
+                try:
+                    supabase.table("docentes_secciones").insert(insert_docentes).execute()
+                except Exception as e:
+                    print(f"Advertencia al insertar docentes: {e}")
+                    return jsonify({'success': True, 'message': 'Sección creada, pero hubo un problema asignando algunos docentes (¿IDs inválidos?).'}), 201
+
+        return jsonify({'success': True, 'message': 'Sección creada y asignada exitosamente.'}), 201
+
+    except Exception as e:
+        err = str(e)
+        print(f"❌ Error crear_seccion: {err}")
+        if "unique" in err.lower() or "llave duplicada" in err.lower():
+             return jsonify({'success': False, 'message': 'Ya existe esta sección para el período seleccionado.'}), 409
+        return jsonify({'success': False, 'message': 'Error interno al crear la sección.'}), 500
+
+
+@app.route('/api/secciones/<seccion_id>', methods=['DELETE'])
+@require_auth
+def eliminar_seccion(seccion_id):
+    if not _verificar_admin(request.current_user.id):
+        return jsonify({'success': False, 'message': 'Solo administradores.'}), 403
+    try:
+        # Supabase lo borra en cascada de docentes_secciones si el FK lo permite.
+        # Por seguridad y consistencia, borramos manualmente primero de docentes_secciones
+        supabase.table("docentes_secciones").delete().eq("seccion_id", seccion_id).execute()
+        supabase.table("secciones").delete().eq("id", seccion_id).execute()
+
+        return jsonify({'success': True, 'message': 'Sección eliminada permanentemente.'}), 200
+    except Exception as e:
+        print(f"❌ Error eliminar_seccion: {e}")
+        return jsonify({'success': False, 'message': 'Error al eliminar la sección.'}), 500
 
 
 @app.route('/')
 def home():
+
     """Ruta de Health Check para que Render sepa que la API está viva."""
     return jsonify({
         "status": "online", 
@@ -383,6 +968,9 @@ def home():
 # =======================================================
 
 if __name__ == '__main__':
-    # Ejecutar en modo debug solo si estamos en desarrollo local
-    print("🚀 Servidor corriendo en http://localhost:5000")
-    app.run(debug=True, port=5000)
+    # debug=True para desarrollo local: permite auto-recarga y errores detallados.
+    # threaded=True: permite manejar múltiples requests en paralelo sin bloquearse.
+    # En producción (Render), este bloque no se ejecuta.
+    IS_DEBUG = os.getenv('FLASK_DEBUG', 'true').lower() == 'true'
+    print(f"🚀 Servidor en modo DEBUG: {'Encendido' if IS_DEBUG else 'Apagado'}")
+    app.run(debug=IS_DEBUG, port=5000, threaded=True)
