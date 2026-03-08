@@ -241,27 +241,36 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                 // Obtener el token en el momento del envío
                 const { data: { session } } = await _supabase.auth.getSession();
+                const tokenSource = session ? '✅ sesión activa Supabase' : '⚠️ localStorage (puede estar expirado)';
                 const token = session ? session.access_token : (localStorage.getItem('auth_token') || '');
 
+                const urlDestino = `${API_BASE_URL}/api/inscribir`;
                 console.log('📤 Enviando inscripción...', {
                     userId,
+                    tokenFuente: tokenSource,
                     tokenPresente: !!token,
-                    tokenInicio: token ? token.substring(0, 20) + '...' : 'NINGUNO',
-                    url: `${API_BASE_URL}/api/inscribir`
+                    tokenInicio: token ? token.substring(0, 30) + '...' : 'NINGUNO',
+                    url: urlDestino
                 });
 
-                const response = await fetch(`${API_BASE_URL}/api/inscribir`, {
+                // ⚠️ Si no hay token real, abortar antes de enviar
+                if (!token) {
+                    throw new Error('No hay token de autenticación. Por favor inicia sesión nuevamente.');
+                }
+
+                const response = await fetch(urlDestino, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${token}`
                     },
                     body: JSON.stringify(data),
-                    signal: controller.signal  // Conectar el AbortController
+                    signal: controller.signal
                 });
 
-                clearTimeout(timeoutId); // Cancelar el timeout si responde
+                clearTimeout(timeoutId);
                 console.log('📨 Respuesta del servidor:', response.status, response.statusText);
+
 
                 if (!response.ok) {
                     const errorData = await response.json().catch(() => ({}));

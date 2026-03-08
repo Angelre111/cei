@@ -25,9 +25,25 @@ app = Flask(__name__,
             static_folder=ROOT_DIR, 
             static_url_path='')
 app.secret_key = os.getenv('SECRET_KEY', 'dev_secret_key')
-# CORS: En producción, solo permitir el dominio real del frontend
-ALLOWED_ORIGINS = os.getenv('ALLOWED_ORIGINS', 'http://127.0.0.1:5000').split(',')
-CORS(app, origins=ALLOWED_ORIGINS)
+# CORS: Orígenes permitidos
+# En producción: el frontend vive en Netlify y llama al backend en Render
+# En desarrollo: soportar Flask:5000 y LiveServer:5500
+DEFAULT_ORIGINS = (
+    'http://127.0.0.1:5000,'
+    'http://localhost:5000,'
+    'http://127.0.0.1:5500,'
+    'http://localhost:5500,'
+    'https://animated-gnome-3fdf38.netlify.app,'
+    'https://cei-preescolar.onrender.com'
+)
+ALLOWED_ORIGINS = os.getenv('ALLOWED_ORIGINS', DEFAULT_ORIGINS).split(',')
+CORS(app,
+     origins=ALLOWED_ORIGINS,
+     supports_credentials=True,
+     allow_headers=['Content-Type', 'Authorization', 'X-Requested-With'],
+     methods=['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+     automatic_options=True)   # flask-cors responde OPTIONS sin pasar por @require_auth
+
 
 
 # =======================================================
