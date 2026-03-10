@@ -122,8 +122,8 @@
         <!-- SIDEBAR DE NAVEGACIÓN (Estilo Docente) -->
         <!-- ============================================ -->
         <nav id="sidebar"
-            class="w-64 bg-white shadow-lg overflow-y-auto flex-shrink-0 fixed inset-y-0 left-0 z-40 transform -translate-x-full transition-transform duration-300 md:translate-x-0 md:static border-r border-gray-100">
-            <div class="p-6">
+            class="w-64 flex flex-col h-screen bg-white shadow-lg flex-shrink-0 fixed inset-y-0 left-0 z-40 transform -translate-x-full transition-transform duration-300 md:translate-x-0 md:static border-r border-gray-100">
+            <div class="p-6 flex-shrink-0">
                 <!-- Logo -->
                 <a href="#" class="flex flex-col items-center space-y-2">
                     <div class="flex items-center justify-center w-20 h-20 bg-pink-100 rounded-full shadow-sm">
@@ -140,7 +140,7 @@
             </div>
 
             <!-- Links de Navegación -->
-            <ul class="space-y-2 p-4">
+            <ul class="space-y-2 p-4 flex-1 overflow-y-auto">
                 <li>
                     <a href="#" data-section="section-dashboard"
                         class="nav-link flex items-center space-x-3 p-3 rounded-xl transition-all duration-200 nav-link-active">
@@ -180,6 +180,18 @@
                     </a>
                 </li>
                 <li>
+                    <a href="#" data-section="section-historial"
+                        class="nav-link flex items-center space-x-3 p-3 rounded-xl hover:bg-blue-50 transition-all duration-200">
+                        <!-- Icono Historial -->
+                        <svg class="w-6 h-6 outline-none" xmlns="http://www.w3.org/2000/svg" fill="none"
+                            viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25" />
+                        </svg>
+                        <span>Historial Estudiantil</span>
+                    </a>
+                </li>
+                <li>
                     <a href="#" data-section="section-secciones"
                         class="nav-link flex items-center space-x-3 p-3 rounded-xl hover:bg-blue-50 transition-all duration-200">
                         <!-- Icono Finanzas -->
@@ -214,7 +226,7 @@
                 </li>
             </ul>
 
-            <div class="fixed bottom-5 left-10 pt-6 border-t border-gray-100">
+            <div class="p-4 border-t border-gray-100 mt-auto flex-shrink-0">
                 <button onclick="logout()"
                     class="w-full text-center p-3 text-sm text-gray-500 hover:text-secondary-pink transition duration-150 rounded-lg flex items-center justify-center">
                     <svg class="w-4 h-4 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
@@ -280,7 +292,10 @@
                                 </div>
                                 <div>
                                     <p class="text-sm text-gray-500 font-medium">Total Alumnos</p>
-                                    <h3 class="text-3xl font-bold text-gray-800" id="dash-total-students">0</h3>
+                                    <h3 class="text-3xl font-bold text-gray-800" id="dash-total-students">
+                                        <span
+                                            class="inline-block w-10 h-7 bg-gray-200 rounded-lg animate-pulse align-middle"></span>
+                                    </h3>
                                 </div>
                             </div>
                         </div>
@@ -475,6 +490,16 @@
                                                 <option value="Docente">Docente</option>
                                             </select>
                                         </div>
+                                        <div>
+                                            <label
+                                                class="block text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Estado</label>
+                                            <select id="user-status"
+                                                class="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-400 focus:border-purple-400 outline-none transition-all bg-gray-50 focus:bg-white text-sm">
+                                                <option value="activo">Activo (Acceso inmediato)</option>
+                                                <option value="pendiente">Pendiente (Requiere Email)</option>
+                                                <option value="inactivo">Inactivo / Suspendido</option>
+                                            </select>
+                                        </div>
                                         <div class="md:col-span-2">
                                             <label
                                                 class="block text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Contraseña
@@ -578,37 +603,73 @@
                                 </div>
                                 <div class="p-6 md:p-8">
                                     <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
+                                        <!-- Buscador de Cédula Escolar (Abarca ambas columnas) -->
+                                        <div class="md:col-span-2 relative">
+                                            <label
+                                                class="block text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">
+                                                Buscar por Cédula (Escolar o Representante) <span
+                                                    class="text-yellow-500">*</span>
+                                            </label>
+                                            <div class="flex gap-2">
+                                                <input type="text" id="student-cedula"
+                                                    placeholder="Ej: 10430587333 o 12345678"
+                                                    onkeypress="if(event.key === 'Enter') buscarEstudiantePorCedula()"
+                                                    class="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 outline-none transition-all bg-gray-50 focus:bg-white text-sm">
+                                                <button type="button" onclick="buscarEstudiantePorCedula()"
+                                                    id="btn-buscar-cedula"
+                                                    class="px-5 bg-yellow-400 text-gray-800 rounded-xl font-bold hover:bg-yellow-500 transition shadow flex items-center gap-2">
+                                                    <svg class="w-5 h-5" fill="none" stroke="currentColor"
+                                                        viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                            stroke-width="2"
+                                                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                                                    </svg>
+                                                    <span class="hidden md:block">Buscar</span>
+                                                </button>
+                                            </div>
+                                            <p class="text-[11px] text-gray-400 mt-1.5 flex items-center gap-1.5">
+                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor"
+                                                    viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                        stroke-width="2"
+                                                        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z">
+                                                    </path>
+                                                </svg>
+                                                Auto-completará Nombre y Representante si se llenó la ficha de
+                                                pre-inscripción online.
+                                            </p>
+                                        </div>
+
+                                        <!-- Auto-completados -->
                                         <div>
                                             <label
                                                 class="block text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Nombre
                                                 del Estudiante</label>
                                             <input type="text" id="student-name"
                                                 placeholder="Ej: Sof&iacute;a P&eacute;rez"
-                                                class="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 outline-none transition-all bg-gray-50 focus:bg-white text-sm">
+                                                class="w-full px-4 py-2.5 border border-gray-200 rounded-xl outline-none transition-all bg-gray-100 text-gray-500 text-sm font-medium cursor-not-allowed"
+                                                readonly>
                                         </div>
                                         <div>
                                             <label
                                                 class="block text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Representante</label>
-                                            <input type="text" id="student-rep" placeholder="Nombre del Padre/Madre"
-                                                class="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 outline-none transition-all bg-gray-50 focus:bg-white text-sm">
+                                            <input type="text" id="student-rep" placeholder="Nombre Padre/Madre"
+                                                class="w-full px-4 py-2.5 border border-gray-200 rounded-xl outline-none transition-all bg-gray-100 text-gray-500 text-sm font-medium cursor-not-allowed"
+                                                readonly>
                                         </div>
-                                        <div>
+
+                                        <!-- Selección de Grupo para matriculación final -->
+                                        <div class="md:col-span-2 pt-2 border-t border-gray-100">
                                             <label
-                                                class="block text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Grupo
-                                                / Nivel</label>
+                                                class="block text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Matricular
+                                                en Grupo / Nivel</label>
                                             <select id="student-group"
                                                 class="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 outline-none transition-all bg-gray-50 focus:bg-white text-sm">
-                                                <option value="Maternal">Maternal (1-2 a&ntilde;os)</option>
-                                                <option value="Pre-Kinder">Pre-Kinder (3-4 a&ntilde;os)</option>
-                                                <option value="Kinder">Kinder (4-5 a&ntilde;os)</option>
+                                                <option value="Maternal">Maternal</option>
+                                                <option value="1ER GRUPO">1ER GRUPO</option>
+                                                <option value="2DO GRUPO">2DO GRUPO</option>
+                                                <option value="3ER GRUPO">3ER GRUPO</option>
                                             </select>
-                                        </div>
-                                        <div>
-                                            <label
-                                                class="block text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Cédula
-                                                Escolar</label>
-                                            <input type="text" id="student-cedula" placeholder="Ej: E-12345678"
-                                                class="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 outline-none transition-all bg-gray-50 focus:bg-white text-sm">
                                         </div>
                                     </div>
                                     <div class="mt-8 pt-5 border-t border-gray-100 flex justify-end gap-3">
@@ -616,10 +677,30 @@
                                             class="px-5 py-2.5 text-gray-600 font-semibold hover:bg-gray-100 rounded-xl transition-colors text-sm">Cancelar</button>
                                         <button id="btn-add-student"
                                             class="px-6 py-2.5 bg-yellow-400 text-gray-800 rounded-xl font-semibold hover:bg-yellow-500 transition shadow-md flex items-center gap-2 text-sm">
-                                            Confirmar Inscripci&oacute;n
+                                            Confirmar Inscripción
                                         </button>
                                     </div>
                                 </div>
+                            </div>
+                        </div>
+
+                        <!-- Barra de Búsqueda de Matrícula -->
+                        <div class="px-6 py-4 bg-gray-50/50 border-b border-gray-100 flex items-center">
+                            <div class="relative w-full max-w-md group">
+                                <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                                    <svg class="w-5 h-5 text-gray-400 group-focus-within:text-yellow-500 transition-colors"
+                                        fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                                    </svg>
+                                </div>
+                                <input type="text" id="student-search-input"
+                                    class="block w-full pl-11 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-yellow-200 focus:border-yellow-400 transition-all shadow-sm"
+                                    placeholder="Buscar por nombre, cédula, grupo o representante...">
+                            </div>
+                            <div class="ml-4 text-xs text-gray-400 font-medium hidden md:block"
+                                id="student-search-count">
+                                Mostrando todos los estudiantes matriculados
                             </div>
                         </div>
 
@@ -639,6 +720,70 @@
                                     <tr>
                                         <td colspan="5" class="px-6 py-10 text-center text-gray-400 text-sm">No hay
                                             alumnos registrados todavía.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+                <!-- ============================================ -->
+                <!-- SECCIÓN: HISTORIAL ESTUDIANTIL -->
+                <!-- ============================================ -->
+                <section id="section-historial" class="page-section hidden fade-in">
+                    <div class="bg-white rounded-2xl shadow-md border border-gray-100 overflow-hidden">
+
+                        <!-- Encabezado -->
+                        <div
+                            class="p-6 border-b border-gray-100 flex flex-col md:flex-row justify-between items-center gap-4">
+                            <div>
+                                <h2 class="text-xl font-bold text-gray-800">Historial Estudiantil</h2>
+                                <p class="text-sm text-gray-500">Consulta los alumnos egresados o retirados de la
+                                    institución.</p>
+                            </div>
+                            <div class="flex bg-gray-100 p-1 rounded-xl">
+                                <button onclick="cargarHistorialEstudiantil('egresado')" id="btn-tab-egresados"
+                                    class="px-5 py-2 text-sm font-semibold rounded-lg bg-white shadow text-gray-800 transition">Egresados</button>
+                                <button onclick="cargarHistorialEstudiantil('retirado')" id="btn-tab-retirados"
+                                    class="px-5 py-2 text-sm font-semibold rounded-lg text-gray-500 hover:text-gray-700 transition">Retirados</button>
+                            </div>
+                        </div>
+
+                        <!-- Barra de Búsqueda de Historial -->
+                        <div class="px-6 py-4 bg-gray-50/50 border-b border-gray-100 flex items-center">
+                            <div class="relative w-full max-w-md group">
+                                <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                                    <svg class="w-5 h-5 text-gray-400 group-focus-within:text-blue-500 transition-colors"
+                                        fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                                    </svg>
+                                </div>
+                                <input type="text" id="historial-search-input" oninput="filtrarHistorial()"
+                                    class="block w-full pl-11 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-400 transition-all shadow-sm"
+                                    placeholder="Buscar por nombre, cédula, grupo o representante...">
+                            </div>
+                            <div class="ml-4 text-xs text-gray-400 font-medium hidden md:block"
+                                id="historial-search-count">
+                                Mostrando alumnos
+                            </div>
+                        </div>
+
+                        <!-- Tabla Alumnos -->
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse">
+                                <thead class="bg-gray-50 text-gray-500 uppercase text-xs font-semibold">
+                                    <tr>
+                                        <th class="px-6 py-4">Cédula Escolar</th>
+                                        <th class="px-6 py-4">Estudiante</th>
+                                        <th class="px-6 py-4">Última Sección</th>
+                                        <th class="px-6 py-4">Representante</th>
+                                        <th class="px-6 py-4">Estado</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="historial-table-body" class="divide-y divide-gray-100 text-sm">
+                                    <tr>
+                                        <td colspan="5" class="px-6 py-10 text-center text-gray-400 text-sm">Cargando
+                                            Historial...</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -1091,19 +1236,189 @@
         // setupForms() — lógica de formularios inline eliminada (reemplazada por modales)
 
         // ── Modal: Registrar Alumno ────────────────────────────
+        // Llama a la API para cargar las secciones dinámicamente
+        async function cargarSeccionesSelect() {
+            try {
+                const res = await fetchWithAuth(`http://127.0.0.1:5000/api/secciones/disponibles`);
+                const data = await res.json();
+
+                if (res.ok && data.success && data.secciones) {
+                    const select = document.getElementById('student-group');
+                    select.innerHTML = '<option value="" disabled selected>-- Seleccione un Grupo/Sección --</option>';
+                    data.secciones.forEach(sec => {
+                        // El value aquí es literalmente el seccion_id (UUID)
+                        select.insertAdjacentHTML('beforeend', `<option value="${sec.id}">${sec.nivel || 'Nivel Desconocido'} - ${sec.letra || ''} (Capacidad: ${sec.capacidad_maxima || 30})</option>`);
+                    });
+                }
+            } catch (error) {
+                console.error("No se pudieron cargar las secciones:", error);
+            }
+        }
+
         function abrirModalRegistrarAlumno() {
             const modal = document.getElementById('modal-registrar-alumno');
             const content = document.getElementById('modal-registrar-alumno-content');
+
+            // Limpiar
             document.getElementById('student-name').value = '';
             document.getElementById('student-rep').value = '';
-            document.getElementById('student-group').value = 'Maternal';
+            document.getElementById('student-group').innerHTML = '<option value="">Cargando secciones...</option>';
             document.getElementById('student-cedula').value = '';
+            modal.removeAttribute('data-estudiante-id'); // limpia rastro
+
+            cargarSeccionesSelect();
+
             modal.classList.remove('hidden');
             setTimeout(() => {
                 modal.classList.remove('opacity-0');
                 content.classList.remove('scale-95');
                 content.classList.add('scale-100');
             }, 10);
+        }
+
+        // --- CARGAR MATRICULA GENERAL ---
+        async function cargarMatriculaGeneral() {
+            const tbody = document.getElementById('student-table-body');
+            try {
+                // Estado de carga
+                tbody.innerHTML = `<tr><td colspan="5" class="px-6 py-10 text-center"><svg class="w-6 h-6 animate-spin mx-auto text-yellow-500 mb-2" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path></svg><span class="text-sm text-gray-500">Cargando matrícula...</span></td></tr>`;
+
+                const res = await fetchWithAuth(`http://127.0.0.1:5000/api/matricula`);
+                const data = await res.json();
+
+                if (res.ok && data.success) {
+                    // Reflejar contador en el Dashboard Principal
+                    const dashTotalAlumnos = document.getElementById('dash-total-students');
+                    if (dashTotalAlumnos) dashTotalAlumnos.innerText = data.matricula.length;
+
+                    tbody.innerHTML = '';
+                    if (data.matricula.length === 0) {
+                        tbody.innerHTML = `<tr><td colspan="5" class="px-6 py-10 text-center text-gray-400 text-sm">No hay alumnos matriculados todavía.</td></tr>`;
+                        return;
+                    }
+
+                    data.matricula.forEach(mat => {
+                        const inicial = mat.estudiante.charAt(0).toUpperCase();
+                        tbody.innerHTML += `
+                            <tr class="hover:bg-gray-50 border-b border-gray-50 transition-colors">
+                                <td class="px-6 py-4 text-gray-500 text-sm font-mono">${mat.cedula}</td>
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-9 h-9 rounded-full bg-yellow-100 text-yellow-700 flex items-center justify-center font-bold text-sm flex-shrink-0">${inicial}</div>
+                                        <p class="font-medium text-gray-800">${mat.estudiante}</p>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 text-gray-500 text-sm"><span class="px-2 py-1 rounded bg-gray-100 border border-gray-200 text-xs shadow-sm whitespace-nowrap">${mat.seccion}</span></td>
+                                <td class="px-6 py-4 text-gray-500 text-xs">${mat.representante}</td>
+                                <td class="px-6 py-4 text-right">
+                                    <button class="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition" onclick="retirarEstudiante('${mat.id}', '${mat.estudiante.replace(/'/g, "\\'")}')" title="Retirar Estudiante">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                    </button>
+                                </td>
+                            </tr>
+                        `;
+                    });
+                }
+            } catch (error) {
+                console.error("Error cargando matricula:", error);
+                tbody.innerHTML = `<tr><td colspan="5" class="px-6 py-10 text-center text-red-500 text-sm font-semibold">Error al cargar la tabla de matrícula.</td></tr>`;
+            }
+        }
+
+        // --- HISTORIAL ESTUDIANTIL ---
+        let historialActual = [];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const seccionHistorial = document.getElementById('section-historial');
+            if (seccionHistorial) {
+                const observer = new MutationObserver((mutations) => {
+                    mutations.forEach(mutation => {
+                        if (mutation.attributeName === 'class' && !seccionHistorial.classList.contains('hidden')) {
+                            // Cargar por defecto los egresados al abrir la pestaña
+                            cargarHistorialEstudiantil('egresado');
+                        }
+                    });
+                });
+                observer.observe(seccionHistorial, { attributes: true });
+            }
+        });
+
+        async function cargarHistorialEstudiantil(estado = 'egresado') {
+            const btnEgresado = document.getElementById('btn-tab-egresados');
+            const btnRetirado = document.getElementById('btn-tab-retirados');
+
+            // UI tab updates
+            if (estado === 'egresado') {
+                btnEgresado.className = "px-5 py-2 text-sm font-semibold rounded-lg bg-white shadow text-gray-800 transition";
+                btnRetirado.className = "px-5 py-2 text-sm font-semibold rounded-lg text-gray-500 hover:text-gray-700 transition";
+            } else {
+                btnRetirado.className = "px-5 py-2 text-sm font-semibold rounded-lg bg-white shadow text-gray-800 transition";
+                btnEgresado.className = "px-5 py-2 text-sm font-semibold rounded-lg text-gray-500 hover:text-gray-700 transition";
+            }
+
+            const tbody = document.getElementById('historial-table-body');
+            try {
+                tbody.innerHTML = `<tr><td colspan="5" class="px-6 py-10 text-center"><svg class="w-6 h-6 animate-spin mx-auto text-blue-500 mb-2" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path></svg><span class="text-sm text-gray-500">Cargando historial...</span></td></tr>`;
+
+                const res = await fetchWithAuth(`http://127.0.0.1:5000/api/historial?estado=${estado}`);
+                const data = await res.json();
+
+                if (res.ok && data.success) {
+                    historialActual = data.historial;
+                    renderizarHistorial(historialActual);
+                }
+            } catch (error) {
+                console.error("Error cargando historial:", error);
+                tbody.innerHTML = `<tr><td colspan="5" class="px-6 py-10 text-center text-red-500 text-sm font-semibold">Error al cargar el historial.</td></tr>`;
+            }
+        }
+
+        function renderizarHistorial(lista) {
+            const tbody = document.getElementById('historial-table-body');
+            const countEl = document.getElementById('historial-search-count');
+
+            if (countEl) {
+                countEl.innerHTML = `${lista.length} alumno(s)`;
+            }
+
+            tbody.innerHTML = '';
+            if (lista.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="px-6 py-10 text-center text-gray-400 text-sm">No se encontraron alumnos con este estado.</td></tr>`;
+                return;
+            }
+
+            lista.forEach(mat => {
+                const inicial = mat.estudiante.charAt(0).toUpperCase();
+                const estadoBadge = mat.estado === 'retirado' ? 'bg-red-100 text-red-700 border-red-200' : 'bg-green-100 text-green-700 border-green-200';
+
+                tbody.innerHTML += `
+                    <tr class="hover:bg-gray-50 border-b border-gray-50 transition-colors">
+                        <td class="px-6 py-4 text-gray-500 text-sm font-mono">${mat.cedula}</td>
+                        <td class="px-6 py-4">
+                            <div class="flex items-center gap-3">
+                                <div class="w-9 h-9 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-sm flex-shrink-0">${inicial}</div>
+                                <p class="font-medium text-gray-800">${mat.estudiante}</p>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 text-gray-500 text-sm"><span class="px-2 py-1 rounded bg-gray-100 border border-gray-200 text-xs shadow-sm whitespace-nowrap">${mat.seccion}</span></td>
+                        <td class="px-6 py-4 text-gray-500 text-xs">${mat.representante}</td>
+                        <td class="px-6 py-4 text-sm font-semibold">
+                            <span class="px-2.5 py-1 rounded-full text-[11px] uppercase tracking-wider border ${estadoBadge}">${mat.estado}</span>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        function filtrarHistorial() {
+            const term = document.getElementById('historial-search-input').value.toLowerCase();
+            const filtered = historialActual.filter(m =>
+                (m.estudiante && m.estudiante.toLowerCase().includes(term)) ||
+                (m.cedula && m.cedula.toLowerCase().includes(term)) ||
+                (m.seccion && m.seccion.toLowerCase().includes(term)) ||
+                (m.representante && m.representante.toLowerCase().includes(term))
+            );
+            renderizarHistorial(filtered);
         }
 
         function cerrarModalRegistrarAlumno() {
@@ -1115,38 +1430,189 @@
             setTimeout(() => modal.classList.add('hidden'), 300);
         }
 
+        // --- BUSCADOR INTELIGENTE DE ESTUDIANTES ---
+        async function buscarEstudiantePorCedula() {
+            const btnBuscar = document.getElementById('btn-buscar-cedula');
+            const cedulaInput = document.getElementById('student-cedula');
+            const cedula = cedulaInput.value.trim();
+
+            if (!cedula) {
+                Swal.fire({ title: 'Cédula requerida', text: 'Por favor, ingresa la cédula para buscar.', icon: 'warning', confirmButtonColor: '#ca8a04' });
+                return;
+            }
+
+            // UI feedback
+            const btnOriginalHtml = btnBuscar.innerHTML;
+            btnBuscar.innerHTML = '<svg class="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path></svg>';
+            btnBuscar.disabled = true;
+
+            try {
+                // Hacemos uso del helper fetchWithAuth importado de auth.js
+                const res = await fetchWithAuth(`http://127.0.0.1:5000/api/estudiantes/buscar/${encodeURIComponent(cedula)}`);
+                const data = await res.json();
+
+                if (res.ok && data.success && data.estudiantes && data.estudiantes.length > 0) {
+
+                    const llenarCampos = (est) => {
+                        document.getElementById('student-name').value = est.nombres;
+                        document.getElementById('student-rep').value = est.representante || 'No especificado';
+                        document.getElementById('student-cedula').value = est.cedula_escolar; // Actualiza el input a la escolar exacta
+
+                        // Guardar id interno oculto si llegamos a requerirlo
+                        const modal = document.getElementById('modal-registrar-alumno');
+                        modal.dataset.estudianteId = est.id;
+
+                        // Notificación de éxito
+                        Swal.fire({
+                            toast: true,
+                            position: 'top-end',
+                            icon: 'success',
+                            title: 'Estudiante seleccionado',
+                            showConfirmButton: false,
+                            timer: 2000,
+                            timerProgressBar: true
+                        });
+                    };
+
+                    if (data.estudiantes.length === 1) {
+                        llenarCampos(data.estudiantes[0]);
+                    } else {
+                        // El representante tiene varios niños inscritos
+                        const opciones = {};
+                        data.estudiantes.forEach(est => {
+                            opciones[est.id] = `${est.nombres} (Cédula Escolar: ${est.cedula_escolar})`;
+                        });
+
+                        const { value: seleccionadoId } = await Swal.fire({
+                            title: 'Múltiples estudiantes',
+                            text: 'Se encontraron varios estudiantes vinculados. Selecciona cuál deseas gestionar:',
+                            input: 'select',
+                            inputOptions: opciones,
+                            inputPlaceholder: 'Selecciona un estudiante...',
+                            showCancelButton: true,
+                            confirmButtonColor: '#ca8a04',
+                            cancelButtonText: 'Cancelar'
+                        });
+
+                        if (seleccionadoId) {
+                            const estSeleccionado = data.estudiantes.find(e => e.id == seleccionadoId);
+                            llenarCampos(estSeleccionado);
+                        } else {
+                            // Si cancela, vaciamos por seguridad.
+                            document.getElementById('student-name').value = '';
+                            document.getElementById('student-rep').value = '';
+                        }
+                    }
+
+                } else {
+                    Swal.fire({
+                        title: 'No encontrado',
+                        text: 'No se encontró estudiante vinculado a esta cédula escolar o de representante. El representante debe llenar la ficha online primero.',
+                        icon: 'info',
+                        confirmButtonColor: '#ca8a04'
+                    });
+                    document.getElementById('student-name').value = '';
+                    document.getElementById('student-rep').value = '';
+                }
+            } catch (err) {
+                console.error("Error al buscar estudiante:", err);
+                Swal.fire({ title: 'Error', text: 'Problema al conectar con el servidor', icon: 'error', confirmButtonColor: '#EF4444' });
+            } finally {
+                btnBuscar.innerHTML = btnOriginalHtml;
+                btnBuscar.disabled = false;
+            }
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
+            cargarMatriculaGeneral();
+
+            const studentSearchInput = document.getElementById('student-search-input');
+            if (studentSearchInput) {
+                studentSearchInput.addEventListener('input', function () {
+                    const query = this.value.toLowerCase();
+                    const tbody = document.getElementById('student-table-body');
+                    if (!tbody) return;
+
+                    const rows = tbody.querySelectorAll('tr');
+                    let visibles = 0;
+
+                    rows.forEach(row => {
+                        // Skip loading/empty rows
+                        if (row.cells.length === 1) return;
+
+                        const textContent = row.textContent.toLowerCase();
+                        if (textContent.includes(query)) {
+                            row.style.display = '';
+                            visibles++;
+                        } else {
+                            row.style.display = 'none';
+                        }
+                    });
+
+                    const countEl = document.getElementById('student-search-count');
+                    if (countEl) {
+                        countEl.textContent = query === ''
+                            ? 'Mostrando todos los estudiantes matriculados'
+                            : `Mostrando ${visibles} coincidencia${visibles !== 1 ? 's' : ''}`;
+                    }
+                });
+            }
+
             const btnAddStudent = document.getElementById('btn-add-student');
             if (btnAddStudent) {
-                btnAddStudent.addEventListener('click', () => {
+                btnAddStudent.addEventListener('click', async () => {
                     const name = document.getElementById('student-name').value.trim();
                     const rep = document.getElementById('student-rep').value.trim();
-                    const group = document.getElementById('student-group').value;
+                    const seccionId = document.getElementById('student-group').value;
                     const cedula = document.getElementById('student-cedula').value.trim();
-                    if (!name || !rep) {
-                        Swal.fire({ title: 'Campos incompletos', text: 'El nombre y el representante son obligatorios.', icon: 'warning', confirmButtonColor: '#ca8a04' });
+
+                    const modal = document.getElementById('modal-registrar-alumno');
+                    const hijoId = modal.dataset.estudianteId;
+
+                    if (!name || !rep || !hijoId) {
+                        Swal.fire({ title: 'Datos incompletos', text: 'Por favor, busca un estudiante y selecciónalo primero.', icon: 'warning', confirmButtonColor: '#ca8a04' });
                         return;
                     }
-                    // Aquí se integrará con la API cuando esté disponible
-                    const tbody = document.getElementById('student-table-body');
-                    const inicial = name.charAt(0).toUpperCase();
-                    // Si solo hay el placeholder, limpiarlo
-                    if (tbody.querySelector('td[colspan]')) tbody.innerHTML = '';
-                    tbody.innerHTML += `
-                        <tr class="hover:bg-gray-50 border-b border-gray-50 transition-colors">
-                            <td class="px-6 py-4 text-gray-500 text-sm font-mono">${cedula || '—'}</td>
-                            <td class="px-6 py-4">
-                                <div class="flex items-center gap-3">
-                                    <div class="w-9 h-9 rounded-full bg-yellow-100 text-yellow-700 flex items-center justify-center font-bold text-sm flex-shrink-0">${inicial}</div>
-                                    <p class="font-medium text-gray-800">${name}</p>
-                                </div>
-                            </td>
-                            <td class="px-6 py-4 text-gray-500 text-sm"><span class="px-2 py-1 rounded bg-gray-100 border border-gray-200 text-xs">${group}</span></td>
-                            <td class="px-6 py-4 text-gray-500 text-xs">${rep}</td>
-                            <td class="px-6 py-4 text-right"></td>
-                        </tr>`;
-                    cerrarModalRegistrarAlumno();
-                    Swal.fire({ icon: 'success', title: '¡Alumno registrado!', text: `${name} fue añadido correctamente.`, confirmButtonColor: '#ca8a04', timer: 2500, timerProgressBar: true });
+
+                    if (!seccionId) {
+                        Swal.fire({ title: 'Sección requerida', text: 'Por favor, selecciona una sección para matricular al estudiante.', icon: 'warning', confirmButtonColor: '#ca8a04' });
+                        return;
+                    }
+
+                    // Prevenir doble submit y Feedback
+                    const originalHtml = btnAddStudent.innerHTML;
+                    btnAddStudent.disabled = true;
+                    btnAddStudent.innerHTML = `<svg class="w-5 h-5 animate-spin mx-auto text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path></svg>`;
+
+                    try {
+                        const res = await fetchWithAuth('http://127.0.0.1:5000/api/estudiantes/asignar', {
+                            method: 'POST',
+                            body: JSON.stringify({
+                                hijo_id: hijoId,
+                                seccion_id: seccionId
+                            })
+                        });
+                        const data = await res.json();
+
+                        if (res.ok && data.success) {
+                            Swal.fire({
+                                title: '¡Matriculado!',
+                                text: data.message,
+                                icon: 'success',
+                                confirmButtonColor: '#ca8a04'
+                            });
+                            cerrarModalRegistrarAlumno();
+                            cargarMatriculaGeneral(); // Recarga la tabla de alumnos
+                        } else {
+                            Swal.fire({ title: 'Error', text: data.message || 'No se pudo procesar la asignación', icon: 'error', confirmButtonColor: '#EF4444' });
+                        }
+                    } catch (error) {
+                        console.error(error);
+                        Swal.fire({ title: 'Error de Red', text: 'Ocurrió un error al contactar con el servidor.', icon: 'error', confirmButtonColor: '#EF4444' });
+                    } finally {
+                        btnAddStudent.disabled = false;
+                        btnAddStudent.innerHTML = originalHtml;
+                    }
                 });
             }
         });
@@ -1159,8 +1625,46 @@
             // Manejado por admin_users.js
         }
 
-        function deleteStudent(id) {
-            // Pendiente de integración con API — sin datos estáticos
+        async function retirarEstudiante(asignacionId, nombreEstudiante) {
+            const confirm = await Swal.fire({
+                title: `¿Retirar a ${nombreEstudiante}?`,
+                text: 'El alumno será dado de baja de su sección actual y marcado como "retirado".',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#EF4444',
+                cancelButtonColor: '#9CA3AF',
+                confirmButtonText: 'Sí, retirar',
+                cancelButtonText: 'Cancelar'
+            });
+
+            if (!confirm.isConfirmed) return;
+
+            try {
+                const res = await fetchWithAuth(`http://127.0.0.1:5000/api/matricula/${asignacionId}/retirar`, {
+                    method: 'PUT'
+                });
+                const data = await res.json();
+
+                if (res.ok && data.success) {
+                    Swal.fire({
+                        toast: true,
+                        position: 'top-end',
+                        icon: 'success',
+                        title: data.message,
+                        showConfirmButton: false,
+                        timer: 2000,
+                        timerProgressBar: true
+                    });
+
+                    // Recargamos silenciosamente la cuadrícula de estudiantes
+                    cargarMatriculaGeneral();
+                } else {
+                    Swal.fire('Error', data.message || 'No se pudo retirar al estudiante', 'error');
+                }
+            } catch (error) {
+                console.error('Error al retirar estudiante:', error);
+                Swal.fire('Error', 'Hubo un problema de conexión con el servidor', 'error');
+            }
         }
 
 
@@ -1193,8 +1697,8 @@
                 icon.innerHTML = '<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>';
             }
 
-            toast.classList.remove('translate-x-full');
-            setTimeout(() => toast.classList.add('translate-x-full'), 3000);
+            toast.classList.remove('translate-x-[150%]');
+            setTimeout(() => toast.classList.add('translate-x-[150%]'), 3000);
         }
 
         // ============================================

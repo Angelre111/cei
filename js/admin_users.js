@@ -395,6 +395,7 @@ window.abrirModalCrearUsuario = function () {
     document.getElementById('user-last-name').value = '';
     document.getElementById('user-email').value = '';
     document.getElementById('user-role').value = '';
+    document.getElementById('user-status').value = 'activo';
     document.getElementById('user-password').value = '';
 
     modal.classList.remove('hidden');
@@ -493,9 +494,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const apellidos = document.getElementById('user-last-name').value.trim();
         const email = document.getElementById('user-email').value.trim();
         const rol = document.getElementById('user-role').value;
+        const estado = document.getElementById('user-status').value;
         const password = document.getElementById('user-password').value;
 
-        if (!nombres || !apellidos || !email || !rol || !password) {
+        if (!nombres || !apellidos || !email || !rol || !password || !estado) {
             Swal.fire({ title: 'Campos Incompletos', text: 'Completa todos los campos requeridos.', icon: 'warning', confirmButtonColor: '#9333ea' });
             return;
         }
@@ -524,7 +526,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const response = await fetchWithAuth(`${API_BASE}/api/crear_personal`, {
                 method: 'POST',
-                body: JSON.stringify({ nombres, apellidos, email, rol, password })
+                body: JSON.stringify({ nombres, apellidos, email, rol, password, estado })
             });
 
             const data = await response.json();
@@ -536,6 +538,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 document.getElementById('user-last-name').value = '';
                 document.getElementById('user-email').value = '';
                 document.getElementById('user-role').value = '';
+                document.getElementById('user-status').value = 'activo';
                 document.getElementById('user-password').value = '';
 
                 cerrarModalCrearUsuario();

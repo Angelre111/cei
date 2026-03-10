@@ -17,6 +17,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             const { data: { session } } = await _supabase.auth.getSession();
             const token = session ? session.access_token : (localStorage.getItem('auth_token') || '');
 
+            if (session && session.access_token) {
+                localStorage.setItem('auth_token', session.access_token);
+                if (session.refresh_token) localStorage.setItem('refresh_token', session.refresh_token);
+            }
+
             const checkResp = await fetch(`${API_BASE_URL}/api/verificar_estado/${userId}`, {
                 headers: {
                     'Authorization': `Bearer ${token}`
@@ -119,6 +124,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     _supabase.auth.onAuthStateChange(async (event, session) => {
         console.log("🔔 Cambio en Autenticación:", event, session ? "Hay sesión" : "Sesión nula");
         if (session) {
+            localStorage.setItem('auth_token', session.access_token);
+            if (session.refresh_token) localStorage.setItem('refresh_token', session.refresh_token);
             await initForm(session.user.id);
         } else if (event === 'INITIAL_SESSION' && isAuthRedirect) {
             console.log("⏳ Reintentando captura de sesión...");
@@ -213,12 +220,20 @@ document.addEventListener('DOMContentLoaded', async () => {
             submitBtn.innerHTML = '<i class="ph ph-spinner animate-spin text-xl"></i> Enviando...';
             submitBtn.disabled = true;
 
-            // Timeout de 20 segundos para evitar que quede colgado
+            // Si es local, esperamos 25 segundos máximo. Si es producción, le damos 60s
+            // a Render para "despertar" de su sleep mode
+            const esProduccion = API_BASE_URL.includes('onrender');
+            const tiempoLimite = esProduccion ? 60000 : 25000;
+
             const controller = new AbortController();
             const timeoutId = setTimeout(() => {
                 controller.abort();
-                console.error('❌ Timeout: el servidor no respondió en 20 segundos');
-            }, 20000);
+                if (esProduccion) {
+                    console.error('❌ Timeout: Render en producción no respondió en 60 segundos (pudo haber dormido tu cuenta gratuita). Vuelve a intentar.');
+                } else {
+                    console.error(`❌ Timeout: El servidor Flask LOCAL (${API_BASE_URL}) no finalizó en 25 segundos. Se quedó bloqueado procesando algo.`);
+                }
+            }, tiempoLimite);
 
             try {
                 const formData = new FormData(form);
@@ -232,17 +247,18 @@ document.addEventListener('DOMContentLoaded', async () => {
                 data.bio_prematuro = formData.has('bio_prematuro');
                 data.bio_alergico = formData.has('bio_alergico');
 
-                if (data.nino_edad) data.nino_edad = parseInt(data.nino_edad);
-                if (data.bio_peso) data.bio_peso = parseFloat(data.bio_peso);
-                if (data.bio_talla) data.bio_talla = parseFloat(data.bio_talla);
+                data.nino_edad = data.nino_edad ? parseInt(data.nino_edad) : null;
+                data.bio_peso = data.bio_peso ? parseFloat(data.bio_peso) : null;
+                data.bio_talla = data.bio_talla ? parseFloat(data.bio_talla) : null;
 
                 // AGREGAR EL USER_ID AL JSON
                 data.user_id = userId;
 
-                // Obtener el token en el momento del envío
-                const { data: { session } } = await _supabase.auth.getSession();
-                const tokenSource = session ? '✅ sesión activa Supabase' : '⚠️ localStorage (puede estar expirado)';
-                const token = session ? session.access_token : (localStorage.getItem('auth_token') || '');
+                // ⚠️ Bypassar el Supabase SDK (getSession) porque en ocasiones genera un 
+                // deadlock en el navegador: "@supabase/gotrue-js: Lock was not released".
+                // En su lugar, leemos directamente el token de la sesión previamente autorizada guardada
+                const token = localStorage.getItem('auth_token') || sessionStorage.getItem('supabase.auth.token') || '';
+                const tokenSource = token ? '✅ LocalStorage Directo' : '⚠️ Ninguno';
 
                 const urlDestino = `${API_BASE_URL}/api/inscribir`;
                 console.log('📤 Enviando inscripción...', {

@@ -70,37 +70,17 @@ def require_auth(f):
         # 3. Extraer el token (quitamos el prefijo 'Bearer ')
         token = auth_header.split(' ')[1]
 
-        # 4. Validar con supabase_auth con timeout de 8 segundos
-        #    (sin esto, si Supabase tarda, Flask bloquea el hilo indefinidamente)
-        result_container = [None]  # compartir resultado entre hilos
-        error_container  = [None]
-
-        def _validate():
-            try:
-                result_container[0] = supabase_auth.auth.get_user(token)
-            except Exception as ex:
-                error_container[0] = ex
-
-        t = threading.Thread(target=_validate, daemon=True)
-        t.start()
-        t.join(timeout=8)  # esperar máximo 8 segundos
-
-        if t.is_alive():
-            # La llamada a Supabase tardó más de 8s — server-side timeout
-            print("❌ require_auth: timeout al validar token con Supabase (>8s)")
-            return jsonify({
-                'success': False,
-                'message': 'El servidor tardó demasiado al validar tu sesión. Intenta de nuevo.'
-            }), 503
-
-        if error_container[0]:
-            print(f"🔒 Token rechazado: {error_container[0]}")
+        # 4. Validar con supabase_auth de forma síncrona
+        #    (Eliminamos el threading para evitar deadlocks de httpx/SSL en Windows)
+        try:
+            user_response = supabase_auth.auth.get_user(token)
+        except Exception as e:
+            print(f"🔒 Token rechazado (Error Supabase): {e}")
             return jsonify({
                 'success': False,
                 'message': 'Token inválido o expirado. Por favor inicia sesión nuevamente.'
             }), 401
-
-        user_response = result_container[0]
+        
         if not user_response or not user_response.user:
             return jsonify({
                 'success': False,
@@ -153,12 +133,11 @@ class InscripcionSchema(BaseModel):
     nino_edad: Optional[int] = 0
     nino_sexo: str
     nino_lugar_nac: Optional[str] = None
-    nino_cedula_escolar: Optional[str] = None
     nino_direccion: str
     
     # Paso 2: Padres
     madre_nombre: str
-    madre_ci: Optional[str] = None
+    madre_ci: str
     madre_telefono: Optional[str] = None
     madre_ocupacion: Optional[str] = None
     padre_nombre: Optional[str] = None
@@ -354,6 +333,7 @@ def crear_personal():
     apellidos = data.get('apellidos')
     email = data.get('email')
     rol_front = data.get('rol') 
+    estado_front = data.get('estado', 'activo')
     password = data.get('password')
 
     # 1. Validaciones básicas
@@ -371,16 +351,18 @@ def crear_personal():
         }), 403
 
     # 3. Lógica Condicional: Auto-confirmar y Estado Inicial
-    # Si es administrador, se confirma directo y queda activo. Si es docente, requiere verificación y queda pendiente.
     es_admin = (rol_db == 'administrador')
-    estado_inicial = 'activo' if es_admin else 'pendiente'
+    estado_inicial = estado_front.lower()
+
+    # Si es admin O si el estado inicial es 'activo', lo confirmamos inmediatamente
+    saltar_confirmacion = es_admin or (estado_inicial == 'activo')
 
     try:
         # 4. Crear el usuario en Supabase Auth
         auth_response = supabase.auth.admin.create_user({
             "email": email,
             "password": password,
-            "email_confirm": es_admin, # <--- Aquí aplicamos la regla condicional
+            "email_confirm": saltar_confirmacion, # <--- Regla condicional dinámica
             "user_metadata": {
                 "first_name": nombres,
                 "last_name": apellidos,
@@ -397,15 +379,15 @@ def crear_personal():
             "apellidos": apellidos,
             "email": email,
             "rol": rol_db,
-            "estado": estado_inicial # <--- Guardamos como 'pendiente' a los docentes
+            "estado": estado_inicial # <--- Estado personalizado
         }
         
         supabase.table("usuarios").upsert(datos_usuario).execute()
 
         # 6. Preparamos un mensaje de respuesta dinámico
         mensaje_exito = f'{rol_front} registrado exitosamente en el sistema.'
-        if not es_admin:
-            mensaje_exito += ' Se ha enviado un correo para que el docente verifique su cuenta.'
+        if not saltar_confirmacion:
+            mensaje_exito += ' Se ha enviado un correo al usuario para que verifique su cuenta.'
 
         return jsonify({
             'success': True, 
@@ -472,6 +454,23 @@ def editar_usuario(user_id):
 
     try:
         supabase.table("usuarios").update(datos_update).eq("id", user_id).execute()
+
+        # Si a un docente se le activa la cuenta manualmente, saltamos la verificacion por correo
+        if datos_update.get('estado') == 'activo':
+            rol_verificar = datos_update.get('rol')
+            if not rol_verificar:
+                # Si no vinieron los datos del rol en el payload, buscar el actual
+                res_rol = supabase.table("usuarios").select("rol").eq("id", user_id).single().execute()
+                if res_rol.data:
+                    rol_verificar = res_rol.data.get("rol")
+            
+            if rol_verificar == 'docente':
+                try:
+                    supabase.auth.admin.update_user_by_id(user_id, {"email_confirm": True})
+                    print(f"✅ Auto-verificación de correo aplicada al docente activado ({user_id})")
+                except Exception as ex:
+                    print(f"⚠️ Aviso: Falló auto-verificar correo del docente en Auth: {ex}")
+
         return jsonify({'success': True, 'message': 'Usuario actualizado correctamente.'}), 200
 
     except Exception as e:
@@ -509,10 +508,246 @@ def eliminar_usuario(user_id):
 
 
 # =======================================================
-# RUTAS DE GESTIÓN (INSCRIPCIONES)
+# RUTAS DE GESTIÓN (INSCRIPCIONES / ESTUDIANTES)
 # =======================================================
 
-@app.route('/api/verificar_estado/<user_id>', methods=['GET'])
+@app.route('/api/estudiantes/buscar/<cedula>', methods=['GET'])
+@require_auth
+def buscar_estudiante_cedula(cedula):
+    """Busca un estudiante pre-inscrito por su cédula escolar O cédula de representante."""
+    try:
+        # 1. Busca hijos que coincidan con la cédula exacta (cedula escolar)
+        # O cuya cedula_escolar TERMINE en la cédula buscada (caso de cédula de representante)
+        res_ninos = supabase.table("hijos").select("*").ilike("cedula_escolar", f"%{cedula}").execute()
+        
+        if not res_ninos.data or len(res_ninos.data) == 0:
+            return jsonify({'success': False, 'message': 'No se encontró ningún estudiante con esa cédula'}), 404
+            
+        estudiantes_formateados = []
+        
+        for nino in res_ninos.data:
+            rep_id = nino.get('representante_id')
+            rep_nombre = ""
+            
+            if rep_id:
+                res_rep = supabase.table("usuarios").select("nombres, apellidos").eq("id", rep_id).execute()
+                if res_rep.data and len(res_rep.data) > 0:
+                    rep = res_rep.data[0]
+                    rep_nombre = f"{rep.get('nombres', '')} {rep.get('apellidos', '')}".strip()
+                    
+            estudiantes_formateados.append({
+                'id': nino.get('id'),
+                'nombres': f"{nino.get('nombre', '')} {nino.get('apellidos', '')}".strip(),
+                'cedula_escolar': nino.get('cedula_escolar'),
+                'representante': rep_nombre
+            })
+                
+        return jsonify({
+            'success': True,
+            'estudiantes': estudiantes_formateados
+        }), 200
+
+    except Exception as e:
+        print(f"❌ Error al buscar estudiante por cédula: {e}")
+        return jsonify({'success': False, 'message': 'Error interno en el servidor.'}), 500
+
+
+@app.route('/api/secciones/disponibles', methods=['GET'])
+@require_auth
+def obtener_secciones_disponibles():
+    """Obtiene las secciones vinculadas al período escolar actual."""
+    try:
+        # 1. Buscar el período activo o en planificación
+        periodo_res = supabase.table("periodos_academicos").select("id").eq("estado", "activo").execute()
+        periodo_id = None
+        
+        if periodo_res.data and len(periodo_res.data) > 0:
+            periodo_id = periodo_res.data[0]['id']
+        else:
+            planificacion_res = supabase.table("periodos_academicos").select("id").eq("estado", "planificacion").order("created_at", desc=True).limit(1).execute()
+            if planificacion_res.data and len(planificacion_res.data) > 0:
+                periodo_id = planificacion_res.data[0]['id']
+                
+        if not periodo_id:
+            return jsonify({'success': False, 'message': 'No hay un período escolar habilitado para cargar secciones.'}), 404
+            
+        # 2. Consultar las secciones que pertenecen a este período
+        res = supabase.table("secciones").select("id, nivel, letra, capacidad_maxima").eq("periodo_id", periodo_id).execute()
+        
+        return jsonify({'success': True, 'secciones': res.data}), 200
+        
+    except Exception as e:
+        print(f"❌ Error al obtener secciones: {e}")
+        return jsonify({'success': False, 'message': 'Error al cargar secciones.'}), 500
+
+
+@app.route('/api/estudiantes/asignar', methods=['POST'])
+@require_auth
+def asignar_estudiante():
+    """Matricula al estudiante vinculando su hijo_id con el seccion_id en 'asignaciones_estudiantes'."""
+    try:
+        data = request.json
+        hijo_id = data.get('hijo_id')
+        seccion_id = data.get('seccion_id')
+        
+        if not hijo_id or not seccion_id:
+            return jsonify({'success': False, 'message': 'Datos incompletos. Se requiere el estudiante y la sección.'}), 400
+            
+        # 1. Validar si ya está cursando en alguna sección
+        verificacion = supabase.table("asignaciones_estudiantes").select("id").eq("hijo_id", hijo_id).eq("estado", "cursando").execute()
+        if len(verificacion.data) > 0:
+            return jsonify({'success': False, 'message': 'Este estudiante ya se encuentra cursando en una sección.'}), 409
+            
+        # 2. Insertar en la nueva tabla
+        datos_asignacion = {
+            "hijo_id": int(hijo_id),
+            "seccion_id": seccion_id,
+            "estado": "cursando"
+        }
+        supabase.table("asignaciones_estudiantes").insert(datos_asignacion).execute()
+        
+        # Opcional: Podrías actualizar el "estado_alumno" en la tabla hijos
+        supabase.table("hijos").update({"estado_alumno": "Inscrito"}).eq("id", hijo_id).execute()
+        
+        return jsonify({'success': True, 'message': 'Estudiante matriculado y asignado a la sección exitosamente.'}), 201
+
+    except Exception as e:
+        print(f"❌ Error al asignar estudiante: {e}")
+        return jsonify({'success': False, 'message': 'Error interno al guardar la asignación.'}), 500
+
+
+@app.route('/api/matricula', methods=['GET'])
+@require_auth
+def obtener_matricula():
+    """Obtiene todos los estudiantes asignados a una sección para mostrar la tabla general."""
+    try:
+        # Buscamos las asignaciones activas
+        res_asignaciones = supabase.table("asignaciones_estudiantes").select("*").eq("estado", "cursando").execute()
+        asignaciones = res_asignaciones.data
+        
+        matricula_completa = []
+        for asig in asignaciones:
+            hijo_id = asig.get('hijo_id')
+            seccion_id = asig.get('seccion_id')
+            
+            # Datos base del estudiante
+            hijo = None
+            if hijo_id:
+                res_h = supabase.table("hijos").select("cedula_escolar, nombre, apellidos, representante_id").eq("id", hijo_id).execute()
+                if res_h.data: hijo = res_h.data[0]
+                
+            # Datos del representante
+            representante_nombre = "Desconocido"
+            if hijo and hijo.get('representante_id'):
+                res_u = supabase.table("usuarios").select("nombres, apellidos").eq("id", hijo.get('representante_id')).execute()
+                if res_u.data:
+                    rep = res_u.data[0]
+                    representante_nombre = f"{rep.get('nombres', '')} {rep.get('apellidos', '')}".strip()
+                    
+            # Datos de la sección
+            seccion_nombre = "Sin asignar"
+            if seccion_id:
+                res_s = supabase.table("secciones").select("nivel, letra").eq("id", seccion_id).execute()
+                if res_s.data:
+                    sec = res_s.data[0]
+                    seccion_nombre = f"{sec.get('nivel', '')} - {sec.get('letra', '')}".strip()
+                    
+            if hijo:
+                matricula_completa.append({
+                    "id": asig.get("id"),
+                    "hijo_id": hijo_id,
+                    "cedula": hijo.get("cedula_escolar", "N/A"),
+                    "estudiante": f"{hijo.get('nombre', '')} {hijo.get('apellidos', '')}".strip(),
+                    "seccion": seccion_nombre,
+                    "representante": representante_nombre
+                })
+                
+        return jsonify({'success': True, 'matricula': matricula_completa}), 200
+
+    except Exception as e:
+        print(f"❌ Error al consultar la matricula general: {e}")
+        return jsonify({'success': False, 'message': 'Error al cargar la matricula.'}), 500
+
+@app.route('/api/historial', methods=['GET'])
+@require_auth
+def obtener_historial():
+    """Obtiene la lista de los estudiantes egresados o retirados según el estado solicitado."""
+    estado_filtro = request.args.get('estado', 'retirado') # Por defecto retirado si no se pasa, o culminado/egresado
+    try:
+        # Obtenemos asignaciones
+        response_asig = supabase.table("asignaciones_estudiantes") \
+            .select("id, hijo_id, seccion_id, estado") \
+            .eq("estado", estado_filtro) \
+            .execute()
+            
+        asignaciones = response_asig.data
+        if not asignaciones:
+            return jsonify({'success': True, 'historial': []}), 200
+            
+        # Recolectar IDs
+        hijos_ids = [a['hijo_id'] for a in asignaciones if a.get('hijo_id')]
+        
+        # Consultar hijos
+        hijos_map = {}
+        if hijos_ids:
+            res_h = supabase.table("hijos").select("id, nombre, apellidos, cedula_escolar, representante_id").in_("id", hijos_ids).execute()
+            for h in res_h.data:
+                hijos_map[h['id']] = h
+
+        historial_completo = []
+        for asig in asignaciones:
+            hijo_id = asig.get('hijo_id')
+            seccion_id = asig.get('seccion_id')
+            
+            hijo = hijos_map.get(hijo_id)
+
+            representante_nombre = "Desconocido"
+            if hijo and hijo.get('representante_id'):
+                res_u = supabase.table("usuarios").select("nombres, apellidos").eq("id", hijo.get('representante_id')).execute()
+                if res_u.data:
+                    rep = res_u.data[0]
+                    representante_nombre = f"{rep.get('nombres', '')} {rep.get('apellidos', '')}".strip()
+                    
+            seccion_nombre = "Desconocida"
+            if seccion_id:
+                res_s = supabase.table("secciones").select("nivel, letra").eq("id", seccion_id).execute()
+                if res_s.data:
+                    sec = res_s.data[0]
+                    seccion_nombre = f"{sec.get('nivel', '')} - {sec.get('letra', '')}".strip()
+                    
+            if hijo:
+                historial_completo.append({
+                    "id": asig.get("id"),
+                    "hijo_id": hijo_id,
+                    "cedula": hijo.get("cedula_escolar", "N/A"),
+                    "estudiante": f"{hijo.get('nombre', '')} {hijo.get('apellidos', '')}".strip(),
+                    "seccion": seccion_nombre,
+                    "representante": representante_nombre,
+                    "estado": asig.get("estado")
+                })
+                
+        return jsonify({'success': True, 'historial': historial_completo}), 200
+
+    except Exception as e:
+        print(f"❌ Error al consultar historial estudiantil: {e}")
+        return jsonify({'success': False, 'message': 'Error al cargar el historial.'}), 500
+
+@app.route('/api/matricula/<asignacion_id>/retirar', methods=['PUT'])
+@require_auth
+def retirar_estudiante(asignacion_id):
+    """Marca a un estudiante como 'retirado' en la tabla asignaciones_estudiantes."""
+    try:
+        data = supabase.table("asignaciones_estudiantes").update({"estado": "retirado"}).eq("id", asignacion_id).execute()
+        
+        if not data.data:
+            return jsonify({'success': False, 'message': 'Asignación no encontrada.'}), 404
+            
+        return jsonify({'success': True, 'message': 'Estudiante retirado de la sección exitosamente.'}), 200
+
+    except Exception as e:
+        print(f"❌ Error al retirar estudiante: {e}")
+        return jsonify({'success': False, 'message': 'Error interno al cambiar el estado del estudiante.'}), 500
+
 @require_auth
 def verificar_estado(user_id):
     """Verifica si un usuario ya ha completado su inscripción."""
@@ -532,16 +767,21 @@ def verificar_estado(user_id):
 @require_auth
 def inscribir_estudiante():
     """Procesa el formulario de inscripción y lo divide en las tablas hijos e inscripciones."""
+    print("🚀 [BACKEND] Iniciando inscribir_estudiante...")
     try:
         # 1. Validar datos con Pydantic (El frontend sigue enviando el mismo JSON)
         raw_data = request.get_json()
+        print("🚀 [BACKEND] JSON recibido.")
         datos = InscripcionSchema(**raw_data)
+        print("🚀 [BACKEND] Validacion Pydantic OK.")
 
         # Usamos SIEMPRE el ID del usuario autenticado
         user_id_real = request.current_user.id
+        print("🚀 [BACKEND] Buscando si el usuario ya llenó la ficha...")
 
         # 2. Verificar si este usuario ya llenó una ficha
         verif = supabase.table("inscripciones").select("id").eq("user_id", user_id_real).execute()
+        print("🚀 [BACKEND] Verificación completada.")
         if len(verif.data) > 0:
              return jsonify({"error": "Ya has completado una ficha de inscripción previamente."}), 409
 
@@ -574,13 +814,48 @@ def inscribir_estudiante():
                     "error": "El proceso de inscripciones está cerrado. No hay un período escolar habilitado en este momento."
                 }), 403
 
+        # --- GENERADOR AUTOMÁTICO DE CÉDULA ESCOLAR ---
+        # Regla: [Correlativo] + [Año Nacimiento (2 dígitos)] + [Cédula Representante]
+        cedula_rep = str(datos.madre_ci) if datos.madre_ci else "00000000"
+        fecha_nac = str(datos.nino_fecha_nacimiento)
+        
+        # 1. Extraer los últimos 2 dígitos del año de nacimiento
+        try:
+            temp_year = fecha_nac.split('-')[0]
+            if len(temp_year) != 4:  # Por si viene DD-MM-YYYY
+                temp_year = fecha_nac.split('-')[-1]
+            año_2_digits = temp_year[-2:]
+        except:
+            año_2_digits = "00"
+            
+        # 2. Correlativo: Contar hijos de este representante nacidos en el MISMO año
+        # Consultamos la tabla 'hijos' (ya que allí reposa la fecha de nacimiento real)
+        res_hermanos = supabase.table("hijos").select("fecha_nacimiento").eq("representante_id", user_id_real).execute()
+        
+        conteo_mismo_año = 0
+        if res_hermanos.data:
+            for hermano in res_hermanos.data:
+                f_hermano = str(hermano.get("fecha_nacimiento", ""))
+                try:
+                    y_hermano = f_hermano.split('-')[0] if len(f_hermano.split('-')[0]) == 4 else f_hermano.split('-')[-1]
+                    if y_hermano[-2:] == año_2_digits:
+                        conteo_mismo_año += 1
+                except:
+                    pass
+                    
+        correlativo = str(conteo_mismo_año + 1)
+        
+        # 3. Concatenación Final de Cédula Escolar
+        cedula_escolar_oficial = f"{correlativo}{año_2_digits}{cedula_rep}"
+        print(f"🎓 Cédula Escolar Autogenerada: {cedula_escolar_oficial}")
+
         # 4. PASO A: Guardar los datos permanentes en la tabla 'hijos'
         datos_hijo = {
             "nombre": datos.nino_nombres,
             "apellidos": datos.nino_apellidos,
             "fecha_nacimiento": datos.nino_fecha_nacimiento,
             "sexo": datos.nino_sexo,
-            "cedula_escolar": datos.nino_cedula_escolar,
+            "cedula_escolar": cedula_escolar_oficial,
             "estado_alumno": "Activo",
             "representante_id": user_id_real 
         }

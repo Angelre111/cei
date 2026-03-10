@@ -129,9 +129,7 @@
             margin-left: 0.25rem;
         }
 
-        .section-title {
-            @apply text-xl font-bold text-gray-800 mb-6 border-b-2 border-pink-100 pb-3 flex items-center gap-3;
-        }
+
 
         /* Cards de selección (Radio/Checkbox) mejoradas */
         .check-card:checked+div {
@@ -230,19 +228,12 @@
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-6">
+                <div class="grid grid-cols-1 gap-8 mb-6">
                     <div>
                         <label class="label-primary">Lugar de Nacimiento</label>
                         <div class="input-group">
                             <input type="text" name="nino_lugar_nac" class="input-field" placeholder="Ciudad, Estado">
                             <i class="ph ph-map-pin input-icon"></i>
-                        </div>
-                    </div>
-                    <div>
-                        <label class="label-primary">Cédula Escolar (Opcional)</label>
-                        <div class="input-group">
-                            <input type="text" name="nino_cedula_escolar" class="input-field" placeholder="V-00000000">
-                            <i class="ph ph-identification-card input-icon"></i>
                         </div>
                     </div>
                 </div>
@@ -273,9 +264,9 @@
                         </div>
                     </div>
                     <div>
-                        <label class="label-primary">Cédula de Identidad</label>
+                        <label class="label-primary">Cédula de Identidad <span class="text-pink-500">*</span></label>
                         <div class="input-group">
-                            <input type="text" name="madre_ci" class="input-field" placeholder="Ej: 12.345.678">
+                            <input type="text" name="madre_ci" class="input-field" placeholder="Ej: 12345678" required>
                             <i class="ph ph-identification-card input-icon"></i>
                         </div>
                     </div>

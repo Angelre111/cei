@@ -142,7 +142,7 @@ function renderTablaPeriodos(periodos) {
                 <span class="px-2.5 py-1 rounded-full text-xs font-semibold ${badge}">${label}</span>
             </td>
             <td class="px-6 py-4 text-right">
-                <div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition">
+                <div class="flex items-center justify-end gap-2 transition">
                     <button onclick="editarPeriodo('${p.id}')"
                         class="p-1.5 text-indigo-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition" title="Editar">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
