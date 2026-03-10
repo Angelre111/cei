@@ -30,7 +30,7 @@ async function _doRefresh() {
     const rt = AUTH.getRefreshToken();
     if (!rt) throw new Error('Sin refresh_token');
 
-    const res = await fetch('/api/refresh', {
+    const res = await fetch(`${API_BASE_URL}/api/refresh`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ refresh_token: rt })

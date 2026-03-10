@@ -91,7 +91,7 @@ function agregarSelectDocente() {
 async function cargarSelectsSecciones() {
     // 1. Cargar Períodos
     try {
-        const resP = await fetchWithAuth('/api/periodos');
+        const resP = await fetchWithAuth(`${API_BASE}/api/periodos`);
         const dataP = await resP.json();
         if (resP.ok && dataP.periodos) {
             periodosCacheSecciones = dataP.periodos.filter(p => p.estado !== 'finalizado'); // Ocultar finalizados para crear sección
@@ -109,7 +109,7 @@ async function cargarSelectsSecciones() {
 
     // 2. Cargar Docentes
     try {
-        const resD = await fetchWithAuth('/api/usuarios');
+        const resD = await fetchWithAuth(`${API_BASE}/api/usuarios`);
         const dataD = await resD.json();
         if (resD.ok && dataD.usuarios) {
             docentesCache = dataD.usuarios.filter(u => u.rol === 'docente');
@@ -133,7 +133,7 @@ async function cargarSecciones() {
     tabla.innerHTML = `<tr><td colspan="6" class="px-6 py-10 text-center text-gray-400">Cargando secciones...</td></tr>`;
 
     try {
-        const res = await fetchWithAuth('/api/secciones');
+        const res = await fetchWithAuth(`${API_BASE}/api/secciones`);
         const json = await res.json();
         if (!res.ok) throw new Error(json.message || 'Error al obtener secciones');
 
@@ -208,7 +208,7 @@ async function guardarSeccion() {
     };
 
     try {
-        const res = await fetchWithAuth('/api/secciones', {
+        const res = await fetchWithAuth(`${API_BASE}/api/secciones`, {
             method: 'POST',
             body: JSON.stringify(payload)
         });
@@ -254,7 +254,7 @@ async function eliminarSeccion(id, nombreDesc) {
     if (!confirm.isConfirmed) return;
 
     try {
-        const res = await fetchWithAuth(`/api/secciones/${id}`, { method: 'DELETE' });
+        const res = await fetchWithAuth(`${API_BASE}/api/secciones/${id}`, { method: 'DELETE' });
         const json = await res.json();
         if (!res.ok) throw new Error(json.message || 'Error al eliminar');
 

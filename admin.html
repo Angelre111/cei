@@ -1239,7 +1239,7 @@
         // Llama a la API para cargar las secciones dinámicamente
         async function cargarSeccionesSelect() {
             try {
-                const res = await fetchWithAuth(`http://127.0.0.1:5000/api/secciones/disponibles`);
+                const res = await fetchWithAuth(`${API_BASE_URL}/api/secciones/disponibles`);
                 const data = await res.json();
 
                 if (res.ok && data.success && data.secciones) {
@@ -1283,7 +1283,7 @@
                 // Estado de carga
                 tbody.innerHTML = `<tr><td colspan="5" class="px-6 py-10 text-center"><svg class="w-6 h-6 animate-spin mx-auto text-yellow-500 mb-2" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path></svg><span class="text-sm text-gray-500">Cargando matrícula...</span></td></tr>`;
 
-                const res = await fetchWithAuth(`http://127.0.0.1:5000/api/matricula`);
+                const res = await fetchWithAuth(`${API_BASE_URL}/api/matricula`);
                 const data = await res.json();
 
                 if (res.ok && data.success) {
@@ -1360,7 +1360,7 @@
             try {
                 tbody.innerHTML = `<tr><td colspan="5" class="px-6 py-10 text-center"><svg class="w-6 h-6 animate-spin mx-auto text-blue-500 mb-2" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path></svg><span class="text-sm text-gray-500">Cargando historial...</span></td></tr>`;
 
-                const res = await fetchWithAuth(`http://127.0.0.1:5000/api/historial?estado=${estado}`);
+                const res = await fetchWithAuth(`${API_BASE_URL}/api/historial?estado=${estado}`);
                 const data = await res.json();
 
                 if (res.ok && data.success) {
@@ -1448,7 +1448,7 @@
 
             try {
                 // Hacemos uso del helper fetchWithAuth importado de auth.js
-                const res = await fetchWithAuth(`http://127.0.0.1:5000/api/estudiantes/buscar/${encodeURIComponent(cedula)}`);
+                const res = await fetchWithAuth(`${API_BASE_URL}/api/estudiantes/buscar/${encodeURIComponent(cedula)}`);
                 const data = await res.json();
 
                 if (res.ok && data.success && data.estudiantes && data.estudiantes.length > 0) {
@@ -1585,8 +1585,9 @@
                     btnAddStudent.innerHTML = `<svg class="w-5 h-5 animate-spin mx-auto text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path></svg>`;
 
                     try {
-                        const res = await fetchWithAuth('http://127.0.0.1:5000/api/estudiantes/asignar', {
+                        const res = await fetchWithAuth(`${API_BASE_URL}/api/estudiantes/asignar`, {
                             method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({
                                 hijo_id: hijoId,
                                 seccion_id: seccionId
@@ -1640,7 +1641,7 @@
             if (!confirm.isConfirmed) return;
 
             try {
-                const res = await fetchWithAuth(`http://127.0.0.1:5000/api/matricula/${asignacionId}/retirar`, {
+                const res = await fetchWithAuth(`${API_BASE_URL}/api/matricula/${asignacionId}/retirar`, {
                     method: 'PUT'
                 });
                 const data = await res.json();
@@ -1756,6 +1757,7 @@
             });
         }
     </script>
+    <script src="js/config.js"></script>
     <script src="js/auth.js"></script>
     <script src="js/admin_users.js"></script>
     <script src="js/admin_periodos.js"></script>

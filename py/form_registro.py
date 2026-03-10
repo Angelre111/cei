@@ -621,8 +621,8 @@ def asignar_estudiante():
 def obtener_matricula():
     """Obtiene todos los estudiantes asignados a una sección para mostrar la tabla general."""
     try:
-        # Buscamos las asignaciones activas
-        res_asignaciones = supabase.table("asignaciones_estudiantes").select("*").eq("estado", "cursando").execute()
+        # Buscamos las asignaciones activas (incluyendo aquellas con estado NULL por retrocompatibilidad)
+        res_asignaciones = supabase.table("asignaciones_estudiantes").select("*").or_("estado.eq.cursando,estado.is.null").execute()
         asignaciones = res_asignaciones.data
         
         matricula_completa = []

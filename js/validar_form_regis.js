@@ -32,8 +32,9 @@ document.getElementById('register-form').addEventListener('submit', async (e) =>
     showAlert('Campos Vacíos', 'Por favor, completa todos los campos requeridos.', 'warning');
     return;
   }
-  if (passwordInput.length < 8) {
-    showAlert('Seguridad', 'La contraseña debe tener al menos 8 caracteres.', 'warning');
+  const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
+  if (!passwordRegex.test(passwordInput)) {
+    showAlert('Contraseña Insegura', 'La contraseña debe tener al menos 8 caracteres, incluir una mayúscula, una minúscula, un número y un carácter especial (ej: @$!%*?&).', 'warning');
     return;
   }
   if (passwordInput !== confirmPasswordInput) {

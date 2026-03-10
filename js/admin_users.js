@@ -2,7 +2,7 @@
 // admin_users.js — Gestión de Usuarios del Panel Administrativo
 // ============================================================
 
-const API_BASE = '';
+const API_BASE = window.API_BASE_URL || '';
 let cachedUsuarios = []; // Cache para búsqueda local
 
 // auth.js provee fetchWithAuth() y AUTH globalmente
