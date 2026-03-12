@@ -5,6 +5,7 @@
 let seccionesCache = [];
 let periodosCacheSecciones = [];
 let docentesCache = [];
+let currentTabSecciones = 'activo';
 
 // =============================================================
 // MODAL SECCIONES
@@ -58,6 +59,16 @@ document.addEventListener('click', (e) => {
     const modal = document.getElementById('modal-crear-seccion');
     if (modal && !modal.classList.contains('hidden') && e.target === modal) {
         cerrarModalCrearSeccion();
+    }
+});
+
+// Cerrar modal con tecla ESC
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+        const modal = document.getElementById('modal-crear-seccion');
+        if (modal && !modal.classList.contains('hidden')) {
+            cerrarModalCrearSeccion();
+        }
     }
 });
 
@@ -138,9 +149,49 @@ async function cargarSecciones() {
         if (!res.ok) throw new Error(json.message || 'Error al obtener secciones');
 
         seccionesCache = json.secciones || [];
-        renderTablaSecciones(seccionesCache, tabla);
+        filtrarSeccionesTab(currentTabSecciones);
     } catch (err) {
         tabla.innerHTML = `<tr><td colspan="6" class="px-6 py-8 text-center text-red-500">${err.message}</td></tr>`;
+    }
+}
+
+function filtrarSeccionesTab(estado) {
+    currentTabSecciones = estado;
+    
+    // Actualizar UI de los botones
+    const btnActivo = document.getElementById('btn-sec-tab-activo');
+    const btnPlanificacion = document.getElementById('btn-sec-tab-planificacion');
+    const btnFinalizado = document.getElementById('btn-sec-tab-finalizado');
+
+    if (!btnActivo || !btnPlanificacion || !btnFinalizado) return;
+
+    // Resetear estilos
+    [btnActivo, btnPlanificacion, btnFinalizado].forEach(btn => {
+        btn.classList.remove('bg-white', 'shadow', 'text-gray-800');
+        btn.classList.add('text-gray-500');
+    });
+
+    // Aplicar estilos al activo
+    let btnActivoRef = null;
+    if (estado === 'activo') btnActivoRef = btnActivo;
+    else if (estado === 'planificacion') btnActivoRef = btnPlanificacion;
+    else if (estado === 'finalizado') btnActivoRef = btnFinalizado;
+
+    if (btnActivoRef) {
+        btnActivoRef.classList.remove('text-gray-500');
+        btnActivoRef.classList.add('bg-white', 'shadow', 'text-gray-800');
+    }
+
+    // Filtrar cache
+    const seccionesFiltradas = seccionesCache.filter(s => {
+        // Asumiendo que ahora recibiremos periodo_estado del backend
+        const sEstado = s.periodo_estado ? s.periodo_estado.toLowerCase() : 'desconocido';
+        return sEstado === estado;
+    });
+
+    const tabla = document.querySelector('#section-secciones tbody');
+    if (tabla) {
+        renderTablaSecciones(seccionesFiltradas, tabla);
     }
 }
 
@@ -155,11 +206,20 @@ function renderTablaSecciones(secciones, tbody) {
             ? s.docentes.map(d => `<span class="inline-block px-2 py-0.5 bg-gray-100 rounded-lg text-xs font-medium mr-1 mb-1">${d.nombre_completo}</span>`).join('')
             : '<span class="text-gray-400 italic">Sin Asignar</span>';
 
+        // Determinar color del status dot basado en el estado
+        const estado = s.periodo_estado ? s.periodo_estado.toLowerCase() : 'desconocido';
+        let statusDotColor = 'bg-gray-400'; // Default / Finalizado
+        if (estado === 'activo') statusDotColor = 'bg-green-500';
+        else if (estado === 'planificacion') statusDotColor = 'bg-yellow-400';
+
         return `
         <tr class="hover:bg-gray-50 transition-colors group">
             <td class="px-6 py-4 text-sm font-medium text-gray-800">${s.periodo_nombre}</td>
             <td class="px-6 py-4 text-sm text-gray-600"><span class="px-2 py-1 rounded bg-blue-100 text-blue-700 font-semibold text-xs">${s.nivel}</span></td>
-            <td class="px-6 py-4 font-semibold text-gray-800">${s.letra}</td>
+            <td class="px-6 py-4 font-semibold text-gray-800 flex items-center gap-2">
+                <span class="inset-y-0 flex items-center"><span class="w-2 h-2 rounded-full ${statusDotColor}"></span></span>
+                ${s.letra}
+            </td>
             <td class="px-6 py-4 text-gray-500 text-sm">${s.capacidad_maxima}</td>
             <td class="px-6 py-4 text-gray-700 text-sm">${docName}</td>
             <td class="px-6 py-4 text-right">

@@ -220,10 +220,13 @@ def registrar_usuario():
         }), 201
 
     except Exception as e:
-        error_msg = str(e)
+        error_msg = str(e).lower() # Pasamos todo a minúsculas una sola vez
         print(f"❌ Error Registro: {error_msg}")
-        if "already registered" in error_msg.lower() or "already exists" in error_msg.lower():
+        
+        # Atrapamos errores de Auth Y errores de llave duplicada en PostgreSQL
+        if any(keyword in error_msg for keyword in ["already registered", "already exists", "unique constraint", "duplicate key"]):
             return jsonify({'success': False, 'message': 'Este correo electrónico ya está registrado.'}), 409
+            
         return jsonify({'success': False, 'message': 'No se pudo completar el registro. Intenta de nuevo.'}), 500
 
 
@@ -395,11 +398,11 @@ def crear_personal():
         }), 201
 
     except Exception as e:
-        error_msg = str(e)
+        error_msg = str(e).lower()
         print(f"❌ Error al crear personal: {error_msg}")
         
-        # Si Supabase nos dice que el correo ya existe
-        if "already exists" in error_msg.lower() or "unique constraint" in error_msg.lower():
+        # Atrapamos errores de Auth Y errores de llave duplicada en PostgreSQL
+        if any(keyword in error_msg for keyword in ["already registered", "already exists", "unique constraint", "duplicate key"]):
             return jsonify({'success': False, 'message': 'Este correo electrónico ya está registrado.'}), 409
             
         return jsonify({'success': False, 'message': 'Error interno del servidor al crear el usuario.'}), 500
@@ -438,7 +441,7 @@ def editar_usuario(user_id):
         return jsonify({'success': False, 'message': 'Acción denegada. Solo administradores.'}), 403
 
     data = request.get_json()
-    campos_permitidos = ['nombres', 'apellidos', 'estado', 'rol']
+    campos_permitidos = ['nombres', 'apellidos', 'estado', 'rol', 'email']
     datos_update = {k: v for k, v in data.items() if k in campos_permitidos and v is not None}
 
     # Validación estricta del rol si viene en la petición
@@ -451,6 +454,14 @@ def editar_usuario(user_id):
 
     if not datos_update:
         return jsonify({'success': False, 'message': 'No hay campos válidos para actualizar.'}), 400
+
+    # Actualizar correo en Auth de Supabase (Importante para que el login también cambie)
+    if 'email' in datos_update:
+        try:
+            supabase.auth.admin.update_user_by_id(user_id, {"email": datos_update['email'], "email_confirm": True})
+        except Exception as ex:
+            print(f"Error actualizando email en auth: {ex}")
+            return jsonify({'success': False, 'message': 'No se pudo actualizar el correo. Puede que ya esté en uso o sea inválido.'}), 400
 
     try:
         supabase.table("usuarios").update(datos_update).eq("id", user_id).execute()
@@ -1135,7 +1146,7 @@ def listar_secciones():
         # Hacemos JOIN con periodos_academicos
         # También buscamos el docente asociado a través de docentes_secciones
         response = supabase.table("secciones") \
-            .select("id, nivel, letra, capacidad_maxima, periodo_id, periodos_academicos(nombre), docentes_secciones(docente_id, usuarios(nombres, apellidos))") \
+            .select("id, nivel, letra, capacidad_maxima, periodo_id, periodos_academicos(nombre, estado), docentes_secciones(docente_id, usuarios(nombres, apellidos))") \
             .execute()
         
         # Formatear respuesta para el frontend
@@ -1151,6 +1162,7 @@ def listar_secciones():
                         })
 
             periodo_nombre = s["periodos_academicos"]["nombre"] if s.get("periodos_academicos") else "Desconocido"
+            periodo_estado = s["periodos_academicos"]["estado"] if s.get("periodos_academicos") else "desconocido"
 
             secciones.append({
                 "id": s["id"],
@@ -1159,6 +1171,7 @@ def listar_secciones():
                 "capacidad_maxima": s["capacidad_maxima"],
                 "periodo_id": s["periodo_id"],
                 "periodo_nombre": periodo_nombre,
+                "periodo_estado": periodo_estado,
                 "docentes": docentes_info
             })
 

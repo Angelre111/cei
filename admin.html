@@ -530,6 +530,81 @@
                             </div>
                         </div>
 
+                        <!-- Modal Editar Usuario -->
+                        <div id="modal-editar-usuario"
+                            class="fixed inset-0 bg-black/60 z-50 hidden flex items-center justify-center backdrop-blur-sm transition-opacity opacity-0"
+                            style="transition: opacity 0.3s ease;">
+                            <div id="modal-editar-usuario-content"
+                                class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl mx-4 overflow-hidden transform scale-95 transition-transform duration-300">
+                                <div
+                                    class="px-6 py-5 border-b border-purple-100 flex justify-between items-center bg-purple-50/50">
+                                    <h3 class="font-bold text-gray-800 text-lg flex items-center gap-2">
+                                        <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                        </svg>
+                                        Editar Usuario
+                                    </h3>
+                                    <button onclick="cerrarModalEditarUsuario()"
+                                        class="text-gray-400 hover:text-red-500 transition-colors p-1.5 hover:bg-white rounded-lg focus:outline-none focus:ring-2 focus:ring-red-200">
+                                        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                        </svg>
+                                    </button>
+                                </div>
+                                <div class="p-6 md:p-8">
+                                    <input type="hidden" id="edit-user-id">
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
+                                        <div>
+                                            <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Nombre</label>
+                                            <input type="text" id="edit-user-first-name" placeholder="Ej: Juan"
+                                                class="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-400 focus:border-purple-400 outline-none transition-all bg-gray-50 focus:bg-white text-sm">
+                                        </div>
+                                        <div>
+                                            <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Apellido</label>
+                                            <input type="text" id="edit-user-last-name" placeholder="Ej: Pérez"
+                                                class="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-400 focus:border-purple-400 outline-none transition-all bg-gray-50 focus:bg-white text-sm">
+                                        </div>
+                                        <div>
+                                            <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Correo Electrónico</label>
+                                            <input type="email" id="edit-user-email" placeholder="correo@ejemplo.com"
+                                                class="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-400 focus:border-purple-400 outline-none transition-all bg-gray-50 focus:bg-white text-sm">
+                                        </div>
+                                        <div>
+                                            <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Rol en el Sistema</label>
+                                            <select id="edit-user-role"
+                                                class="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-400 focus:border-purple-400 outline-none transition-all bg-gray-50 focus:bg-white text-sm">
+                                                <option value="administrador">Administrador</option>
+                                                <option value="docente">Docente</option>
+                                            </select>
+                                            <p id="edit-user-role-warn" class="hidden text-[11px] text-gray-400 mt-1.5 flex items-center gap-1.5">
+                                                ⚠️ No puedes cambiar tu propio rol
+                                            </p>
+                                        </div>
+                                        <div>
+                                            <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Estado</label>
+                                            <select id="edit-user-status"
+                                                class="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-400 focus:border-purple-400 outline-none transition-all bg-gray-50 focus:bg-white text-sm">
+                                                <option value="activo">Activo</option>
+                                                <option value="pendiente">Pendiente</option>
+                                                <option value="inactivo">Inactivo / Suspendido</option>
+                                            </select>
+                                            <p id="edit-user-status-warn" class="hidden text-[11px] text-gray-400 mt-1.5 flex items-center gap-1.5">
+                                                ⚠️ No puedes cambiar tu propio estado
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div class="mt-8 pt-5 border-t border-gray-100 flex justify-end gap-3">
+                                        <button onclick="cerrarModalEditarUsuario()"
+                                            class="px-5 py-2.5 text-gray-600 font-semibold hover:bg-gray-100 rounded-xl transition-colors text-sm">Cancelar</button>
+                                        <button id="btn-update-user"
+                                            class="px-6 py-2.5 bg-purple-600 text-white rounded-xl font-semibold hover:bg-purple-700 transition shadow-md shadow-purple-600/20 flex items-center gap-2 text-sm">
+                                            Guardar Cambios
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                         <!-- Tabla Usuarios -->
                         <div class="overflow-x-auto">
                             <table class="w-full text-left border-collapse">
@@ -917,6 +992,24 @@
                             </div>
                         </div>
 
+                        <!-- Filtro de Tabs para Secciones -->
+                        <div class="px-6 py-3 border-b border-gray-100 flex items-center bg-white">
+                            <div class="flex bg-gray-100 p-1 rounded-xl w-fit">
+                                <button onclick="filtrarSeccionesTab('activo')" id="btn-sec-tab-activo"
+                                    class="px-5 py-2 text-sm font-semibold rounded-lg bg-white shadow text-gray-800 transition">
+                                    Activos
+                                </button>
+                                <button onclick="filtrarSeccionesTab('planificacion')" id="btn-sec-tab-planificacion"
+                                    class="px-5 py-2 text-sm font-semibold rounded-lg text-gray-500 hover:text-gray-700 transition">
+                                    Planificación
+                                </button>
+                                <button onclick="filtrarSeccionesTab('finalizado')" id="btn-sec-tab-finalizado"
+                                    class="px-5 py-2 text-sm font-semibold rounded-lg text-gray-500 hover:text-gray-700 transition">
+                                    Finalizados
+                                </button>
+                            </div>
+                        </div>
+
                         <!-- Tabla Secciones -->
                         <div class="overflow-x-auto">
                             <table class="w-full text-left border-collapse">
@@ -1299,13 +1392,23 @@
 
                     data.matricula.forEach(mat => {
                         const inicial = mat.estudiante.charAt(0).toUpperCase();
+
+                        // Determinar color del status dot basado en el estado (como en gestión de secciones)
+                        const estado = (mat.periodo_estado || 'activo').toLowerCase();
+                        let statusDotColor = 'bg-gray-400';
+                        if (estado === 'activo') statusDotColor = 'bg-green-500';
+                        else if (estado === 'planificacion') statusDotColor = 'bg-yellow-400';
+
                         tbody.innerHTML += `
                             <tr class="hover:bg-gray-50 border-b border-gray-50 transition-colors">
                                 <td class="px-6 py-4 text-gray-500 text-sm font-mono">${mat.cedula}</td>
                                 <td class="px-6 py-4">
                                     <div class="flex items-center gap-3">
                                         <div class="w-9 h-9 rounded-full bg-yellow-100 text-yellow-700 flex items-center justify-center font-bold text-sm flex-shrink-0">${inicial}</div>
-                                        <p class="font-medium text-gray-800">${mat.estudiante}</p>
+                                        <div class="flex items-center gap-2">
+                                            <span class="flex items-center"><span class="w-2 h-2 rounded-full ${statusDotColor}"></span></span>
+                                            <p class="font-medium text-gray-800">${mat.estudiante}</p>
+                                        </div>
                                     </div>
                                 </td>
                                 <td class="px-6 py-4 text-gray-500 text-sm"><span class="px-2 py-1 rounded bg-gray-100 border border-gray-200 text-xs shadow-sm whitespace-nowrap">${mat.seccion}</span></td>
@@ -1429,6 +1532,16 @@
             content.classList.add('scale-95');
             setTimeout(() => modal.classList.add('hidden'), 300);
         }
+
+        // Cerrar modal con tecla ESC
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                const modalAlum = document.getElementById('modal-registrar-alumno');
+                if (modalAlum && !modalAlum.classList.contains('hidden') && typeof cerrarModalRegistrarAlumno === 'function') {
+                    cerrarModalRegistrarAlumno();
+                }
+            }
+        });
 
         // --- BUSCADOR INTELIGENTE DE ESTUDIANTES ---
         async function buscarEstudiantePorCedula() {

@@ -72,6 +72,16 @@ document.addEventListener('click', (e) => {
     }
 });
 
+// Cerrar modal con tecla ESC
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+        const modal = document.getElementById('modal-periodo');
+        if (modal && !modal.classList.contains('hidden')) {
+            cerrarModalPeriodo();
+        }
+    }
+});
+
 // =============================================================
 // CRUD — LEER
 // =============================================================

@@ -135,6 +135,7 @@ function renderizarTablaUsuarios(usuarios) {
                             data-user-id="${u.id}"
                             data-nombres="${u.nombres}"
                             data-apellidos="${u.apellidos}"
+                            data-email="${u.email}"
                             data-estado="${u.estado}"
                             data-rol="${u.rol}"
                             data-es-mismo-usuario="${esMismoUsuario}"
@@ -211,6 +212,7 @@ function abrirModalEditarDesdeBtn(btn) {
         btn.dataset.userId,
         btn.dataset.nombres,
         btn.dataset.apellidos,
+        btn.dataset.email,
         btn.dataset.estado,
         btn.dataset.rol,
         btn.dataset.esMismoUsuario === 'true'
@@ -223,107 +225,133 @@ function confirmarEliminarDesdeBtn(btn) {
 // ─────────────────────────────────────────────────────────────
 // ACCIÓN: EDITAR USUARIO — Modal SweetAlert2
 // ─────────────────────────────────────────────────────────────
-async function abrirModalEditar(userId, nombres, apellidos, estadoActual, rolActual, esMismoUsuario = false) {
+async function abrirModalEditar(userId, nombres, apellidos, email, estadoActual, rolActual, esMismoUsuario = false) {
+    // Rellenamos el formulario del modal
+    document.getElementById('edit-user-id').value = userId;
+    document.getElementById('edit-user-first-name').value = nombres;
+    document.getElementById('edit-user-last-name').value = apellidos;
+    document.getElementById('edit-user-email').value = email;
+    document.getElementById('edit-user-role').value = rolActual;
+    document.getElementById('edit-user-status').value = estadoActual;
 
-    const opcionesEstado = ['activo', 'pendiente', 'inactivo']
-        .map(e => `<option value="${e}" ${e === estadoActual ? 'selected' : ''}>${e.charAt(0).toUpperCase() + e.slice(1)}</option>`)
-        .join('');
+    // Bloquear campos de rol y estado si es el mismo usuario y mostrar warning
+    const rolSelect = document.getElementById('edit-user-role');
+    const statusSelect = document.getElementById('edit-user-status');
+    const rolWarn = document.getElementById('edit-user-role-warn');
+    const statusWarn = document.getElementById('edit-user-status-warn');
 
-    const opcionesRol = ['administrador', 'docente']
-        .map(r => `<option value="${r}" ${r === rolActual ? 'selected' : ''}>${r.charAt(0).toUpperCase() + r.slice(1)}</option>`)
-        .join('');
-
-    const { value: formValues, isConfirmed } = await Swal.fire({
-        title: '<span style="color:#7c3aed;font-weight:700">✏️ Editar Usuario</span>',
-        html: `
-            <div style="text-align:left;display:flex;flex-direction:column;gap:12px;margin-top:8px">
-                <div>
-                    <label style="font-size:12px;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:.05em">Nombre</label>
-                    <input id="swal-nombres" value="${nombres}" placeholder="Nombre"
-                        style="width:100%;margin-top:4px;padding:8px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:14px;outline:none">
-                </div>
-                <div>
-                    <label style="font-size:12px;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:.05em">Apellido</label>
-                    <input id="swal-apellidos" value="${apellidos}" placeholder="Apellido"
-                        style="width:100%;margin-top:4px;padding:8px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:14px;outline:none">
-                </div>
-                <div style="display:flex;gap:10px">
-                    <div style="flex:1">
-                        <label style="font-size:12px;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:.05em">Rol</label>
-                        <select id="swal-rol"
-                            ${esMismoUsuario ? 'disabled title="No puedes cambiar tu propio rol"' : ''}
-                            style="width:100%;margin-top:4px;padding:8px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:14px;background:${esMismoUsuario ? '#f3f4f6' : '#fff'};color:${esMismoUsuario ? '#9ca3af' : 'inherit'};outline:none;cursor:${esMismoUsuario ? 'not-allowed' : 'pointer'}">
-                            ${opcionesRol}
-                        </select>
-                        ${esMismoUsuario ? '<p style="font-size:11px;color:#9ca3af;margin-top:4px">⚠️ No puedes cambiar tu propio rol</p>' : ''}
-                    </div>
-                    <div style="flex:1">
-                        <label style="font-size:12px;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:.05em">Estado</label>
-                        <select id="swal-estado"
-                            ${esMismoUsuario ? 'disabled title="No puedes cambiar tu propio estado"' : ''}
-                            style="width:100%;margin-top:4px;padding:8px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:14px;background:${esMismoUsuario ? '#f3f4f6' : '#fff'};color:${esMismoUsuario ? '#9ca3af' : 'inherit'};outline:none;cursor:${esMismoUsuario ? 'not-allowed' : 'pointer'}">
-                            ${opcionesEstado}
-                        </select>
-                        ${esMismoUsuario ? '<p style="font-size:11px;color:#9ca3af;margin-top:4px">⚠️ No puedes cambiar tu propio estado</p>' : ''}
-                    </div>
-                </div>
-            </div>`,
-        showCancelButton: true,
-        confirmButtonText: 'Guardar Cambios',
-        cancelButtonText: 'Cancelar',
-        confirmButtonColor: '#7c3aed',
-        cancelButtonColor: '#9ca3af',
-        focusConfirm: false,
-        preConfirm: () => {
-            const nombresVal = document.getElementById('swal-nombres').value.trim();
-            const apellidosVal = document.getElementById('swal-apellidos').value.trim();
-            const estadoVal = document.getElementById('swal-estado').value;
-            const rolVal = document.getElementById('swal-rol').value;
-
-            if (!nombresVal || !apellidosVal) {
-                Swal.showValidationMessage('El nombre y apellido son obligatorios');
-                return false;
-            }
-            return { nombres: nombresVal, apellidos: apellidosVal, estado: estadoVal, rol: rolVal };
-        }
-    });
-
-    if (!isConfirmed || !formValues) return;
-
-    // Mostrar loading mientras se guarda
-    Swal.fire({
-        title: 'Guardando...',
-        allowOutsideClick: false,
-        didOpen: () => Swal.showLoading()
-    });
-
-    try {
-        const response = await fetchWithAuth(`${API_BASE}/api/usuarios/${userId}`, {
-            method: 'PUT',
-            body: JSON.stringify(formValues)
-        });
-
-        const data = await response.json();
-
-        if (response.ok && data.success) {
-            await Swal.fire({
-                icon: 'success',
-                title: '¡Actualizado!',
-                text: data.message,
-                confirmButtonColor: '#7c3aed',
-                timer: 2500,
-                timerProgressBar: true
-            });
-            await cargarYRenderizarUsuarios(); // Recargar tabla
-        } else {
-            Swal.fire({ icon: 'error', title: 'Error', text: data.message, confirmButtonColor: '#EF4444' });
-        }
-
-    } catch (error) {
-        console.error('Error al editar:', error);
-        Swal.fire({ icon: 'error', title: 'Error de conexión', text: 'No se pudo conectar con el servidor.', confirmButtonColor: '#EF4444' });
+    if (esMismoUsuario) {
+        rolSelect.disabled = true;
+        statusSelect.disabled = true;
+        rolSelect.classList.add('bg-gray-100', 'text-gray-500', 'cursor-not-allowed');
+        statusSelect.classList.add('bg-gray-100', 'text-gray-500', 'cursor-not-allowed');
+        rolWarn.classList.remove('hidden');
+        statusWarn.classList.remove('hidden');
+    } else {
+        rolSelect.disabled = false;
+        statusSelect.disabled = false;
+        rolSelect.classList.remove('bg-gray-100', 'text-gray-500', 'cursor-not-allowed');
+        statusSelect.classList.remove('bg-gray-100', 'text-gray-500', 'cursor-not-allowed');
+        rolWarn.classList.add('hidden');
+        statusWarn.classList.add('hidden');
     }
+
+    // Mostrar modal con animaciones
+    const modal = document.getElementById('modal-editar-usuario');
+    const content = document.getElementById('modal-editar-usuario-content');
+
+    modal.classList.remove('hidden');
+    setTimeout(() => {
+        modal.classList.remove('opacity-0');
+        content.classList.remove('scale-95');
+        content.classList.add('scale-100');
+    }, 10);
 }
+
+window.cerrarModalEditarUsuario = function () {
+    const modal = document.getElementById('modal-editar-usuario');
+    const content = document.getElementById('modal-editar-usuario-content');
+
+    modal.classList.add('opacity-0');
+    content.classList.remove('scale-100');
+    content.classList.add('scale-95');
+
+    setTimeout(() => {
+        modal.classList.add('hidden');
+    }, 300);
+}
+
+// Cerrar modal con tecla ESC
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+        const modalEdit = document.getElementById('modal-editar-usuario');
+        if (modalEdit && !modalEdit.classList.contains('hidden')) {
+            cerrarModalEditarUsuario();
+        }
+        
+        // Opcional: Cerrar cualquier otro modal que exista
+        const modalCreate = document.getElementById('modal-crear-usuario');
+        if (modalCreate && !modalCreate.classList.contains('hidden') && typeof cerrarModalCrearUsuario === 'function') {
+            cerrarModalCrearUsuario();
+        }
+    }
+});
+
+// Botón "Guardar Cambios" del Modal de Edición
+document.addEventListener('DOMContentLoaded', () => {
+    const btnUpdateUser = document.getElementById('btn-update-user');
+    if (btnUpdateUser) {
+        btnUpdateUser.addEventListener('click', async () => {
+            const userId = document.getElementById('edit-user-id').value;
+            const formValues = {
+                nombres: document.getElementById('edit-user-first-name').value.trim(),
+                apellidos: document.getElementById('edit-user-last-name').value.trim(),
+                email: document.getElementById('edit-user-email').value.trim(),
+                rol: document.getElementById('edit-user-role').value,
+                estado: document.getElementById('edit-user-status').value
+            };
+
+            if (!formValues.nombres || !formValues.apellidos) {
+                Swal.fire({ title: 'Campos Requeridos', text: 'El nombre y apellido son obligatorios', icon: 'warning', confirmButtonColor: '#9333ea' });
+                return;
+            }
+
+            const textoOriginal = btnUpdateUser.innerHTML;
+            btnUpdateUser.innerHTML = `<svg class="w-4 h-4 animate-spin inline mr-2" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path></svg>Guardando...`;
+            btnUpdateUser.disabled = true;
+
+            try {
+                const response = await fetchWithAuth(`${API_BASE}/api/usuarios/${userId}`, {
+                    method: 'PUT',
+                    body: JSON.stringify(formValues)
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    cerrarModalEditarUsuario();
+                    await Swal.fire({
+                        icon: 'success',
+                        title: '¡Actualizado!',
+                        text: data.message,
+                        confirmButtonColor: '#7c3aed',
+                        timer: 2500,
+                        timerProgressBar: true
+                    });
+                    await cargarYRenderizarUsuarios(); // Recargar tabla
+                } else {
+                    Swal.fire({ icon: 'error', title: 'Error', text: data.message, confirmButtonColor: '#EF4444' });
+                }
+            } catch (error) {
+                console.error('Error al editar:', error);
+                Swal.fire({ icon: 'error', title: 'Error de conexión', text: 'No se pudo conectar con el servidor.', confirmButtonColor: '#EF4444' });
+            } finally {
+                btnUpdateUser.innerHTML = textoOriginal;
+                btnUpdateUser.disabled = false;
+            }
+        });
+    }
+});
 
 // ─────────────────────────────────────────────────────────────
 // ACCIÓN: ELIMINAR USUARIO — Confirmación SweetAlert2
