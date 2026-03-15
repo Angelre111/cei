@@ -181,6 +181,15 @@ def registrar_usuario():
     if not all([nombres, apellidos, email, telefono, contrasena]):
         return jsonify({'success': False, 'message': 'Faltan datos obligatorios.'}), 400
 
+    # ---> NUEVO PASO: Verificar en la BD pública antes de llamar a Auth <---
+    try:
+        usuario_existente = supabase.table("usuarios").select("id").eq("email", email).execute()
+        if usuario_existente.data and len(usuario_existente.data) > 0:
+            return jsonify({'success': False, 'message': 'Este correo electrónico ya está registrado en el sistema.'}), 409
+    except Exception as e:
+        print(f"⚠️ Error al verificar existencia previa: {e}")
+        # Si falla la consulta por error de red, dejamos que el código siga a ver qué pasa
+
     try:
         # 3. Crear el usuario en el sistema de Autenticación de Supabase
         auth_response = supabase_auth.auth.sign_up({
@@ -220,13 +229,18 @@ def registrar_usuario():
         }), 201
 
     except Exception as e:
-        error_msg = str(e).lower() # Pasamos todo a minúsculas una sola vez
+        error_msg = str(e).lower() 
         print(f"❌ Error Registro: {error_msg}")
         
-        # Atrapamos errores de Auth Y errores de llave duplicada en PostgreSQL
-        if any(keyword in error_msg for keyword in ["already registered", "already exists", "unique constraint", "duplicate key"]):
-            return jsonify({'success': False, 'message': 'Este correo electrónico ya está registrado.'}), 409
+        # 1. Atrapamos errores de "Usuario ya existe" (Auth o código 23505 de llave duplicada en BD)
+        if any(keyword in error_msg for keyword in ["already registered", "already exists", "unique constraint", "duplicate key", "23505", "already in use"]):
+            return jsonify({'success': False, 'message': 'Este correo electrónico ya está registrado en el sistema.'}), 409
             
+        # 2. Atrapamos errores de límite de pruebas de Supabase (Rate Limit)
+        if "rate limit" in error_msg or "too many requests" in error_msg:
+            return jsonify({'success': False, 'message': 'Has intentado registrarte demasiadas veces seguidas. Por favor, espera unos minutos.'}), 429
+            
+        # 3. Error genérico de respaldo
         return jsonify({'success': False, 'message': 'No se pudo completar el registro. Intenta de nuevo.'}), 500
 
 
@@ -273,9 +287,12 @@ def login_usuario():
         rol_usuario = user_data.data[0].get('rol')
         estado_usuario = user_data.data[0].get('estado')
 
-        # Bloquear si la cuenta está inactiva
-        if estado_usuario == 'inactivo':
-             return jsonify({'success': False, 'message': 'Tu cuenta está inactiva. Verifique su cuenta antes de ingresar'}), 403
+        # Bloquear si la cuenta está inactiva o pendiente
+        if estado_usuario in ['inactivo', 'pendiente']:
+             return jsonify({
+                 'success': False, 
+                 'message': 'Tu cuenta está pendiente de verificación o inactiva. Revisa tu correo electrónico para verificarla.'
+             }), 403
 
         # Guardar sesión en Flask
         session['user_id'] = user_id
@@ -286,6 +303,16 @@ def login_usuario():
         if rol_usuario == 'representante':
             ficha_res = supabase.table("inscripciones").select("id").eq("user_id", user_id).execute()
             ficha_completada = len(ficha_res.data) > 0
+            
+        # NUEVA VALIDACIÓN: Si es docente, verificar si tiene aula asignada
+        elif rol_usuario == 'docente':
+            sec_res = supabase.table("docentes_secciones").select("seccion_id").eq("docente_id", user_id).execute()
+            if not sec_res.data or len(sec_res.data) == 0:
+                print(f"❌ Login denegado: La docente {email} no tiene sección asignada.")
+                return jsonify({
+                    'success': False, 
+                    'message': 'Aún no tienes un aula asignada. Por favor, contacta a la dirección para que te asignen una sección antes de ingresar.'
+                }), 403
 
         # 6. Enviar respuesta exitosa al Frontend con el rol real
         return jsonify({
@@ -305,6 +332,13 @@ def login_usuario():
         error_msg = str(e).lower()
         print(f"⚠️ Error Login: {e}")
         
+        # NUEVO: Si no ha verificado el correo en Supabase
+        if "email not confirmed" in error_msg:
+            return jsonify({
+                'success': False, 
+                'message': 'Debes verificar tu correo electrónico antes de iniciar sesión. Por favor, revisa tu bandeja de entrada o la carpeta de Spam.'
+            }), 403
+            
         # Si el error es claramente de credenciales de Supabase
         if "invalid login credentials" in error_msg:
             return jsonify({
@@ -973,13 +1007,18 @@ def _verificar_admin(user_id: str):
     perfil = supabase.table("usuarios").select("rol").eq("id", user_id).single().execute()
     return perfil.data and perfil.data.get("rol") == "administrador"
 
+def _verificar_admin_o_docente(user_id: str):
+    """Helper: retorna True si el usuario es administrador o docente, False si no."""
+    perfil = supabase.table("usuarios").select("rol").eq("id", user_id).single().execute()
+    return perfil.data and perfil.data.get("rol") in ["administrador", "docente"]
+
 
 @app.route('/api/periodos', methods=['GET'])
 @require_auth
 def listar_periodos():
     """Lista todos los períodos académicos ordenados por fecha de inicio descendente."""
-    if not _verificar_admin(request.current_user.id):
-        return jsonify({'success': False, 'message': 'Acción denegada. Solo administradores.'}), 403
+    if not _verificar_admin_o_docente(request.current_user.id):
+        return jsonify({'success': False, 'message': 'Acción denegada. Solo personal autorizado.'}), 403
     try:
         response = supabase.table("periodos_academicos") \
             .select("id, nombre, fecha_inicio, fecha_fin, estado, created_at") \
@@ -1257,6 +1296,279 @@ def eliminar_seccion(seccion_id):
     except Exception as e:
         print(f"❌ Error eliminar_seccion: {e}")
         return jsonify({'success': False, 'message': 'Error al eliminar la sección.'}), 500
+
+@app.route('/api/asistencias/<seccion_id>/<fecha>', methods=['GET'])
+@require_auth
+def obtener_asistencia_dia(seccion_id, fecha):
+    """Obtiene los registros de asistencia de una sección en una fecha específica."""
+    solicitante_id = request.current_user.id
+    perfil = supabase.table("usuarios").select("rol").eq("id", solicitante_id).single().execute()
+    
+    if not perfil.data or perfil.data.get("rol") not in ["docente", "administrador"]:
+        return jsonify({'success': False, 'message': 'Acción denegada.'}), 403
+
+    try:
+        # Buscar todos los registros de esa sección en esa fecha específica
+        res = supabase.table("asistencias").select("*").eq("seccion_id", seccion_id).eq("fecha", fecha).execute()
+        
+        return jsonify({
+            'success': True, 
+            'asistencias': res.data,
+            'ya_registrada': len(res.data) > 0
+        }), 200
+
+    except Exception as e:
+        print(f"❌ Error al obtener asistencia del día: {e}")
+        return jsonify({'success': False, 'message': 'Error al cargar los datos de asistencia.'}), 500
+
+
+@app.route('/api/asistencias/guardar', methods=['POST'])
+@require_auth
+def guardar_asistencia():
+    """Guarda o actualiza el registro de asistencia diario de una sección."""
+    # Verificar que sea docente o admin
+    solicitante_id = request.current_user.id
+    perfil = supabase.table("usuarios").select("rol").eq("id", solicitante_id).single().execute()
+    
+    if not perfil.data or perfil.data.get("rol") not in ["docente", "administrador"]:
+        return jsonify({'success': False, 'message': 'Acción denegada. Solo docentes pueden registrar asistencia.'}), 403
+
+    data = request.json
+    fecha = data.get('fecha')
+    seccion_id = data.get('seccion_id')
+    lista_asistencia = data.get('estudiantes', []) # Lista de diccionarios
+
+    if not fecha or not seccion_id or not lista_asistencia:
+        return jsonify({'success': False, 'message': 'Datos incompletos. Se requiere fecha, sección y lista de alumnos.'}), 400
+
+    # =======================================================
+    # NUEVA VALIDACIÓN ESTRICTA DE FECHAS EN EL BACKEND
+    # =======================================================
+    try:
+        # Convertir el string 'YYYY-MM-DD' a un objeto Date de Python
+        fecha_obj = datetime.strptime(fecha, '%Y-%m-%d').date()
+        hoy = datetime.now().date()
+        
+        # 1. Bloquear Fechas Futuras
+        if fecha_obj > hoy:
+            return jsonify({'success': False, 'message': 'Operación rechazada por el servidor: No se puede registrar asistencia en fechas futuras.'}), 400
+            
+        # 2. Bloquear Fines de Semana (En Python weekday() 5 es Sábado y 6 es Domingo)
+        if fecha_obj.weekday() >= 5:
+            return jsonify({'success': False, 'message': 'Operación rechazada por el servidor: No se labora los fines de semana.'}), 400
+            
+    except ValueError:
+        return jsonify({'success': False, 'message': 'Formato de fecha inválido. Se esperaba YYYY-MM-DD.'}), 400
+    # =======================================================
+
+    try:
+        registros_a_guardar = []
+        
+        for est in lista_asistencia:
+            # Si no envían observación, se guarda como None (NULL en BD)
+            observacion = est.get('observacion') if est.get('observacion') else None
+            
+            registro = {
+                "hijo_id": est['hijo_id'],
+                "seccion_id": seccion_id,
+                "fecha": fecha,
+                "estado_asistencia": est.get('estado_asistencia', 'ausente'),
+                "observacion": observacion,
+                "registrado_por": solicitante_id
+            }
+            registros_a_guardar.append(registro)
+
+        # Usamos upsert. Si ya existe un registro para ese hijo_id en esa fecha, lo actualiza.
+        # Si no existe, lo inserta nuevo. Todo en una sola llamada a la BD.
+        response = supabase.table("asistencias").upsert(
+            registros_a_guardar, 
+            on_conflict="hijo_id,fecha" # Clave de la restricción única
+        ).execute()
+
+        return jsonify({'success': True, 'message': 'Asistencia guardada exitosamente.'}), 200
+
+    except Exception as e:
+        print(f"❌ Error al guardar asistencia: {e}")
+        return jsonify({'success': False, 'message': 'Error interno al procesar la asistencia.'}), 500
+
+
+@app.route('/api/docente/mi-clase', methods=['GET'])
+@require_auth
+def obtener_mi_clase():
+    """Obtiene la sección asignada a la docente logueada y la lista de sus alumnos activos."""
+    docente_id = request.current_user.id
+    
+    try:
+        # 1. Buscar la sección asignada a este docente
+        # Usamos la tabla puente 'docentes_secciones' que creamos anteriormente
+        res_doc_sec = supabase.table("docentes_secciones").select("seccion_id").eq("docente_id", docente_id).execute()
+        
+        if not res_doc_sec.data:
+            return jsonify({'success': False, 'message': 'No tienes ninguna sección asignada en este momento.'}), 404
+            
+        seccion_id = res_doc_sec.data[0]['seccion_id']
+        
+        # 2. Obtener los detalles de esa sección (Nivel y Letra) y nombre del docente
+        res_seccion = supabase.table("secciones").select("nivel, letra").eq("id", seccion_id).execute()
+        seccion_info = res_seccion.data[0] if res_seccion.data else {'nivel': 'Desconocido', 'letra': ''}
+        
+        res_user = supabase.table("usuarios").select("nombres, apellidos").eq("id", docente_id).single().execute()
+        nombre_docente = "¡Bienvenida!"
+        if res_user.data:
+            nombre_docente = f"¡Bienvenida, {res_user.data['nombres']}!"
+
+        # 3. Buscar los IDs de los estudiantes inscritos ('cursando') en esta sección
+        res_asignaciones = supabase.table("asignaciones_estudiantes").select("hijo_id").eq("seccion_id", seccion_id).eq("estado", "cursando").execute()
+        
+        estudiantes = []
+        if res_asignaciones.data:
+            hijos_ids = [item['hijo_id'] for item in res_asignaciones.data]
+            
+            # 4. Traer los datos de los niños, incluyendo cédula y el ID del representante
+            res_hijos = supabase.table("hijos").select("id, nombre, apellidos, cedula_escolar, representante_id").in_("id", hijos_ids).order("nombre").execute()
+            
+            # Buscamos los nombres de los representantes en un solo query para optimizar
+            rep_ids = list(set([h['representante_id'] for h in res_hijos.data if h.get('representante_id')]))
+            reps_map = {}
+            if rep_ids:
+                res_reps = supabase.table("usuarios").select("id, nombres, apellidos").in_("id", rep_ids).execute()
+                for r in res_reps.data:
+                    reps_map[r['id']] = f"{r.get('nombres', '')} {r.get('apellidos', '')}".strip()
+
+            for h in res_hijos.data:
+                inicial = h['nombre'][0].upper() if h['nombre'] else 'S'
+                rep_nombre = reps_map.get(h.get('representante_id'), "Desconocido")
+                
+                estudiantes.append({
+                    "id": h['id'],
+                    "nombre": h['nombre'],
+                    "apellido": h['apellidos'],
+                    "cedula_escolar": h.get('cedula_escolar', 'S/N'),
+                    "representante": rep_nombre,
+                    "fotoUrl": f"https://placehold.co/100x100/E0F2FE/0284C7?text={inicial}"
+                })
+                
+        return jsonify({
+            'success': True,
+            'docente': nombre_docente,
+            'seccion': {
+                'id': seccion_id,
+                'nivel': seccion_info.get('nivel'),
+                'letra': seccion_info.get('letra')
+            },
+            'estudiantes': estudiantes
+        }), 200
+
+    except Exception as e:
+        print(f"❌ Error al cargar clase de docente: {e}")
+        return jsonify({'success': False, 'message': 'Error interno al cargar los datos de la clase.'}), 500
+
+
+@app.route('/api/estudiantes/<int:hijo_id>/ficha', methods=['GET'])
+@require_auth
+def obtener_ficha_estudiante(hijo_id):
+    """Obtiene todos los datos de inscripción y personales de un estudiante."""
+    try:
+        # 1. Buscar datos básicos del niño
+        res_hijo = supabase.table("hijos").select("*").eq("id", hijo_id).single().execute()
+        if not res_hijo.data:
+            return jsonify({'success': False, 'message': 'Estudiante no encontrado.'}), 404
+            
+        hijo = res_hijo.data
+
+        # 2. Buscar su ficha médica/socioeconómica
+        res_inscripcion = supabase.table("inscripciones").select("*").eq("hijo_id", hijo_id).order("created_at", desc=True).limit(1).execute()
+        inscripcion = res_inscripcion.data[0] if res_inscripcion.data else {}
+
+        # 3. Unificamos todo en un solo diccionario para el Frontend
+        ficha_completa = {
+            # Datos Niño
+            "nombres": hijo.get("nombre", ""),
+            "apellidos": hijo.get("apellidos", ""),
+            "fecha_nacimiento": hijo.get("fecha_nacimiento", ""),
+            "sexo": hijo.get("sexo", ""),
+            "cedula_escolar": hijo.get("cedula_escolar", ""),
+            
+            # Datos Inscripción (Padres, Salud, Hábitos)
+            "lugar_nacimiento": inscripcion.get("lugar_nacimiento", ""),
+            "direccion_habitacion": inscripcion.get("direccion_habitacion", ""),
+            "nombre_madre": inscripcion.get("nombre_madre", ""),
+            "ci_madre": inscripcion.get("ci_madre", ""),
+            "telefono_madre": inscripcion.get("telefono_madre", ""),
+            "ocupacion_madre": inscripcion.get("ocupacion_madre", ""),
+            "nombre_padre": inscripcion.get("nombre_padre", ""),
+            "telefono_padre": inscripcion.get("telefono_padre", ""),
+            "tipo_vivienda": inscripcion.get("tipo_vivienda", ""),
+            "tenencia_vivienda": inscripcion.get("tenencia_vivienda", ""),
+            "fue_cesarea": inscripcion.get("fue_cesarea", False),
+            "es_prematuro": inscripcion.get("es_prematuro", False),
+            "es_alergico": inscripcion.get("es_alergico", False),
+            "peso_nacer": inscripcion.get("peso_nacer", ""),
+            "talla_nacer": inscripcion.get("talla_nacer", ""),
+            "enfermedad_cronica": inscripcion.get("enfermedad_cronica", ""),
+            "medicamento_fiebre": inscripcion.get("medicamento_fiebre", ""),
+            "come_solo": inscripcion.get("come_solo", ""),
+            "hora_dormir": inscripcion.get("hora_dormir", ""),
+            "diagnostico_inicial": inscripcion.get("diagnostico_inicial", [])
+        }
+
+        return jsonify({'success': True, 'ficha': ficha_completa}), 200
+
+    except Exception as e:
+        print(f"❌ Error al cargar ficha: {e}")
+        return jsonify({'success': False, 'message': 'Error al cargar la ficha del estudiante.'}), 500
+
+
+@app.route('/api/estudiantes/<int:hijo_id>/ficha', methods=['PUT'])
+@require_auth
+def actualizar_ficha_estudiante(hijo_id):
+    """Permite a la docente o admin actualizar la ficha del estudiante."""
+    data = request.json
+    try:
+        # 1. Separamos los datos que van a la tabla 'hijos'
+        datos_hijo = {
+            "nombre": data.get("nombres"),
+            "apellidos": data.get("apellidos"),
+            "fecha_nacimiento": data.get("fecha_nacimiento"),
+            "sexo": data.get("sexo")
+        }
+        supabase.table("hijos").update(datos_hijo).eq("id", hijo_id).execute()
+
+        # 2. Separamos los datos que van a 'inscripciones'
+        datos_inscripcion = {
+            "lugar_nacimiento": data.get("lugar_nacimiento"),
+            "direccion_habitacion": data.get("direccion_habitacion"),
+            "nombre_madre": data.get("nombre_madre"),
+            "ci_madre": data.get("ci_madre"),
+            "telefono_madre": data.get("telefono_madre"),
+            "ocupacion_madre": data.get("ocupacion_madre"),
+            "nombre_padre": data.get("nombre_padre"),
+            "telefono_padre": data.get("telefono_padre"),
+            "tipo_vivienda": data.get("tipo_vivienda"),
+            "tenencia_vivienda": data.get("tenencia_vivienda"),
+            "fue_cesarea": data.get("fue_cesarea", False),
+            "es_prematuro": data.get("es_prematuro", False),
+            "es_alergico": data.get("es_alergico", False),
+            "peso_nacer": data.get("peso_nacer"),
+            "talla_nacer": data.get("talla_nacer"),
+            "enfermedad_cronica": data.get("enfermedad_cronica"),
+            "medicamento_fiebre": data.get("medicamento_fiebre"),
+            "come_solo": data.get("come_solo"),
+            "hora_dormir": data.get("hora_dormir")
+            # Omitimos diagnostico_inicial por simplicidad en esta actualización, o puedes agregarlo
+        }
+        
+        # Buscamos la inscripción más reciente para actualizarla
+        res_inscripcion = supabase.table("inscripciones").select("id").eq("hijo_id", hijo_id).order("created_at", desc=True).limit(1).execute()
+        if res_inscripcion.data:
+            inscripcion_id = res_inscripcion.data[0]['id']
+            supabase.table("inscripciones").update(datos_inscripcion).eq("id", inscripcion_id).execute()
+
+        return jsonify({'success': True, 'message': 'Ficha actualizada correctamente.'}), 200
+
+    except Exception as e:
+        print(f"❌ Error al actualizar ficha: {e}")
+        return jsonify({'success': False, 'message': 'Error al guardar los cambios en la ficha.'}), 500
 
 
 @app.route('/')

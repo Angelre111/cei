@@ -226,9 +226,12 @@
                 } else if (res.status === 403) {
                     Swal.fire({
                         title: 'Acceso Restringido',
-                        text: json.message || 'Por favor verifique su cuenta antes de ingresar',
+                        text: json.message, // <-- Ahora usa estrictamente el mensaje del servidor
                         icon: 'warning',
-                        confirmButtonColor: '#f59e0b'
+                        confirmButtonColor: '#EC4899', // Cambié al rosa principal del colegio para mantener el branding
+                        customClass: {
+                            popup: 'rounded-2xl shadow-xl'
+                        }
                     });
                 } else if (res.status === 401) {
                     Swal.fire({

@@ -19,6 +19,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
 
     <script>
         tailwind.config = {
@@ -146,6 +148,17 @@
                     </a>
                 </li>
                 <li>
+                    <a href="#" data-section="section-listados"
+                        class="nav-link flex items-center space-x-3 p-3 rounded-xl hover:bg-blue-50 transition-all duration-200">
+                        <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                            stroke-width="1.5" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M3.75 12h16.5m-16.5 3.75h16.5M3.75 19.5h16.5M5.625 4.5h12.75a1.875 1.875 0 010 3.75H5.625a1.875 1.875 0 010-3.75z" />
+                        </svg>
+                        <span>Listado de Alumnos</span>
+                    </a>
+                </li>
+                <li>
                     <a href="#" data-section="section-asistencia"
                         class="nav-link flex items-center space-x-3 p-3 rounded-xl hover:bg-blue-50 transition-all duration-200">
                         <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
@@ -165,17 +178,6 @@
                                 d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125" />
                         </svg>
                         <span>Evaluaciones</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="#" data-section="section-listados"
-                        class="nav-link flex items-center space-x-3 p-3 rounded-xl hover:bg-blue-50 transition-all duration-200">
-                        <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                            stroke-width="1.5" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M3.75 12h16.5m-16.5 3.75h16.5M3.75 19.5h16.5M5.625 4.5h12.75a1.875 1.875 0 010 3.75H5.625a1.875 1.875 0 010-3.75z" />
-                        </svg>
-                        <span>Listados</span>
                     </a>
                 </li>
                 <li>
@@ -206,42 +208,28 @@
 
             <!-- Header Móvil -->
             <div class="md:hidden bg-white p-4 shadow-sm flex justify-between items-center sticky top-0 z-20">
-                <span class="font-bold text-lg text-gray-800">CEI La Paragua</span>
+                <span class="font-bold text-lg text-gray-800">Portal Docente</span>
                 <button onclick="toggleSidebar()" class="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition">
-                    <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                        stroke-width="1.5" stroke="currentColor">
+                    <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round"
                             d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
                     </svg>
                 </button>
             </div>
 
-            <!-- Header del Contenido (Desktop) -->
+            <!-- Header Desktop (Copiado de admin.html) -->
             <header
-                class="sticky top-0 z-10 hidden md:flex items-center justify-between p-4 bg-blue-50/80 backdrop-blur-sm border-b border-blue-100">
+                class="sticky top-0 z-10 hidden md:flex items-center justify-between p-6 bg-white/80 backdrop-blur-md border-b border-gray-200 shadow-sm">
                 <div>
-                    <h1 class="text-2xl font-bold text-gray-800">¡Bienvenida, Prof. Pérez!</h1>
-                    <p class="text-gray-500">Grupo: Maternal (1-2 años)</p>
+                    <h1 id="header-nombre-docente" class="text-2xl font-bold text-gray-800">¡Bienvenida!</h1>
+                    <p id="header-seccion-info" class="text-gray-500">Cargando tu grupo...</p>
                 </div>
                 <div class="flex items-center space-x-4">
-                    <div class="relative">
-                        <input type="text" placeholder="Buscar..."
-                            class="px-4 py-2 pr-10 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-300">
-                        <svg class="w-5 h-5 text-gray-400 absolute right-3 top-1/2 -translate-y-1/2"
-                            xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                            stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
-                        </svg>
-                    </div>
-                    <button class="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-100 rounded-full">
-                        <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                            stroke-width="1.5" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-1.905l-1.05-1.05a.75.75 0 00-1.06 0l-1.06 1.05v1.905c0 1.36.224 2.67.65 3.879l-1.06 1.06a.75.75 0 000 1.06l1.06 1.06a.75.75 0 001.06 0l1.06-1.06zM6.467 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0112 9.75v-1.905l-1.05-1.05a.75.75 0 00-1.06 0l-1.06 1.05v1.905c0 1.36.224 2.67.65 3.879l-1.06 1.06a.75.75 0 000 1.06l1.06 1.06a.75.75 0 001.06 0l1.06-1.06zM12 21a.75.75 0 00.75-.75V18a.75.75 0 00-1.5 0v2.25A.75.75 0 0012 21z" />
-                        </svg>
-                    </button>
-                    <img src="https://placehold.co/100x100/EBF4FF/60A5FA?text=P" alt="Perfil"
+                    <span id="header-ano-container"
+                        class="text-xs font-semibold px-3 py-1 rounded-full border transition-colors bg-gray-100 text-gray-500 border-gray-200">
+                        Año Escolar: <span id="header-ano-activo" class="font-bold">...</span>
+                    </span>
+                    <img src="https://placehold.co/100x100/EBF4FF/60A5FA?text=P" alt="Docente"
                         class="w-10 h-10 rounded-full border-2 border-blue-200">
                 </div>
             </header>
@@ -312,28 +300,87 @@
                 <!-- SECCIÓN 2: GESTIÓN DE ASISTENCIA -->
                 <!-- ============================================ -->
                 <section id="section-asistencia" class="page-section hidden">
-                    <div class="bg-white p-6 rounded-2xl shadow-md">
-                        <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-4">
-                            <h2 class="text-2xl font-bold text-gray-800">Gestión de Asistencia</h2>
-                            <div class="flex items-center space-x-2 mt-4 md:mt-0">
-                                <label for="attendance-date" class="text-gray-600 font-medium">Fecha:</label>
-                                <input type="date" id="attendance-date"
-                                    class="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300"
-                                    value="">
+                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-pink-100 flex flex-col sm:flex-row items-center justify-between mb-6">
+                        <div class="mb-4 sm:mb-0 text-center sm:text-left">
+                            <h2 class="text-xl font-bold text-gray-800">Registro Diario</h2>
+                            <p class="text-sm text-gray-500">Confirma la fecha para habilitar la lista de alumnos</p>
+                        </div>
+                        
+                        <div class="relative group w-full sm:w-auto">
+                            <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                                <svg class="w-6 h-6 text-pink-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                            </div>
+                            <input type="date" id="attendance-date" 
+                                class="bg-pink-50 border-2 border-pink-200 text-gray-800 text-lg font-bold rounded-xl focus:ring-pink-500 focus:border-pink-500 block w-full pl-12 pr-4 py-3 shadow-sm transition-all cursor-pointer hover:bg-pink-100 outline-none">
+                        </div>
+                    </div>
+
+                    <div id="attendance-empty-state" class="text-center py-10 hidden">
+                        <div class="inline-block p-4 bg-gray-50 rounded-full mb-3">
+                            <svg class="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        </div>
+                        <p class="text-gray-500 font-medium">Por favor, selecciona una fecha para ver los estudiantes.</p>
+                    </div>
+
+                    <div id="attendance-list-container" class="bg-white rounded-2xl shadow-md border border-gray-100 overflow-hidden hidden">
+                        
+                        <div class="p-6 border-b border-gray-100 flex flex-col md:flex-row justify-between items-center gap-4 bg-gray-50/30">
+                            <div>
+                                <h3 class="text-lg font-bold text-gray-800">Control de Asistencia</h3>
+                                <p class="text-sm text-gray-500">Marca el estado de los estudiantes y añade justificativos si es necesario.</p>
+                            </div>
+                            <div class="text-xs font-semibold px-3 py-1.5 rounded-lg bg-pink-50 text-pink-600 border border-pink-100">
+                                Sección Activa
                             </div>
                         </div>
 
-                        <!-- Contenedor de la lista de alumnos -->
-                        <div id="attendance-list-container" class="space-y-3">
-                            <!-- Los alumnos se cargarán aquí vía JS -->
-                        </div>
-
-                        <div class="mt-6 text-right">
-                            <button id="btn-save-attendance"
-                                class="px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-all">
-                                Guardar Cambios
+                        <div class="px-6 py-3 bg-white border-b border-gray-100 flex flex-col sm:flex-row justify-between items-center gap-4 font-normal">
+                            <div class="flex items-center gap-4 text-sm font-semibold">
+                                <span class="flex items-center gap-1.5 px-3 py-1.5 bg-green-50 text-green-700 rounded-lg border border-green-100 shadow-sm">
+                                    <span class="w-2.5 h-2.5 rounded-full bg-green-500"></span> Presentes: <span id="contador-presentes" class="text-lg">0</span>
+                                </span>
+                                <span class="flex items-center gap-1.5 px-3 py-1.5 bg-gray-50 text-gray-600 rounded-lg border border-gray-200 shadow-sm">
+                                    <span class="w-2.5 h-2.5 rounded-full bg-gray-400"></span> Ausentes: <span id="contador-ausentes" class="text-lg">0</span>
+                                </span>
+                            </div>
+                            <button type="button" id="btn-toggle-todos" onclick="toggleTodosAsistencia()" class="text-sm font-bold text-pink-600 hover:text-pink-800 transition-colors flex items-center gap-2 bg-pink-50 px-4 py-2 rounded-xl border border-pink-100 hover:bg-pink-100 hover:shadow-sm">
+                                <svg id="icon-toggle-todos" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                                <span id="text-toggle-todos">Todos Presentes</span>
                             </button>
                         </div>
+
+                        <div class="px-6 py-4 bg-gray-50/50 border-b border-gray-100 flex items-center">
+                            <div class="relative w-full max-w-md group">
+                                <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                                    <svg class="w-5 h-5 text-gray-400 group-focus-within:text-pink-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                                </div>
+                                <input type="text" id="attendance-search-input" class="block w-full pl-11 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-pink-200 focus:border-pink-400 transition-all shadow-sm font-normal" placeholder="Buscar alumno por cédula o nombre...">
+                            </div>
+                        </div>
+
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse">
+                                <thead class="bg-gray-50 text-gray-500 uppercase text-xs font-semibold">
+                                    <tr>
+                                        <th class="px-6 py-4 w-32">Cédula Escolar</th>
+                                        <th class="px-6 py-4">Estudiante</th>
+                                        <th class="px-6 py-4 text-center">Estado</th>
+                                        <th class="px-6 py-4">Observaciones / Justificativo</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="attendance-table-body" class="divide-y divide-gray-100 text-sm">
+                                    </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="mt-8 text-right">
+                        <button id="btn-save-attendance"
+                            class="px-8 py-3 bg-pink-500 text-white rounded-xl font-bold shadow-lg shadow-pink-200 hover:bg-pink-600 hover:shadow-pink-300 transition-all transform hover:-translate-y-1">
+                            Guardar Registro del Día
+                        </button>
                     </div>
                 </section>
 
@@ -403,27 +450,30 @@
 
                         <p class="text-gray-600 mb-4">Vista previa del listado oficial de la sección.</p>
 
-                        <!-- Tabla de Vista Previa -->
-                        <div class="overflow-x-auto rounded-lg border">
-                            <table class="w-full min-w-full divide-y divide-gray-200">
-                                <thead class="bg-gray-50">
+                        <div class="px-6 py-4 bg-gray-50/50 border-t border-b border-gray-100 flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4 font-normal">
+                            <div class="relative w-full max-w-md group">
+                                <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                                    <svg class="w-5 h-5 text-gray-400 group-focus-within:text-pink-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                                </div>
+                                <input type="text" id="listado-search-input" class="block w-full pl-11 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-pink-200 focus:border-pink-400 transition-all shadow-sm" placeholder="Buscar por cédula o nombre...">
+                            </div>
+                            <div class="text-sm font-semibold text-gray-600 bg-white px-4 py-2 rounded-lg border border-gray-200 shadow-sm whitespace-nowrap">
+                                Total matriculados: <span id="listado-total-count" class="text-pink-600 font-bold text-lg">0</span> alumnos
+                            </div>
+                        </div>
+
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse">
+                                <thead class="bg-gray-50 text-gray-500 uppercase text-xs font-semibold">
                                     <tr>
-                                        <th scope="col"
-                                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                            ID</th>
-                                        <th scope="col"
-                                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                            Foto</th>
-                                        <th scope="col"
-                                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                            Nombre</th>
-                                        <th scope="col"
-                                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                            Apellido</th>
+                                        <th class="px-6 py-4">Cédula Escolar</th>
+                                        <th class="px-6 py-4">Estudiante</th>
+                                        <th class="px-6 py-4">Grupo</th>
+                                        <th class="px-6 py-4">Representante</th>
+                                        <th class="px-6 py-4 text-center">Acciones</th>
                                     </tr>
                                 </thead>
-                                <tbody id="preview-table-body" class="bg-white divide-y divide-gray-200">
-                                    <!-- Filas cargadas por JS -->
+                                <tbody id="preview-table-body" class="divide-y divide-gray-100 text-sm">
                                 </tbody>
                             </table>
                         </div>
@@ -444,6 +494,99 @@
         </main>
     </div>
 
+    <div id="modal-ficha-estudiante" class="fixed inset-0 bg-black/60 z-50 hidden flex items-center justify-center backdrop-blur-sm opacity-0 transition-opacity duration-300">
+        <div id="modal-ficha-content" class="bg-white rounded-2xl shadow-2xl w-full max-w-5xl mx-4 max-h-[90vh] flex flex-col transform scale-95 transition-transform duration-300">
+            
+            <div class="px-6 py-4 border-b border-pink-100 flex justify-between items-center bg-pink-50/50 rounded-t-2xl flex-shrink-0">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full bg-pink-200 text-pink-700 flex items-center justify-center font-bold text-lg" id="ficha-inicial">A</div>
+                    <div>
+                        <h3 class="font-bold text-gray-800 text-lg leading-tight" id="ficha-nombre-completo">Cargando...</h3>
+                        <p class="text-xs text-pink-600 font-semibold tracking-wider">Cédula: <span id="ficha-cedula">...</span></p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button type="button" id="btn-editar-ficha" onclick="toggleEditFicha()" class="px-4 py-2 bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 rounded-lg text-sm font-semibold transition-all shadow-sm flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                        Editar Ficha
+                    </button>
+                    <button onclick="cerrarModalFicha()" class="text-gray-400 hover:text-red-500 transition-colors p-2 hover:bg-white rounded-lg">
+                        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
+                </div>
+            </div>
+
+            <div class="p-6 overflow-y-auto flex-1 bg-gray-50/30">
+                <form id="form-ficha-estudiante">
+                    <input type="hidden" id="ficha-hijo-id">
+
+                    <h4 class="text-sm font-bold text-pink-500 uppercase tracking-widest mb-3 border-b border-pink-100 pb-2"><i class="ph-fill ph-user mr-1"></i> Datos Personales</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                        <div><label class="block text-xs font-semibold text-gray-500 mb-1">Nombres</label><input type="text" id="f-nombres" class="ficha-input w-full px-3 py-2 border border-gray-200 rounded-lg bg-gray-100 text-gray-700 text-sm focus:ring-2 focus:ring-pink-300 outline-none" disabled></div>
+                        <div><label class="block text-xs font-semibold text-gray-500 mb-1">Apellidos</label><input type="text" id="f-apellidos" class="ficha-input w-full px-3 py-2 border border-gray-200 rounded-lg bg-gray-100 text-gray-700 text-sm focus:ring-2 focus:ring-pink-300 outline-none" disabled></div>
+                        <div><label class="block text-xs font-semibold text-gray-500 mb-1">Fecha de Nacimiento</label><input type="date" id="f-fecha-nac" class="ficha-input w-full px-3 py-2 border border-gray-200 rounded-lg bg-gray-100 text-gray-700 text-sm focus:ring-2 focus:ring-pink-300 outline-none" disabled></div>
+                        <div><label class="block text-xs font-semibold text-gray-500 mb-1">Sexo</label>
+                            <select id="f-sexo" class="ficha-input w-full px-3 py-2 border border-gray-200 rounded-lg bg-gray-100 text-gray-700 text-sm outline-none" disabled>
+                                <option value="F">Femenino</option><option value="M">Masculino</option>
+                            </select>
+                        </div>
+                        <div class="md:col-span-2"><label class="block text-xs font-semibold text-gray-500 mb-1">Dirección de Habitación</label><input type="text" id="f-direccion" class="ficha-input w-full px-3 py-2 border border-gray-200 rounded-lg bg-gray-100 text-gray-700 text-sm focus:ring-2 focus:ring-pink-300 outline-none" disabled></div>
+                    </div>
+
+                    <h4 class="text-sm font-bold text-pink-500 uppercase tracking-widest mb-3 border-b border-pink-100 pb-2 mt-6"><i class="ph-fill ph-users mr-1"></i> Contactos de Emergencia</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                        <div class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
+                            <p class="font-bold text-sm text-gray-800 mb-3">Datos de la Madre</p>
+                            <div class="space-y-3">
+                                <div><label class="block text-xs text-gray-500">Nombre Completo</label><input type="text" id="f-madre-nombre" class="ficha-input w-full px-3 py-1.5 border border-gray-200 rounded-md bg-gray-50 text-sm" disabled></div>
+                                <div class="flex gap-2">
+                                    <div class="w-1/2"><label class="block text-xs text-gray-500">Cédula</label><input type="text" id="f-madre-ci" class="ficha-input w-full px-3 py-1.5 border border-gray-200 rounded-md bg-gray-50 text-sm" disabled></div>
+                                    <div class="w-1/2"><label class="block text-xs text-gray-500">Teléfono</label><input type="text" id="f-madre-tel" class="ficha-input w-full px-3 py-1.5 border border-gray-200 rounded-md bg-gray-50 text-sm font-bold text-blue-600" disabled></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
+                            <p class="font-bold text-sm text-gray-800 mb-3">Datos del Padre</p>
+                            <div class="space-y-3">
+                                <div><label class="block text-xs text-gray-500">Nombre Completo</label><input type="text" id="f-padre-nombre" class="ficha-input w-full px-3 py-1.5 border border-gray-200 rounded-md bg-gray-50 text-sm" disabled></div>
+                                <div><label class="block text-xs text-gray-500">Teléfono</label><input type="text" id="f-padre-tel" class="ficha-input w-full px-3 py-1.5 border border-gray-200 rounded-md bg-gray-50 text-sm font-bold text-blue-600" disabled></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h4 class="text-sm font-bold text-red-500 uppercase tracking-widest mb-3 border-b border-red-100 pb-2 mt-6"><i class="ph-fill ph-heartbeat mr-1"></i> Información Médica</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-2">
+                        <div class="flex items-center gap-2 bg-white p-3 rounded-lg border border-gray-100">
+                            <input type="checkbox" id="f-alergico" class="ficha-input w-4 h-4 text-red-500 rounded focus:ring-red-400" disabled>
+                            <label class="text-sm font-bold text-gray-700">Es Alérgico</label>
+                        </div>
+                        <div class="flex items-center gap-2 bg-white p-3 rounded-lg border border-gray-100">
+                            <input type="checkbox" id="f-prematuro" class="ficha-input w-4 h-4 text-red-500 rounded focus:ring-red-400" disabled>
+                            <label class="text-sm font-bold text-gray-700">Fue Prematuro</label>
+                        </div>
+                        <div class="flex items-center gap-2 bg-white p-3 rounded-lg border border-gray-100">
+                            <input type="checkbox" id="f-cesarea" class="ficha-input w-4 h-4 text-red-500 rounded focus:ring-red-400" disabled>
+                            <label class="text-sm font-bold text-gray-700">Nacido por Cesárea</label>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div><label class="block text-xs font-semibold text-gray-500 mb-1">Enfermedades Crónicas</label><input type="text" id="f-enfermedad" class="ficha-input w-full px-3 py-2 border border-gray-200 rounded-lg bg-gray-100 text-gray-700 text-sm" disabled></div>
+                        <div><label class="block text-xs font-semibold text-gray-500 mb-1">Medicamento para Fiebre</label><input type="text" id="f-fiebre" class="ficha-input w-full px-3 py-2 border border-gray-200 rounded-lg bg-gray-100 text-gray-700 text-sm" disabled></div>
+                    </div>
+
+                </form>
+            </div>
+
+            <div id="ficha-footer" class="px-6 py-4 border-t border-gray-100 bg-gray-50 flex justify-end gap-3 hidden flex-shrink-0 rounded-b-2xl">
+                <button type="button" onclick="toggleEditFicha()" class="px-5 py-2 text-gray-600 font-semibold hover:bg-gray-200 rounded-xl transition-colors text-sm">Cancelar Edición</button>
+                <button type="button" id="btn-guardar-ficha" onclick="guardarFicha()" class="px-6 py-2 bg-pink-500 text-white rounded-xl font-bold shadow-md shadow-pink-200 hover:bg-pink-600 transition-all text-sm flex items-center gap-2">
+                    Guardar Cambios
+                </button>
+            </div>
+
+        </div>
+    </div>
+
     <!-- ============================================ -->
     <!-- TOAST NOTIFICATION (para feedback) -->
     <!-- ============================================ -->
@@ -460,24 +603,18 @@
         // Importar jsPDF (ya está en el scope global por el CDN)
         const { jsPDF } = window.jspdf;
 
-        // ============================================
-        // DATOS FICTICIOS (MOCK DATA)
-        // ============================================
-        const mockEstudiantes = [
-            { id: 1, nombre: "Sofía", apellido: "Pérez", fotoUrl: "https://placehold.co/100x100/FEF3C7/F97316?text=S" },
-            { id: 2, nombre: "Mateo", apellido: "González", fotoUrl: "https://placehold.co/100x100/E0F2FE/0284C7?text=M" },
-            { id: 3, nombre: "Valentina", apellido: "Rodríguez", fotoUrl: "https://placehold.co/100x100/FCE7F3/DB2777?text=V" },
-            { id: 4, nombre: "Leo", apellido: "Martínez", fotoUrl: "https://placehold.co/100x100/D1FAE5/059669?text=L" },
-            { id: 5, nombre: "Isabella", apellido: "García", fotoUrl: "https://placehold.co/100x100/EFE7FF/7C3AED?text=I" },
-            { id: 6, nombre: "Thiago", apellido: "López", fotoUrl: "https://placehold.co/100x100/F3E8FF/8B5CF6?text=T" },
-            { id: 7, nombre: "Emma", apellido: "Sánchez", fotoUrl: "https://placehold.co/100x100/FFF7ED/F97316?text=E" },
-        ];
-
-        // Almacén de datos en memoria
+        // Almacén de datos en memoria para estados locales
         const appData = {
             asistencia: {}, // { "2023-11-12": { 1: "P", 2: "A", ... }, ... }
             evaluaciones: {} // { "p1": { 1: "Texto...", 2: "Texto..." }, ... }
         };
+
+        // ============================================
+        // DATOS DINÁMICOS
+        // ============================================
+        let listaEstudiantes = []; // Ya no usamos mockEstudiantes
+        let seccionActivaId = null;
+        let asistenciaYaRegistrada = false; // Controla si mostramos la advertencia de modificar
 
         // ============================================
         // INICIALIZACIÓN DE LA APP
@@ -486,20 +623,119 @@
             initApp();
         });
 
-        function initApp() {
+        async function initApp() {
             setupNavigation();
-
+            
             // Setear la fecha de hoy en el picker de asistencia
             const today = new Date().toISOString().split('T')[0];
-            document.getElementById('attendance-date').value = today;
+            const dateInput = document.getElementById('attendance-date');
+            
+            dateInput.value = today;
+            dateInput.max = today; // ¡NUEVO! Bloquea días futuros en el calendario nativo
 
-            // Cargar datos iniciales
-            populateAttendanceList();
-            populateStudentDropdowns();
-            populatePreviewTable();
+            // 1. Cargar los datos de la base de datos primero
+            await cargarDatosMiClase();
 
-            // Configurar Listeners de acciones
+            // 2. Configurar Listeners de acciones
             setupActionListeners();
+        }
+
+        // ============================================
+        // CARGA DE DATOS DESDE API
+        // ============================================
+        async function cargarDatosMiClase() {
+            // MOSTRAR THROBBER (LOADING) EN LA TABLA
+            const tbody = document.getElementById('preview-table-body');
+            if (tbody) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="px-6 py-12 text-center text-gray-400">
+                            <div class="flex flex-col items-center gap-3">
+                                <svg class="w-8 h-8 animate-spin text-pink-500" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+                                </svg>
+                                <span class="text-xs font-medium uppercase tracking-widest text-gray-400">Cargando Listado...</span>
+                            </div>
+                        </td>
+                    </tr>`;
+            }
+
+            try {
+                const token = localStorage.getItem('auth_token');
+                const baseUrl = typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : 'http://127.0.0.1:5000';
+                
+                const response = await fetch(`${baseUrl}/api/docente/mi-clase`, {
+                    method: 'GET',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                const result = await response.json();
+
+                // NUEVO: Capturar específicamente el 404 de "Sin sección"
+                if (response.status === 404) {
+                    Swal.fire({
+                        title: 'Acceso Restringido',
+                        text: result.message || 'No tienes una sección asignada. Serás redirigida al inicio.',
+                        icon: 'warning',
+                        confirmButtonColor: '#EC4899',
+                        allowOutsideClick: false,
+                        customClass: { popup: 'rounded-3xl' }
+                    }).then(() => {
+                        // Borramos los datos y la enviamos al login
+                        localStorage.removeItem('auth_token');
+                        localStorage.removeItem('user_rol');
+                        window.location.replace('login.html');
+                    });
+                    return; // Detenemos la ejecución aquí
+                }
+
+                if (response.ok && result.success) {
+                    // 1. Guardar los datos en memoria y LocalStorage
+                    listaEstudiantes = result.estudiantes.map(e => ({
+                        ...e,
+                        nombre_completo: `${e.nombre} ${e.apellido}`,
+                        cedula: e.cedula_escolar || "S/N", 
+                        representante: e.representante || "No asignado",
+                        seccion: `${result.seccion.nivel} - ${result.seccion.letra}`
+                    }));
+                    seccionActivaId = result.seccion.id;
+                    localStorage.setItem('seccion_activa_id', seccionActivaId); // Para que la asistencia lo use
+
+                    // 2. Actualizar el Header Visual
+                    const nombrePila = localStorage.getItem('user_nombres') || 'Docente';
+                    document.getElementById('header-nombre-docente').innerText = result.docente || '¡Bienvenida, Profesor(a)!';
+                    document.getElementById('header-seccion-info').innerText = `Grupo: ${result.seccion.nivel} - ${result.seccion.letra}`;
+
+                    // 3. Poblar las tablas y selectores con los datos reales
+                    populateStudentDropdowns();
+                    populatePreviewTable();
+                    
+                    // Si ya hay una fecha, cargar la lista de asistencia
+                    if(document.getElementById('attendance-date').value) {
+                        populateAttendanceList();
+                    }
+                    
+                } else {
+                    Swal.fire({
+                        title: 'Aviso',
+                        text: result.message || 'No se pudieron cargar los datos.',
+                        icon: 'info',
+                        confirmButtonColor: '#ec4899',
+                        customClass: { popup: 'rounded-3xl' }
+                    });
+                }
+
+            } catch (error) {
+                console.error("Error al cargar datos:", error);
+                Swal.fire({
+                    title: 'Error de Red',
+                    text: 'No se pudo conectar con el servidor para traer a tus alumnos.',
+                    icon: 'error',
+                    confirmButtonColor: '#EF4444',
+                    customClass: { popup: 'rounded-3xl' }
+                });
+            }
         }
 
         // ============================================
@@ -538,72 +774,117 @@
         }
 
         // ============================================
-        // SECCIÓN 2: ASISTENCIA
+        // SECCIÓN 2: ASISTENCIA (LÓGICA MEJORADA)
         // ============================================
 
-        function populateAttendanceList() {
+        async function populateAttendanceList() {
             const container = document.getElementById('attendance-list-container');
+            const tbody = document.getElementById('attendance-table-body');
+            const emptyState = document.getElementById('attendance-empty-state');
             const selectedDate = document.getElementById('attendance-date').value;
 
-            if (!appData.asistencia[selectedDate]) {
-                appData.asistencia[selectedDate] = {};
+            if (!selectedDate || !seccionActivaId) {
+                container.classList.add('hidden');
+                emptyState.classList.remove('hidden');
+                return;
             }
-            const dailyAttendance = appData.asistencia[selectedDate];
 
-            container.innerHTML = ''; // Limpiar lista
-
-            mockEstudiantes.forEach(student => {
-                const status = dailyAttendance[student.id] || null; // 'P', 'A', 'J', or null
-
-                const studentHtml = `
-                    <div class="flex flex-col md:flex-row md:items-center md:justify-between p-4 rounded-xl border border-gray-200 bg-gray-50/50">
-                        <div class="flex items-center space-x-3 mb-3 md:mb-0">
-                            <img src="${student.fotoUrl}" alt="${student.nombre}" class="w-12 h-12 rounded-full">
-                            <div>
-                                <p class="font-semibold text-gray-800">${student.nombre} ${student.apellido}</p>
-                                <span class="text-sm text-gray-500">ID: ${student.id}</span>
-                            </div>
+            // 1. Mostrar estado de carga
+            emptyState.classList.add('hidden');
+            container.classList.remove('hidden');
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="4" class="px-6 py-12 text-center text-gray-400">
+                        <div class="flex flex-col items-center gap-3">
+                            <svg class="w-8 h-8 animate-spin text-pink-500" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path></svg>
+                            <span class="text-xs font-medium uppercase tracking-widest">Consultando registro...</span>
                         </div>
-                        <div class="flex items-center space-x-2">
-                            <button data-id="${student.id}" data-status="P" class="attendance-btn ${status === 'P' ? 'bg-green-500 text-white' : 'bg-green-100 text-green-700'} w-10 h-10 rounded-full font-bold transition-all">P</button>
-                            <button data-id="${student.id}" data-status="A" class="attendance-btn ${status === 'A' ? 'bg-red-500 text-white' : 'bg-red-100 text-red-700'} w-10 h-10 rounded-full font-bold transition-all">A</button>
-                            <button data-id="${student.id}" data-status="J" class="attendance-btn ${status === 'J' ? 'bg-yellow-500 text-white' : 'bg-yellow-100 text-yellow-700'} w-10 h-10 rounded-full font-bold transition-all">J</button>
-                            <button data-id="${student.id}" data-status="null" class="attendance-btn-delete ${!status ? 'text-gray-300' : 'text-gray-500 hover:text-red-500'} ml-2 p-2 rounded-full transition-all" title="Eliminar/Resetear">
-                                <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9.75L14.25 12m-2.438 2.438L12 9.75m0 0L9.562 7.312M12 9.75L7.312 14.438m-2.188-2.188a9 9 0 1112.728 0 9 9 0 01-12.728 0z" /></svg>
-                            </button>
-                        </div>
-                    </div>
-                `;
-                container.innerHTML += studentHtml;
-            });
+                    </td>
+                </tr>`;
 
-            // Re-adjuntar listeners de botones de asistencia
-            setupAttendanceButtonListeners();
-        }
+            try {
+                // 2. Consultar al backend si ya hay asistencia para este día
+                const token = localStorage.getItem('auth_token');
+                const baseUrl = typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : 'http://127.0.0.1:5000';
+                
+                const response = await fetch(`${baseUrl}/api/asistencias/${seccionActivaId}/${selectedDate}`, {
+                    method: 'GET',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const result = await response.json();
 
-        function setupAttendanceButtonListeners() {
-            const container = document.getElementById('attendance-list-container');
+                // Convertir el array de BD a un mapa { hijo_id: {estado, obs} } para lectura rápida
+                const registrosPrevios = {};
+                asistenciaYaRegistrada = false;
 
-            container.addEventListener('click', (e) => {
-                const button = e.target.closest('.attendance-btn, .attendance-btn-delete');
-                if (!button) return;
-
-                const studentId = button.dataset.id;
-                const newStatus = button.dataset.status; // 'P', 'A', 'J', o 'null'
-                const selectedDate = document.getElementById('attendance-date').value;
-
-                // Lógica de "Eliminar" (resetear)
-                if (newStatus === 'null') {
-                    delete appData.asistencia[selectedDate][studentId];
-                } else {
-                    // Lógica de Registrar/Modificar
-                    appData.asistencia[selectedDate][studentId] = newStatus;
+                if (response.ok && result.success && result.ya_registrada) {
+                    asistenciaYaRegistrada = true; // ¡Alerta activada para el botón Guardar!
+                    result.asistencias.forEach(reg => {
+                        registrosPrevios[reg.hijo_id] = {
+                            estado: reg.estado_asistencia,
+                            observacion: reg.observacion || ''
+                        };
+                    });
                 }
 
-                // Repintar la lista para reflejar el estado
-                // En una app más grande, solo actualizaríamos los botones afectados
-                populateAttendanceList();
-            });
+                // 3. Renderizar la lista
+                tbody.innerHTML = '';
+                if (listaEstudiantes.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="4" class="px-6 py-10 text-center text-gray-400">No hay alumnos asignados a esta sección.</td></tr>';
+                    return;
+                }
+
+                listaEstudiantes.forEach(student => {
+                    // Tomamos el estado de la BD, o "ausente" por defecto
+                    const regBD = registrosPrevios[student.id] || { estado: 'ausente', observacion: '' };
+                    const isPresent = (regBD.estado === 'presente');
+                    const inicial = student.nombre_completo.charAt(0).toUpperCase();
+                    
+                    // ¿Tiene observación guardada?
+                    const tieneObs = regBD.observacion.trim().length > 0;
+
+                    tbody.innerHTML += `
+                        <tr class="student-attendance-row hover:bg-gray-50 border-b border-gray-50 transition-colors">
+                            <td class="px-6 py-4 text-gray-500 text-sm font-mono whitespace-nowrap">${student.cedula}</td>
+                            
+                            <td class="px-6 py-4">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-9 h-9 rounded-full bg-pink-100 text-pink-700 flex items-center justify-center font-bold text-sm flex-shrink-0">${inicial}</div>
+                                    <p class="font-medium text-gray-800">${student.nombre_completo}</p>
+                                </div>
+                            </td>
+
+                            <td class="px-6 py-4 text-center">
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" class="sr-only peer asistencia-checkbox" data-hijo-id="${student.id}" onchange="cambiarTextoSwitch(this, ${student.id})" ${isPresent ? 'checked' : ''}> 
+                                    <div class="w-11 h-6 bg-gray-200 rounded-full peer peer-focus:ring-4 peer-focus:ring-pink-300 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-500 shadow-sm"></div>
+                                    <span id="label-estado-${student.id}" class="ml-3 text-xs font-bold uppercase tracking-widest ${isPresent ? 'text-green-600' : 'text-gray-400'} w-16 text-left select-none">
+                                        ${isPresent ? 'Presente' : 'Ausente'}
+                                    </span>
+                                </label>
+                            </td>
+
+                            <td class="px-6 py-4">
+                                <div id="justificativo-wrapper-${student.id}" class="${isPresent ? 'hidden' : 'flex'} items-center gap-2 w-full transition-all duration-300">
+                                    <button type="button" onclick="toggleObservacion(${student.id})" class="p-2 text-yellow-600 bg-yellow-50 rounded-lg border border-yellow-100 hover:bg-yellow-100 transition shadow-sm" title="Agregar Justificativo">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                                    </button>
+                                    <div id="obs-container-${student.id}" class="${tieneObs ? 'block' : 'hidden'} flex-1 animate-fade-in">
+                                        <input type="text" id="observacion-${student.id}" value="${regBD.observacion}" class="observacion-input w-full text-xs px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-300 focus:bg-white transition-all" placeholder="Ej: Reposo médico, Permiso...">
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                });
+
+                // Actualizar contadores iniciales al renderizar
+                actualizarContadoresAsistencia();
+
+            } catch (error) {
+                console.error("Error al cargar la asistencia:", error);
+                tbody.innerHTML = '<tr><td colspan="4" class="px-6 py-10 text-center text-red-500">Error al cargar el registro del día.</td></tr>';
+            }
         }
 
         // ============================================
@@ -613,8 +894,8 @@
         function populateStudentDropdowns() {
             const select = document.getElementById('eval-student-select');
             select.innerHTML = '<option value="">Seleccione un estudiante...</option>';
-            mockEstudiantes.forEach(student => {
-                select.innerHTML += `<option value="${student.id}">${student.nombre} ${student.apellido}</option>`;
+            listaEstudiantes.forEach(student => {
+                select.innerHTML += `<option value="${student.id}">${student.nombre_completo}</option>`;
             });
         }
 
@@ -636,7 +917,13 @@
             const text = document.getElementById('eval-textarea').value;
 
             if (!studentId || !period) {
-                showToast("Por favor, seleccione un estudiante y un período.", "error");
+                Swal.fire({
+                    title: 'Campos Incompletos',
+                    text: 'Por favor, seleccione un estudiante y un período.',
+                    icon: 'warning',
+                    confirmButtonColor: '#ec4899',
+                    customClass: { popup: 'rounded-3xl' }
+                });
                 return;
             }
 
@@ -645,7 +932,13 @@
             }
 
             appData.evaluaciones[period][studentId] = text;
-            showToast("Evaluación guardada exitosamente.", "success");
+            Swal.fire({
+                title: '¡Guardado!',
+                text: 'Evaluación guardada exitosamente.',
+                icon: 'success',
+                confirmButtonColor: '#ec4899',
+                customClass: { popup: 'rounded-3xl' }
+            });
 
             console.log("Datos de Evaluaciones:", appData.evaluaciones);
         }
@@ -684,48 +977,66 @@
         function populatePreviewTable() {
             const tbody = document.getElementById('preview-table-body');
             tbody.innerHTML = '';
-            mockEstudiantes.forEach(student => {
+            listaEstudiantes.forEach(student => {
+                const inicial = student.nombre_completo.charAt(0).toUpperCase();
                 tbody.innerHTML += `
-                    <tr class="hover:bg-gray-50">
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${student.id}</td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <img src="${student.fotoUrl}" alt="${student.nombre}" class="w-10 h-10 rounded-full">
+                    <tr class="hover:bg-gray-50 border-b border-gray-50 transition-colors">
+                        <td class="px-6 py-4 text-gray-500 text-sm font-mono">${student.cedula}</td>
+                        <td class="px-6 py-4">
+                            <div class="flex items-center gap-3">
+                                <div class="w-9 h-9 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-sm flex-shrink-0">${inicial}</div>
+                                <p class="font-medium text-gray-800">${student.nombre_completo}</p>
+                            </div>
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800">${student.nombre}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800">${student.apellido}</td>
+                        <td class="px-6 py-4 text-gray-500 text-sm"><span class="px-2 py-1 rounded bg-gray-100 border border-gray-200 text-xs shadow-sm whitespace-nowrap">${student.seccion}</span></td>
+                        <td class="px-6 py-4 text-gray-500 text-xs">${student.representante}</td>
+                        <td class="px-6 py-4 text-center">
+                            <button onclick="abrirModalFicha(${student.id})" 
+                                class="inline-flex items-center justify-center p-2 bg-white border-2 border-pink-100 text-pink-600 rounded-xl hover:bg-pink-500 hover:text-white hover:border-pink-500 transition-all duration-300 shadow-sm group" 
+                                title="Ver Ficha de ${student.nombre_completo}">
+                                <svg class="w-5 h-5 text-pink-400 group-hover:text-white transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                </svg>
+                            </button>
+                        </td>
                     </tr>
                 `;
             });
+            document.getElementById('listado-total-count').innerText = listaEstudiantes.length;
         }
 
         function generatePDF() {
             const doc = new jsPDF();
 
-            // Título
             doc.setFontSize(18);
-            doc.text("Listado de Alumnos - Grupo Maternal", 14, 22);
+            doc.text("Listado de Alumnos - " + (listaEstudiantes[0]?.seccion || "Grupo"), 14, 22);
             doc.setFontSize(11);
             doc.text(`Fecha: ${new Date().toLocaleDateString()}`, 14, 30);
 
-            // Preparar datos para AutoTable
-            const tableData = mockEstudiantes.map(student => {
-                return [student.id, student.nombre, student.apellido];
+            const tableData = listaEstudiantes.map(student => {
+                return [student.cedula, student.nombre_completo, student.seccion, student.representante];
             });
 
-            // Generar la tabla
             doc.autoTable({
                 startY: 40,
-                head: [['ID', 'Nombre', 'Apellido']],
+                head: [['Cédula Escolar', 'Estudiante', 'Grupo', 'Representante']],
                 body: tableData,
-                theme: 'striped', // 'striped', 'grid', 'plain'
-                headStyles: {
-                    fillColor: [37, 99, 235] // azul-600
-                }
+                theme: 'striped',
+                headStyles: { fillColor: [236, 72, 153] } // Rosa paragua
             });
 
-            // Guardar el PDF
-            doc.save('listado_alumnos_maternal.pdf');
-            showToast("PDF generado exitosamente.", "success");
+            doc.save('listado_alumnos.pdf');
+            
+            Swal.fire({
+                title: 'PDF Generado',
+                text: 'El listado se ha descargado correctamente.',
+                icon: 'success',
+                confirmButtonColor: '#EC4899',
+                customClass: {
+                    popup: 'rounded-3xl shadow-xl'
+                }
+            });
         }
 
         // ============================================
@@ -733,11 +1044,55 @@
         // ============================================
 
         function setupActionListeners() {
-            // Asistencia
-            document.getElementById('attendance-date').addEventListener('change', populateAttendanceList);
-            document.getElementById('btn-save-attendance').addEventListener('click', () => {
-                showToast("Asistencia guardada exitosamente.", "success");
-                console.log("Datos de Asistencia:", appData.asistencia);
+            // Asistencia - Validación Estricta de Fechas
+            document.getElementById('attendance-date').addEventListener('change', (e) => {
+                const dateStr = e.target.value;
+                if(!dateStr) return;
+
+                // Descomponer fecha para evitar errores de zona horaria de JS
+                const parts = dateStr.split('-');
+                const year = parseInt(parts[0], 10);
+                const month = parseInt(parts[1], 10) - 1; // JS los meses van del 0 al 11
+                const day = parseInt(parts[2], 10);
+                
+                const dateObj = new Date(year, month, day);
+                const dayOfWeek = dateObj.getDay(); // 0 = Domingo, 6 = Sábado
+                
+                // 1. Validar que no sea una fecha futura
+                const hoy = new Date();
+                hoy.setHours(0, 0, 0, 0); // Ignorar la hora, solo comparar el día
+                
+                if (dateObj > hoy) {
+                    Swal.fire({
+                        title: 'Fecha inválida',
+                        text: 'No puedes registrar asistencia para un día que aún no ha ocurrido.',
+                        icon: 'error',
+                        confirmButtonColor: '#EC4899',
+                        customClass: { popup: 'rounded-3xl' }
+                    });
+                    // Devolver el calendario al día de hoy
+                    e.target.value = new Date().toISOString().split('T')[0];
+                    populateAttendanceList(); 
+                    return;
+                }
+
+                // 2. Validar que no sea fin de semana
+                if (dayOfWeek === 0 || dayOfWeek === 6) {
+                    Swal.fire({
+                        title: 'Día no laborable',
+                        text: 'Has seleccionado un fin de semana. Por favor, elige un día de lunes a viernes.',
+                        icon: 'warning',
+                        confirmButtonColor: '#EC4899',
+                        customClass: { popup: 'rounded-3xl' }
+                    });
+                    // Devolver el calendario al día de hoy
+                    e.target.value = new Date().toISOString().split('T')[0];
+                    populateAttendanceList(); 
+                    return;
+                }
+
+                // Si pasa las validaciones, cargamos la lista normal
+                populateAttendanceList();
             });
 
             // Evaluaciones
@@ -747,6 +1102,33 @@
 
             // Listados (PDF)
             document.getElementById('btn-download-pdf').addEventListener('click', generatePDF);
+            
+            // Buscador del Listado de Alumnos
+            const searchInput = document.getElementById('listado-search-input');
+            if(searchInput) {
+                searchInput.addEventListener('input', function() {
+                    const term = this.value.toLowerCase();
+                    const rows = document.querySelectorAll('#preview-table-body tr');
+                    rows.forEach(row => {
+                        const text = row.textContent.toLowerCase();
+                        row.style.display = text.includes(term) ? '' : 'none';
+                    });
+                });
+            }
+
+            // --> NUEVO: Buscador de Asistencia <--
+            const attendanceSearchInput = document.getElementById('attendance-search-input');
+            if(attendanceSearchInput) {
+                attendanceSearchInput.addEventListener('input', function() {
+                    const term = this.value.toLowerCase();
+                    // Usamos la clase específica para no ocultar mensajes de "Cargando..."
+                    const rows = document.querySelectorAll('#attendance-table-body tr.student-attendance-row');
+                    rows.forEach(row => {
+                        const text = row.textContent.toLowerCase();
+                        row.style.display = text.includes(term) ? '' : 'none';
+                    });
+                });
+            }
         }
 
         // ============================================
@@ -779,6 +1161,72 @@
             }, 3000);
         }
 
+        // --- NUEVAS FUNCIONES DE ASISTENCIA ---
+
+        // Actualiza los números 🟩 y ⬜ y sincroniza el botón mágico
+        function actualizarContadoresAsistencia() {
+            const checkboxes = document.querySelectorAll('.asistencia-checkbox');
+            if(checkboxes.length === 0) return;
+            
+            let presentes = 0;
+            let ausentes = 0;
+            checkboxes.forEach(cb => {
+                if (cb.checked) presentes++;
+                else ausentes++;
+            });
+            
+            document.getElementById('contador-presentes').innerText = presentes;
+            document.getElementById('contador-ausentes').innerText = ausentes;
+
+            // --- Sincronizar el Botón Mágico ---
+            const btnText = document.getElementById('text-toggle-todos');
+            const btnIcon = document.getElementById('icon-toggle-todos');
+            const btn = document.getElementById('btn-toggle-todos');
+
+            if (btn && btnText && btnIcon) {
+                if (presentes === checkboxes.length && checkboxes.length > 0) {
+                    // Si TODOS están presentes, el botón ofrece revertir a ausentes (Gris)
+                    btnText.innerText = "Todos Ausentes";
+                    btnIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>';
+                    btn.classList.replace('text-pink-600', 'text-gray-500');
+                    btn.classList.replace('bg-pink-50', 'bg-gray-50');
+                    btn.classList.replace('border-pink-100', 'border-gray-200');
+                } else {
+                    // Si falta al menos uno, el botón ofrece marcarlos a todos presentes (Rosa)
+                    btnText.innerText = "Todos Presentes";
+                    btnIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>';
+                    btn.classList.replace('text-gray-500', 'text-pink-600');
+                    btn.classList.replace('bg-gray-50', 'bg-pink-50');
+                    btn.classList.replace('border-gray-200', 'border-pink-100');
+                }
+            }
+        }
+
+        // Función Toggle: Alterna entre Todos Presentes y Todos Ausentes
+        function toggleTodosAsistencia() {
+            const checkboxes = document.querySelectorAll('.asistencia-checkbox');
+            if (checkboxes.length === 0) return;
+
+            // Verificamos si ya están absolutamente todos presentes
+            const todosEstanPresentes = Array.from(checkboxes).every(cb => cb.checked);
+            
+            // Si todos están presentes, el nuevo estado será Ausente (false). Si no, será Presente (true).
+            const nuevoEstado = !todosEstanPresentes;
+            let cambios = false;
+            
+            checkboxes.forEach(cb => {
+                if (cb.checked !== nuevoEstado) {
+                    cb.checked = nuevoEstado;
+                    const id = cb.dataset.hijoId;
+                    cambiarTextoSwitch(cb, id); // Esta función ya oculta/muestra el justificativo
+                    cambios = true;
+                }
+            });
+            
+            // Al final, actualizamos contadores (lo cual también actualizará el diseño de este botón)
+            if(cambios) actualizarContadoresAsistencia();
+        }
+
         // ============================================
         // CIERRE DE SESIÓN
         // ============================================
@@ -801,8 +1249,207 @@
                 }
             });
         }
-    </script>
 
+        // ============================================
+        // LÓGICA DEL MODAL DE FICHA (VER Y EDITAR)
+        // ============================================
+        let modoEdicionFicha = false;
+
+        async function abrirModalFicha(hijo_id) {
+            const modal = document.getElementById('modal-ficha-estudiante');
+            const content = document.getElementById('modal-ficha-content');
+            
+            // Resetear el modo edición siempre que se abra
+            if(modoEdicionFicha) toggleEditFicha();
+            
+            // 1. Mostrar estado de carga en el UI
+            document.getElementById('ficha-nombre-completo').innerText = "Cargando datos...";
+            document.getElementById('ficha-cedula').innerText = "...";
+            document.getElementById('f-madre-tel').value = "Cargando...";
+
+            // 2. Mostrar el modal con animación
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                content.classList.remove('scale-95');
+            }, 10);
+
+            // 3. Solicitar datos a la API
+            try {
+                const token = localStorage.getItem('auth_token');
+                const baseUrl = typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : 'http://127.0.0.1:5000';
+                
+                const response = await fetch(`${baseUrl}/api/estudiantes/${hijo_id}/ficha`, {
+                    method: 'GET',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok && data.success) {
+                    const f = data.ficha;
+                    
+                    // Llenar Header
+                    document.getElementById('ficha-hijo-id').value = hijo_id;
+                    document.getElementById('ficha-nombre-completo').innerText = `${f.nombres} ${f.apellidos}`;
+                    document.getElementById('ficha-cedula').innerText = f.cedula_escolar;
+                    document.getElementById('ficha-inicial').innerText = (f.nombres || 'A').charAt(0).toUpperCase();
+
+                    // Llenar Formulario
+                    document.getElementById('f-nombres').value = f.nombres || '';
+                    document.getElementById('f-apellidos').value = f.apellidos || '';
+                    document.getElementById('f-fecha-nac').value = f.fecha_nacimiento || '';
+                    document.getElementById('f-sexo').value = f.sexo || '';
+                    document.getElementById('f-direccion').value = f.direccion_habitacion || '';
+                    
+                    document.getElementById('f-madre-nombre').value = f.nombre_madre || '';
+                    document.getElementById('f-madre-ci').value = f.ci_madre || '';
+                    document.getElementById('f-madre-tel').value = f.telefono_madre || 'No registrado';
+                    document.getElementById('f-padre-nombre').value = f.nombre_padre || 'No registrado';
+                    document.getElementById('f-padre-tel').value = f.telefono_padre || 'No registrado';
+
+                    document.getElementById('f-alergico').checked = f.es_alergico;
+                    document.getElementById('f-prematuro').checked = f.es_prematuro;
+                    document.getElementById('f-cesarea').checked = f.fue_cesarea;
+                    document.getElementById('f-enfermedad').value = f.enfermedad_cronica || 'Ninguna reportada';
+                    document.getElementById('f-fiebre').value = f.medicamento_fiebre || 'Ninguno reportado';
+
+                } else {
+                    Swal.fire('Error', data.message || 'No se pudo cargar la ficha.', 'error');
+                    cerrarModalFicha();
+                }
+            } catch (error) {
+                console.error("Error al obtener la ficha:", error);
+                Swal.fire('Error de Red', 'No se pudo conectar con el servidor.', 'error');
+                cerrarModalFicha();
+            }
+        }
+
+        function cerrarModalFicha() {
+            const modal = document.getElementById('modal-ficha-estudiante');
+            const content = document.getElementById('modal-ficha-content');
+            
+            modal.classList.add('opacity-0');
+            content.classList.add('scale-95');
+            setTimeout(() => modal.classList.add('hidden'), 300);
+        }
+
+        function toggleEditFicha() {
+            modoEdicionFicha = !modoEdicionFicha;
+            const inputs = document.querySelectorAll('.ficha-input');
+            const footer = document.getElementById('ficha-footer');
+            const btnEdit = document.getElementById('btn-editar-ficha');
+            
+            if (modoEdicionFicha) {
+                // Activar Edición
+                inputs.forEach(input => {
+                    input.removeAttribute('disabled');
+                    input.classList.remove('bg-gray-100', 'bg-gray-50');
+                    input.classList.add('bg-white', 'border-pink-300');
+                });
+                footer.classList.remove('hidden');
+                btnEdit.classList.add('hidden'); // Ocultamos el botón "Editar" de arriba
+            } else {
+                // Bloquear (Cancelar Edición)
+                inputs.forEach(input => {
+                    input.setAttribute('disabled', 'true');
+                    input.classList.remove('bg-white', 'border-pink-300');
+                    input.classList.add('bg-gray-100'); // Vuelve al gris original
+                });
+                footer.classList.add('hidden');
+                btnEdit.classList.remove('hidden');
+            }
+        }
+
+        async function guardarFicha() {
+            const hijo_id = document.getElementById('ficha-hijo-id').value;
+            const btnGuardar = document.getElementById('btn-guardar-ficha');
+            const originalText = btnGuardar.innerHTML;
+
+            // Recolectar datos
+            const payload = {
+                nombres: document.getElementById('f-nombres').value,
+                apellidos: document.getElementById('f-apellidos').value,
+                fecha_nacimiento: document.getElementById('f-fecha-nac').value,
+                sexo: document.getElementById('f-sexo').value,
+                direccion_habitacion: document.getElementById('f-direccion').value,
+                nombre_madre: document.getElementById('f-madre-nombre').value,
+                ci_madre: document.getElementById('f-madre-ci').value,
+                telefono_madre: document.getElementById('f-madre-tel').value,
+                nombre_padre: document.getElementById('f-padre-nombre').value,
+                telefono_padre: document.getElementById('f-padre-tel').value,
+                es_alergico: document.getElementById('f-alergico').checked,
+                es_prematuro: document.getElementById('f-prematuro').checked,
+                fue_cesarea: document.getElementById('f-cesarea').checked,
+                enfermedad_cronica: document.getElementById('f-enfermedad').value,
+                medicamento_fiebre: document.getElementById('f-fiebre').value
+            };
+
+            btnGuardar.innerHTML = '<i class="ph-spinner animate-spin mr-2"></i> Guardando...';
+            btnGuardar.disabled = true;
+
+            try {
+                const token = localStorage.getItem('auth_token');
+                const baseUrl = typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : 'http://127.0.0.1:5000';
+                
+                const response = await fetch(`${baseUrl}/api/estudiantes/${hijo_id}/ficha`, {
+                    method: 'PUT',
+                    headers: { 
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json' 
+                    },
+                    body: JSON.stringify(payload)
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok && data.success) {
+                    Swal.fire({
+                        title: '¡Actualizado!',
+                        text: 'Los datos del estudiante se guardaron correctamente.',
+                        icon: 'success',
+                        confirmButtonColor: '#EC4899',
+                        customClass: { popup: 'rounded-3xl' }
+                    });
+                    
+                    // Bloqueamos los inputs de nuevo
+                    toggleEditFicha(); 
+                    
+                    // Actualizamos el nombre en el encabezado del modal por si lo editaron
+                    document.getElementById('ficha-nombre-completo').innerText = `${payload.nombres} ${payload.apellidos}`;
+                    
+                    // Recargamos la tabla principal silenciosamente para reflejar cambios
+                    cargarDatosMiClase(); 
+                } else {
+                    Swal.fire('Error', data.message || 'No se pudo guardar.', 'error');
+                }
+            } catch (error) {
+                console.error("Error:", error);
+                Swal.fire('Error de Red', 'No se pudo contactar al servidor.', 'error');
+            } finally {
+                btnGuardar.innerHTML = originalText;
+                btnGuardar.disabled = false;
+            }
+        }
+
+        // Cerrar modal con tecla ESC
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                const modalFicha = document.getElementById('modal-ficha-estudiante');
+                if (modalFicha && !modalFicha.classList.contains('hidden')) {
+                    cerrarModalFicha();
+                }
+            }
+        });
+    </script>
+    <script src="js/config.js"></script>
+    <script>
+        // Definir API_BASE para que admin_periodos.js funcione
+        const API_BASE = window.API_BASE_URL || '';
+    </script>
+    <script src="js/auth.js"></script>
+    <script src="js/admin_periodos.js"></script>
+    <script src="js/docente_asistencia.js"></script>
 </body>
 
 </html>

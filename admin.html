@@ -19,6 +19,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
 
     <script>
         const token = localStorage.getItem('auth_token');
@@ -853,11 +855,12 @@
                                         <th class="px-6 py-4">Última Sección</th>
                                         <th class="px-6 py-4">Representante</th>
                                         <th class="px-6 py-4">Estado</th>
+                                        <th class="px-6 py-4 text-right">Acciones</th>
                                     </tr>
                                 </thead>
                                 <tbody id="historial-table-body" class="divide-y divide-gray-100 text-sm">
                                     <tr>
-                                        <td colspan="5" class="px-6 py-10 text-center text-gray-400 text-sm">Cargando
+                                        <td colspan="6" class="px-6 py-10 text-center text-gray-400 text-sm">Cargando
                                             Historial...</td>
                                     </tr>
                                 </tbody>
@@ -1413,8 +1416,11 @@
                                 </td>
                                 <td class="px-6 py-4 text-gray-500 text-sm"><span class="px-2 py-1 rounded bg-gray-100 border border-gray-200 text-xs shadow-sm whitespace-nowrap">${mat.seccion}</span></td>
                                 <td class="px-6 py-4 text-gray-500 text-xs">${mat.representante}</td>
-                                <td class="px-6 py-4 text-right">
-                                    <button class="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition" onclick="retirarEstudiante('${mat.id}', '${mat.estudiante.replace(/'/g, "\\'")}')" title="Retirar Estudiante">
+                                <td class="px-6 py-4 text-right flex justify-end gap-2">
+                                    <button onclick="abrirModalFicha(${mat.hijo_id})" class="p-2 text-pink-500 hover:text-pink-700 bg-pink-50 hover:bg-pink-100 rounded-xl transition-colors shadow-sm" title="Ver Ficha Completa">
+                                        <i class="ph-bold ph-eye text-lg"></i>
+                                    </button>
+                                    <button class="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition shadow-sm" onclick="retirarEstudiante('${mat.id}', '${mat.estudiante.replace(/'/g, "\\'")}')" title="Retirar Estudiante">
                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                                     </button>
                                 </td>
@@ -1424,7 +1430,7 @@
                 }
             } catch (error) {
                 console.error("Error cargando matricula:", error);
-                tbody.innerHTML = `<tr><td colspan="5" class="px-6 py-10 text-center text-red-500 text-sm font-semibold">Error al cargar la tabla de matrícula.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="6" class="px-6 py-10 text-center text-red-500 text-sm font-semibold">Error al cargar la tabla de matrícula.</td></tr>`;
             }
         }
 
@@ -1461,7 +1467,7 @@
 
             const tbody = document.getElementById('historial-table-body');
             try {
-                tbody.innerHTML = `<tr><td colspan="5" class="px-6 py-10 text-center"><svg class="w-6 h-6 animate-spin mx-auto text-blue-500 mb-2" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path></svg><span class="text-sm text-gray-500">Cargando historial...</span></td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="6" class="px-6 py-10 text-center"><svg class="w-6 h-6 animate-spin mx-auto text-blue-500 mb-2" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path></svg><span class="text-sm text-gray-500">Cargando historial...</span></td></tr>`;
 
                 const res = await fetchWithAuth(`${API_BASE_URL}/api/historial?estado=${estado}`);
                 const data = await res.json();
@@ -1472,7 +1478,7 @@
                 }
             } catch (error) {
                 console.error("Error cargando historial:", error);
-                tbody.innerHTML = `<tr><td colspan="5" class="px-6 py-10 text-center text-red-500 text-sm font-semibold">Error al cargar el historial.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="6" class="px-6 py-10 text-center text-red-500 text-sm font-semibold">Error al cargar el historial.</td></tr>`;
             }
         }
 
@@ -1486,7 +1492,7 @@
 
             tbody.innerHTML = '';
             if (lista.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" class="px-6 py-10 text-center text-gray-400 text-sm">No se encontraron alumnos con este estado.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="6" class="px-6 py-10 text-center text-gray-400 text-sm">No se encontraron alumnos con este estado.</td></tr>`;
                 return;
             }
 
@@ -1507,6 +1513,11 @@
                         <td class="px-6 py-4 text-gray-500 text-xs">${mat.representante}</td>
                         <td class="px-6 py-4 text-sm font-semibold">
                             <span class="px-2.5 py-1 rounded-full text-[11px] uppercase tracking-wider border ${estadoBadge}">${mat.estado}</span>
+                        </td>
+                        <td class="px-6 py-4 text-right">
+                            <button onclick="abrirModalFicha(${mat.hijo_id})" class="p-2 text-pink-500 hover:text-pink-700 bg-pink-50 hover:bg-pink-100 rounded-xl transition-colors shadow-sm" title="Ver Ficha Completa">
+                                <i class="ph-bold ph-eye text-lg"></i>
+                            </button>
                         </td>
                     </tr>
                 `;
@@ -1533,12 +1544,37 @@
             setTimeout(() => modal.classList.add('hidden'), 300);
         }
 
-        // Cerrar modal con tecla ESC
+        // Cerrar modales con tecla ESC
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
+                // Ficha Estudiante (Nuevo)
+                const modalFicha = document.getElementById('modal-ficha-estudiante');
+                if (modalFicha && !modalFicha.classList.contains('hidden')) {
+                    cerrarModalFicha();
+                }
+                
+                // Registrar Alumno
                 const modalAlum = document.getElementById('modal-registrar-alumno');
                 if (modalAlum && !modalAlum.classList.contains('hidden') && typeof cerrarModalRegistrarAlumno === 'function') {
                     cerrarModalRegistrarAlumno();
+                }
+
+                // Usuario
+                const modalUser = document.getElementById('modal-crear-usuario');
+                if (modalUser && !modalUser.classList.contains('hidden') && typeof cerrarModalCrearUsuario === 'function') {
+                    cerrarModalCrearUsuario();
+                }
+
+                // Secciones
+                const modalSec = document.getElementById('modal-crear-seccion');
+                if (modalSec && !modalSec.classList.contains('hidden') && typeof cerrarModalCrearSeccion === 'function') {
+                    cerrarModalCrearSeccion();
+                }
+
+                // Períodos
+                const modalPer = document.getElementById('modal-periodo');
+                if (modalPer && !modalPer.classList.contains('hidden') && typeof cerrarModalPeriodo === 'function') {
+                    cerrarModalPeriodo();
                 }
             }
         });
@@ -1870,11 +1906,277 @@
             });
         }
     </script>
+    <div id="modal-ficha-estudiante" class="fixed inset-0 bg-black/60 z-50 hidden flex items-center justify-center backdrop-blur-sm opacity-0 transition-opacity duration-300">
+        <div id="modal-ficha-content" class="bg-white rounded-2xl shadow-2xl w-full max-w-5xl mx-4 max-h-[90vh] flex flex-col transform scale-95 transition-transform duration-300">
+            
+            <div class="px-6 py-4 border-b border-pink-100 flex justify-between items-center bg-pink-50/50 rounded-t-2xl flex-shrink-0">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full bg-pink-200 text-pink-700 flex items-center justify-center font-bold text-lg" id="ficha-inicial">A</div>
+                    <div>
+                        <h3 class="font-bold text-gray-800 text-lg leading-tight" id="ficha-nombre-completo">Cargando...</h3>
+                        <p class="text-xs text-pink-600 font-semibold tracking-wider">Cédula: <span id="ficha-cedula">...</span></p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button type="button" id="btn-editar-ficha" onclick="toggleEditFicha()" class="px-4 py-2 bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 rounded-lg text-sm font-semibold transition-all shadow-sm flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                        Editar Ficha
+                    </button>
+                    <button onclick="cerrarModalFicha()" class="text-gray-400 hover:text-red-500 transition-colors p-2 hover:bg-white rounded-lg">
+                        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
+                </div>
+            </div>
+
+            <div class="p-6 overflow-y-auto flex-1 bg-gray-50/30">
+                <form id="form-ficha-estudiante">
+                    <input type="hidden" id="ficha-hijo-id">
+
+                    <h4 class="text-sm font-bold text-pink-500 uppercase tracking-widest mb-3 border-b border-pink-100 pb-2"><i class="ph-fill ph-user mr-1"></i> Datos Personales</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                        <div><label class="block text-xs font-semibold text-gray-500 mb-1">Nombres</label><input type="text" id="f-nombres" class="ficha-input w-full px-3 py-2 border border-gray-200 rounded-lg bg-gray-100 text-gray-700 text-sm focus:ring-2 focus:ring-pink-300 outline-none" disabled></div>
+                        <div><label class="block text-xs font-semibold text-gray-500 mb-1">Apellidos</label><input type="text" id="f-apellidos" class="ficha-input w-full px-3 py-2 border border-gray-200 rounded-lg bg-gray-100 text-gray-700 text-sm focus:ring-2 focus:ring-pink-300 outline-none" disabled></div>
+                        <div><label class="block text-xs font-semibold text-gray-500 mb-1">Fecha de Nacimiento</label><input type="date" id="f-fecha-nac" class="ficha-input w-full px-3 py-2 border border-gray-200 rounded-lg bg-gray-100 text-gray-700 text-sm focus:ring-2 focus:ring-pink-300 outline-none" disabled></div>
+                        <div><label class="block text-xs font-semibold text-gray-500 mb-1">Sexo</label>
+                            <select id="f-sexo" class="ficha-input w-full px-3 py-2 border border-gray-200 rounded-lg bg-gray-100 text-gray-700 text-sm outline-none" disabled>
+                                <option value="F">Femenino</option><option value="M">Masculino</option>
+                            </select>
+                        </div>
+                        <div class="md:col-span-2"><label class="block text-xs font-semibold text-gray-500 mb-1">Dirección de Habitación</label><input type="text" id="f-direccion" class="ficha-input w-full px-3 py-2 border border-gray-200 rounded-lg bg-gray-100 text-gray-700 text-sm focus:ring-2 focus:ring-pink-300 outline-none" disabled></div>
+                    </div>
+
+                    <h4 class="text-sm font-bold text-pink-500 uppercase tracking-widest mb-3 border-b border-pink-100 pb-2 mt-6"><i class="ph-fill ph-users mr-1"></i> Contactos de Emergencia</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                        <div class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
+                            <p class="font-bold text-sm text-gray-800 mb-3">Datos de la Madre</p>
+                            <div class="space-y-3">
+                                <div><label class="block text-xs text-gray-500">Nombre Completo</label><input type="text" id="f-madre-nombre" class="ficha-input w-full px-3 py-1.5 border border-gray-200 rounded-md bg-gray-50 text-sm" disabled></div>
+                                <div class="flex gap-2">
+                                    <div class="w-1/2"><label class="block text-xs text-gray-500">Cédula</label><input type="text" id="f-madre-ci" class="ficha-input w-full px-3 py-1.5 border border-gray-200 rounded-md bg-gray-50 text-sm" disabled></div>
+                                    <div class="w-1/2"><label class="block text-xs text-gray-500">Teléfono</label><input type="text" id="f-madre-tel" class="ficha-input w-full px-3 py-1.5 border border-gray-200 rounded-md bg-gray-50 text-sm font-bold text-blue-600" disabled></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
+                            <p class="font-bold text-sm text-gray-800 mb-3">Datos del Padre</p>
+                            <div class="space-y-3">
+                                <div><label class="block text-xs text-gray-500">Nombre Completo</label><input type="text" id="f-padre-nombre" class="ficha-input w-full px-3 py-1.5 border border-gray-200 rounded-md bg-gray-50 text-sm" disabled></div>
+                                <div><label class="block text-xs text-gray-500">Teléfono</label><input type="text" id="f-padre-tel" class="ficha-input w-full px-3 py-1.5 border border-gray-200 rounded-md bg-gray-50 text-sm font-bold text-blue-600" disabled></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h4 class="text-sm font-bold text-red-500 uppercase tracking-widest mb-3 border-b border-red-100 pb-2 mt-6"><i class="ph-fill ph-heartbeat mr-1"></i> Información Médica</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-2">
+                        <div class="flex items-center gap-2 bg-white p-3 rounded-lg border border-gray-100">
+                            <input type="checkbox" id="f-alergico" class="ficha-input w-4 h-4 text-red-500 rounded focus:ring-red-400" disabled>
+                            <label class="text-sm font-bold text-gray-700">Es Alérgico</label>
+                        </div>
+                        <div class="flex items-center gap-2 bg-white p-3 rounded-lg border border-gray-100">
+                            <input type="checkbox" id="f-prematuro" class="ficha-input w-4 h-4 text-red-500 rounded focus:ring-red-400" disabled>
+                            <label class="text-sm font-bold text-gray-700">Fue Prematuro</label>
+                        </div>
+                        <div class="flex items-center gap-2 bg-white p-3 rounded-lg border border-gray-100">
+                            <input type="checkbox" id="f-cesarea" class="ficha-input w-4 h-4 text-red-500 rounded focus:ring-red-400" disabled>
+                            <label class="text-sm font-bold text-gray-700">Nacido por Cesárea</label>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div><label class="block text-xs font-semibold text-gray-500 mb-1">Enfermedades Crónicas</label><input type="text" id="f-enfermedad" class="ficha-input w-full px-3 py-2 border border-gray-200 rounded-lg bg-gray-100 text-gray-700 text-sm" disabled></div>
+                        <div><label class="block text-xs font-semibold text-gray-500 mb-1">Medicamento para Fiebre</label><input type="text" id="f-fiebre" class="ficha-input w-full px-3 py-2 border border-gray-200 rounded-lg bg-gray-100 text-gray-700 text-sm" disabled></div>
+                    </div>
+                </form>
+            </div>
+
+            <div id="ficha-footer" class="px-6 py-4 border-t border-gray-100 bg-gray-50 flex justify-end gap-3 hidden flex-shrink-0 rounded-b-2xl">
+                <button type="button" onclick="toggleEditFicha()" class="px-5 py-2 text-gray-600 font-semibold hover:bg-gray-200 rounded-xl transition-colors text-sm">Cancelar Edición</button>
+                <button type="button" id="btn-guardar-ficha" onclick="guardarFicha()" class="px-6 py-2 bg-pink-500 text-white rounded-xl font-bold shadow-md shadow-pink-200 hover:bg-pink-600 transition-all text-sm flex items-center gap-2">
+                    Guardar Cambios
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script src="js/config.js"></script>
     <script src="js/auth.js"></script>
     <script src="js/admin_users.js"></script>
     <script src="js/admin_periodos.js"></script>
     <script src="js/admin_secciones.js"></script>
+
+    <script>
+        // ============================================
+        // LÓGICA DEL MODAL DE FICHA (ADMIN)
+        // ============================================
+        let modoEdicionFicha = false;
+
+        async function abrirModalFicha(hijo_id) {
+            const modal = document.getElementById('modal-ficha-estudiante');
+            const content = document.getElementById('modal-ficha-content');
+            
+            if(modoEdicionFicha) toggleEditFicha(); // Resetear edición
+            
+            // Carga UI
+            document.getElementById('ficha-nombre-completo').innerText = "Cargando datos...";
+            document.getElementById('ficha-cedula').innerText = "...";
+            document.getElementById('f-madre-tel').value = "Cargando...";
+
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                content.classList.remove('scale-95');
+            }, 10);
+
+            try {
+                const token = localStorage.getItem('auth_token');
+                const baseUrl = typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : 'http://127.0.0.1:5000';
+                
+                const response = await fetch(`${baseUrl}/api/estudiantes/${hijo_id}/ficha`, {
+                    method: 'GET',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await response.json();
+                
+                if (response.ok && data.success) {
+                    const f = data.ficha;
+                    
+                    document.getElementById('ficha-hijo-id').value = hijo_id;
+                    document.getElementById('ficha-nombre-completo').innerText = `${f.nombres} ${f.apellidos}`;
+                    document.getElementById('ficha-cedula').innerText = f.cedula_escolar;
+                    document.getElementById('ficha-inicial').innerText = (f.nombres || 'A').charAt(0).toUpperCase();
+
+                    document.getElementById('f-nombres').value = f.nombres || '';
+                    document.getElementById('f-apellidos').value = f.apellidos || '';
+                    document.getElementById('f-fecha-nac').value = f.fecha_nacimiento || '';
+                    document.getElementById('f-sexo').value = f.sexo || '';
+                    document.getElementById('f-direccion').value = f.direccion_habitacion || '';
+                    
+                    document.getElementById('f-madre-nombre').value = f.nombre_madre || '';
+                    document.getElementById('f-madre-ci').value = f.ci_madre || '';
+                    document.getElementById('f-madre-tel').value = f.telefono_madre || 'No registrado';
+                    document.getElementById('f-padre-nombre').value = f.nombre_padre || 'No registrado';
+                    document.getElementById('f-padre-tel').value = f.telefono_padre || 'No registrado';
+
+                    document.getElementById('f-alergico').checked = f.es_alergico;
+                    document.getElementById('f-prematuro').checked = f.es_prematuro;
+                    document.getElementById('f-cesarea').checked = f.fue_cesarea;
+                    document.getElementById('f-enfermedad').value = f.enfermedad_cronica || 'Ninguna reportada';
+                    document.getElementById('f-fiebre').value = f.medicamento_fiebre || 'Ninguno reportado';
+
+                } else {
+                    Swal.fire('Error', data.message || 'No se pudo cargar la ficha.', 'error');
+                    cerrarModalFicha();
+                }
+            } catch (error) {
+                console.error("Error al obtener la ficha:", error);
+                Swal.fire('Error de Red', 'No se pudo conectar con el servidor.', 'error');
+                cerrarModalFicha();
+            }
+        }
+
+        function cerrarModalFicha() {
+            const modal = document.getElementById('modal-ficha-estudiante');
+            const content = document.getElementById('modal-ficha-content');
+            
+            modal.classList.add('opacity-0');
+            content.classList.add('scale-95');
+            setTimeout(() => modal.classList.add('hidden'), 300);
+        }
+
+        function toggleEditFicha() {
+            modoEdicionFicha = !modoEdicionFicha;
+            const inputs = document.querySelectorAll('.ficha-input');
+            const footer = document.getElementById('ficha-footer');
+            const btnEdit = document.getElementById('btn-editar-ficha');
+            
+            if (modoEdicionFicha) {
+                inputs.forEach(input => {
+                    input.removeAttribute('disabled');
+                    input.classList.remove('bg-gray-100', 'bg-gray-50');
+                    input.classList.add('bg-white', 'border-pink-300');
+                });
+                footer.classList.remove('hidden');
+                btnEdit.classList.add('hidden');
+            } else {
+                inputs.forEach(input => {
+                    input.setAttribute('disabled', 'true');
+                    input.classList.remove('bg-white', 'border-pink-300');
+                    input.classList.add('bg-gray-100');
+                });
+                footer.classList.add('hidden');
+                btnEdit.classList.remove('hidden');
+            }
+        }
+
+        async function guardarFicha() {
+            const hijo_id = document.getElementById('ficha-hijo-id').value;
+            const btnGuardar = document.getElementById('btn-guardar-ficha');
+            const originalText = btnGuardar.innerHTML;
+
+            const payload = {
+                nombres: document.getElementById('f-nombres').value,
+                apellidos: document.getElementById('f-apellidos').value,
+                fecha_nacimiento: document.getElementById('f-fecha-nac').value,
+                sexo: document.getElementById('f-sexo').value,
+                direccion_habitacion: document.getElementById('f-direccion').value,
+                nombre_madre: document.getElementById('f-madre-nombre').value,
+                ci_madre: document.getElementById('f-madre-ci').value,
+                telefono_madre: document.getElementById('f-madre-tel').value,
+                nombre_padre: document.getElementById('f-padre-nombre').value,
+                telefono_padre: document.getElementById('f-padre-tel').value,
+                es_alergico: document.getElementById('f-alergico').checked,
+                es_prematuro: document.getElementById('f-prematuro').checked,
+                fue_cesarea: document.getElementById('f-cesarea').checked,
+                enfermedad_cronica: document.getElementById('f-enfermedad').value,
+                medicamento_fiebre: document.getElementById('f-fiebre').value
+            };
+
+            btnGuardar.innerHTML = '<i class="ph-spinner animate-spin mr-2"></i> Guardando...';
+            btnGuardar.disabled = true;
+
+            try {
+                const token = localStorage.getItem('auth_token');
+                const baseUrl = typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : 'http://127.0.0.1:5000';
+                
+                const response = await fetch(`${baseUrl}/api/estudiantes/${hijo_id}/ficha`, {
+                    method: 'PUT',
+                    headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok && data.success) {
+                    Swal.fire({
+                        title: '¡Actualizado!',
+                        text: 'Los datos del estudiante se guardaron correctamente.',
+                        icon: 'success',
+                        confirmButtonColor: '#EC4899',
+                        customClass: { popup: 'rounded-3xl' }
+                    });
+                    
+                    toggleEditFicha(); 
+                    document.getElementById('ficha-nombre-completo').innerText = `${payload.nombres} ${payload.apellidos}`;
+                    
+                    // Refrescar tablas del admin silenciosamente
+                    if (typeof cargarMatriculaGeneral === 'function') cargarMatriculaGeneral();
+                    const btnEgresados = document.getElementById('btn-tab-egresados');
+                    if (btnEgresados && btnEgresados.classList.contains('bg-white')) {
+                        cargarHistorialEstudiantil('egresado');
+                    } else {
+                        cargarHistorialEstudiantil('retirado');
+                    }
+                } else {
+                    Swal.fire('Error', data.message || 'No se pudo guardar.', 'error');
+                }
+            } catch (error) {
+                console.error("Error:", error);
+                Swal.fire('Error de Red', 'No se pudo contactar al servidor.', 'error');
+            } finally {
+                btnGuardar.innerHTML = originalText;
+                btnGuardar.disabled = false;
+            }
+        }
+    </script>
 </body>
 
 </html>
