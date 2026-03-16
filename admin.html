@@ -1196,12 +1196,7 @@
         </main>
     </div>
 
-    <!-- TOAST NOTIFICATION -->
-    <div id="toast-notification"
-        class="fixed top-5 right-5 z-50 p-4 rounded-lg shadow-xl text-white transition-transform transform translate-x-full duration-300 ease-in-out font-medium flex items-center gap-3">
-        <span id="toast-icon"></span>
-        <span id="toast-message"></span>
-    </div>
+
 
     <!-- MODAL PERÍODOS ACADÉMICOS (fuera de cualquier sección para evitar herencia de display:none) -->
     <div id="modal-periodo"
@@ -1826,30 +1821,17 @@
             doc.text(`Generado: ${new Date().toLocaleDateString()}`, 14, 30);
             // La tabla la maneja admin_users dinámicamente
             doc.save('matricula_general.pdf');
-            showToast('PDF descargado', 'success');
+
+            Swal.fire({
+                title: 'PDF Generado',
+                text: 'El listado se ha descargado correctamente.',
+                icon: 'success',
+                confirmButtonColor: '#EC4899',
+                customClass: { popup: 'rounded-3xl shadow-xl' }
+            });
         }
 
-        // --- UTILS ---
-        function showToast(msg, type) {
-            const toast = document.getElementById('toast-notification');
-            const icon = document.getElementById('toast-icon');
-            const text = document.getElementById('toast-message');
 
-            text.innerText = msg;
-
-            if (type === 'success') {
-                toast.classList.remove('bg-red-500');
-                toast.classList.add('bg-green-500');
-                icon.innerHTML = '<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>';
-            } else {
-                toast.classList.remove('bg-green-500');
-                toast.classList.add('bg-red-500');
-                icon.innerHTML = '<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>';
-            }
-
-            toast.classList.remove('translate-x-[150%]');
-            setTimeout(() => toast.classList.add('translate-x-[150%]'), 3000);
-        }
 
         // ============================================
         // MENÚ MÓVIL

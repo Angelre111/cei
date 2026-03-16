@@ -343,12 +343,17 @@
                                     <span class="w-2.5 h-2.5 rounded-full bg-gray-400"></span> Ausentes: <span id="contador-ausentes" class="text-lg">0</span>
                                 </span>
                             </div>
-                            <button type="button" id="btn-toggle-todos" onclick="toggleTodosAsistencia()" class="text-sm font-bold text-pink-600 hover:text-pink-800 transition-colors flex items-center gap-2 bg-pink-50 px-4 py-2 rounded-xl border border-pink-100 hover:bg-pink-100 hover:shadow-sm">
-                                <svg id="icon-toggle-todos" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                                </svg>
-                                <span id="text-toggle-todos">Todos Presentes</span>
-                            </button>
+                            <div id="master-switch-container" class="flex items-center gap-3 bg-pink-50/80 px-4 py-2 rounded-2xl border border-pink-100 shadow-sm transition-colors duration-500">
+                                <span class="text-[10px] font-extrabold text-gray-400 uppercase tracking-widest select-none">Marcar Todos:</span>
+                                
+                                <label class="relative inline-flex items-center cursor-pointer group">
+                                    <input type="checkbox" id="master-attendance-switch" class="sr-only peer" onchange="toggleTodosAsistencia(this.checked)"> 
+                                    
+                                    <div class="w-12 h-6 bg-gray-200 rounded-full peer peer-focus:ring-4 peer-focus:ring-green-100 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-400 shadow-inner"></div>
+                                    
+                                    <span id="master-switch-text" class="ml-3 text-sm font-bold text-gray-400 w-16 select-none transition-colors">Ausentes</span>
+                                </label>
+                            </div>
                         </div>
 
                         <div class="px-6 py-4 bg-gray-50/50 border-b border-gray-100 flex items-center">
@@ -587,13 +592,7 @@
         </div>
     </div>
 
-    <!-- ============================================ -->
-    <!-- TOAST NOTIFICATION (para feedback) -->
-    <!-- ============================================ -->
-    <div id="toast-notification"
-        class="fixed top-5 right-5 z-50 p-4 rounded-lg shadow-lg text-white transition-transform transform translate-x-full duration-300 ease-in-out">
-        <span id="toast-message"></span>
-    </div>
+
 
 
     <!-- ============================================ -->
@@ -1131,39 +1130,12 @@
             }
         }
 
-        // ============================================
-        // UTILIDADES (Toast Notification)
-        // ============================================
 
-        function showToast(message, type = "success") {
-            const toast = document.getElementById('toast-notification');
-            const messageSpan = document.getElementById('toast-message');
-
-            messageSpan.innerText = message;
-
-            // Resetear clases
-            toast.classList.remove('bg-green-500', 'bg-red-500', 'translate-x-full');
-
-            if (type === "success") {
-                toast.classList.add('bg-green-500');
-            } else if (type === "error") {
-                toast.classList.add('bg-red-500');
-            }
-
-            // Mostrar
-            toast.classList.remove('translate-x-full');
-            toast.classList.add('translate-x-0');
-
-            // Ocultar después de 3 segundos
-            setTimeout(() => {
-                toast.classList.remove('translate-x-0');
-                toast.classList.add('translate-x-full');
-            }, 3000);
-        }
 
         // --- NUEVAS FUNCIONES DE ASISTENCIA ---
 
         // Actualiza los números 🟩 y ⬜ y sincroniza el botón mágico
+        // Actualiza los números 🟩 y ⬜ y sincroniza el Switch Maestro
         function actualizarContadoresAsistencia() {
             const checkboxes = document.querySelectorAll('.asistencia-checkbox');
             if(checkboxes.length === 0) return;
@@ -1178,52 +1150,52 @@
             document.getElementById('contador-presentes').innerText = presentes;
             document.getElementById('contador-ausentes').innerText = ausentes;
 
-            // --- Sincronizar el Botón Mágico ---
-            const btnText = document.getElementById('text-toggle-todos');
-            const btnIcon = document.getElementById('icon-toggle-todos');
-            const btn = document.getElementById('btn-toggle-todos');
+            // --- Sincronizar el Switch Maestro ---
+            const masterSwitch = document.getElementById('master-attendance-switch');
+            const masterText = document.getElementById('master-switch-text');
+            const masterContainer = document.getElementById('master-switch-container');
 
-            if (btn && btnText && btnIcon) {
+            if (masterSwitch && masterText && masterContainer) {
                 if (presentes === checkboxes.length && checkboxes.length > 0) {
-                    // Si TODOS están presentes, el botón ofrece revertir a ausentes (Gris)
-                    btnText.innerText = "Todos Ausentes";
-                    btnIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>';
-                    btn.classList.replace('text-pink-600', 'text-gray-500');
-                    btn.classList.replace('bg-pink-50', 'bg-gray-50');
-                    btn.classList.replace('border-pink-100', 'border-gray-200');
+                    // Estado: TODOS PRESENTES (Verde Pastel)
+                    masterSwitch.checked = true;
+                    masterText.innerText = "Presentes";
+                    masterText.classList.replace('text-gray-400', 'text-green-600');
+                    masterContainer.classList.replace('bg-pink-50/80', 'bg-green-50/80');
+                    masterContainer.classList.replace('border-pink-100', 'border-green-200');
                 } else {
-                    // Si falta al menos uno, el botón ofrece marcarlos a todos presentes (Rosa)
-                    btnText.innerText = "Todos Presentes";
-                    btnIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>';
-                    btn.classList.replace('text-gray-500', 'text-pink-600');
-                    btn.classList.replace('bg-gray-50', 'bg-pink-50');
-                    btn.classList.replace('border-gray-200', 'border-pink-100');
+                    // Estado: FALTAN O TODOS AUSENTES (Rosa Pastel)
+                    masterSwitch.checked = false;
+                    masterText.innerText = "Ausentes";
+                    masterText.classList.replace('text-green-600', 'text-gray-400');
+                    masterContainer.classList.replace('bg-green-50/80', 'bg-pink-50/80');
+                    masterContainer.classList.replace('border-green-200', 'border-pink-100');
                 }
             }
         }
 
-        // Función Toggle: Alterna entre Todos Presentes y Todos Ausentes
-        function toggleTodosAsistencia() {
+        // Función Toggle Maestro: Recibe el estado del switch principal y se lo aplica a todos
+        function toggleTodosAsistencia(nuevoEstado) {
             const checkboxes = document.querySelectorAll('.asistencia-checkbox');
             if (checkboxes.length === 0) return;
 
-            // Verificamos si ya están absolutamente todos presentes
-            const todosEstanPresentes = Array.from(checkboxes).every(cb => cb.checked);
-            
-            // Si todos están presentes, el nuevo estado será Ausente (false). Si no, será Presente (true).
-            const nuevoEstado = !todosEstanPresentes;
             let cambios = false;
             
             checkboxes.forEach(cb => {
+                // Si el checkbox actual es distinto al estado maestro, lo cambiamos
                 if (cb.checked !== nuevoEstado) {
                     cb.checked = nuevoEstado;
                     const id = cb.dataset.hijoId;
-                    cambiarTextoSwitch(cb, id); // Esta función ya oculta/muestra el justificativo
+                    
+                    // Llamamos a tu función visual existente para ocultar/mostrar justificativos
+                    if(typeof cambiarTextoSwitch === 'function') {
+                        cambiarTextoSwitch(cb, id); 
+                    }
                     cambios = true;
                 }
             });
             
-            // Al final, actualizamos contadores (lo cual también actualizará el diseño de este botón)
+            // Al final, actualizamos los contadores y colores del contenedor maestro
             if(cambios) actualizarContadoresAsistencia();
         }
 
