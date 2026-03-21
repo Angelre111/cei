@@ -1408,10 +1408,20 @@ def obtener_mi_clase():
             
         seccion_id = res_doc_sec.data[0]['seccion_id']
         
-        # 2. Obtener los detalles de esa sección (Nivel y Letra) y nombre del docente
-        res_seccion = supabase.table("secciones").select("nivel, letra").eq("id", seccion_id).execute()
-        seccion_info = res_seccion.data[0] if res_seccion.data else {'nivel': 'Desconocido', 'letra': ''}
+        # 2. Obtener los detalles de esa sección (Nivel, Letra y Período)
+        res_seccion = supabase.table("secciones").select("nivel, letra, periodo_id").eq("id", seccion_id).execute()
+        seccion_info = res_seccion.data[0] if res_seccion.data else {'nivel': 'Desconocido', 'letra': '', 'periodo_id': None}
         
+        # Buscar los datos reales del período académico
+        periodo_nombre = "Sin asignar"
+        periodo_estado = "desconocido"
+        
+        if seccion_info.get('periodo_id'):
+            res_periodo = supabase.table("periodos_academicos").select("nombre, estado").eq("id", seccion_info['periodo_id']).execute()
+            if res_periodo.data:
+                periodo_nombre = res_periodo.data[0].get('nombre', 'Sin asignar')
+                periodo_estado = res_periodo.data[0].get('estado', 'desconocido')
+
         res_user = supabase.table("usuarios").select("nombres, apellidos").eq("id", docente_id).single().execute()
         nombre_docente = "¡Bienvenida!"
         if res_user.data:
@@ -1451,6 +1461,8 @@ def obtener_mi_clase():
         return jsonify({
             'success': True,
             'docente': nombre_docente,
+            'periodo': periodo_nombre,
+            'periodo_estado': periodo_estado,
             'seccion': {
                 'id': seccion_id,
                 'nivel': seccion_info.get('nivel'),

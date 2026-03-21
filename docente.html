@@ -19,7 +19,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    
+
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
 
     <script>
@@ -150,10 +150,9 @@
                 <li>
                     <a href="#" data-section="section-listados"
                         class="nav-link flex items-center space-x-3 p-3 rounded-xl hover:bg-blue-50 transition-all duration-200">
-                        <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                            stroke-width="1.5" stroke="currentColor">
+                        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M3.75 12h16.5m-16.5 3.75h16.5M3.75 19.5h16.5M5.625 4.5h12.75a1.875 1.875 0 010 3.75H5.625a1.875 1.875 0 010-3.75z" />
+                                d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" />
                         </svg>
                         <span>Listado de Alumnos</span>
                     </a>
@@ -164,7 +163,7 @@
                         <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                             stroke-width="1.5" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                d="M10.125 2.25h-4.5c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125v-9M10.125 2.25h.375a9 9 0 019 9v.375M10.125 2.25A3.375 3.375 0 0113.5 5.625v1.5c0 .621.504 1.125 1.125 1.125h1.5a3.375 3.375 0 013.375 3.375M9 15l2.25 2.25L15 12" />
                         </svg>
                         <span>Asistencia</span>
                     </a>
@@ -178,6 +177,13 @@
                                 d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125" />
                         </svg>
                         <span>Evaluaciones</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" data-section="section-estadisticas"
+                        class="nav-link flex items-center space-x-3 p-3 rounded-xl hover:bg-blue-50 transition-all duration-200">
+                        <i class="ph-bold ph-chart-line-up text-xl text-gray-600"></i>
+                        <span>Estadísticas</span>
                     </a>
                 </li>
                 <li>
@@ -219,18 +225,62 @@
 
             <!-- Header Desktop (Copiado de admin.html) -->
             <header
-                class="sticky top-0 z-10 hidden md:flex items-center justify-between p-6 bg-white/80 backdrop-blur-md border-b border-gray-200 shadow-sm">
-                <div>
-                    <h1 id="header-nombre-docente" class="text-2xl font-bold text-gray-800">¡Bienvenida!</h1>
-                    <p id="header-seccion-info" class="text-gray-500">Cargando tu grupo...</p>
+                class="sticky top-0 z-20 hidden md:flex items-center justify-between px-8 py-4 bg-white/80 backdrop-blur-xl border-b border-white/50 shadow-[0_4px_30px_-10px_rgba(0,0,0,0.05)]">
+
+                <div class="flex items-center gap-4">
+                    <div
+                        class="w-12 h-12 rounded-2xl bg-gradient-to-br from-pink-400 to-pink-600 flex items-center justify-center shadow-lg shadow-pink-200 text-white transform -rotate-3">
+                        <i class="ph-fill ph-chalkboard-teacher text-2xl"></i>
+                    </div>
+                    <div>
+                        <h1 id="header-nombre-docente"
+                            class="text-xl font-black text-gray-800 tracking-tight leading-tight">¡Bienvenida!</h1>
+                        <div class="flex items-center gap-1.5 mt-0.5">
+                            <i class="ph-fill ph-users-three text-gray-400 text-sm"></i>
+                            <p id="header-seccion-info"
+                                class="text-xs font-bold text-gray-500 tracking-wider uppercase">Cargando tu grupo...
+                            </p>
+                        </div>
+                    </div>
                 </div>
-                <div class="flex items-center space-x-4">
-                    <span id="header-ano-container"
-                        class="text-xs font-semibold px-3 py-1 rounded-full border transition-colors bg-gray-100 text-gray-500 border-gray-200">
-                        Año Escolar: <span id="header-ano-activo" class="font-bold">...</span>
-                    </span>
-                    <img src="https://placehold.co/100x100/EBF4FF/60A5FA?text=P" alt="Docente"
-                        class="w-10 h-10 rounded-full border-2 border-blue-200">
+
+                <div class="flex items-center space-x-6">
+
+                    <div id="header-ano-container"
+                        class="flex flex-row items-center gap-2.5 bg-gray-50 border border-gray-200 px-4 py-2 rounded-full shadow-sm whitespace-nowrap transition-all duration-300">
+
+                        <div id="header-ano-icon-bg"
+                            class="flex-shrink-0 flex items-center justify-center w-6 h-6 bg-gray-100 rounded-full transition-all">
+                            <i id="header-ano-icon" class="ph-bold ph-calendar-star text-gray-500 text-sm"></i>
+                        </div>
+
+                        <div id="header-ano-label"
+                            class="flex flex-row items-center text-xs font-bold text-gray-600 uppercase tracking-wider m-0 p-0 leading-none">
+                            <span class="mr-1">Año Escolar:</span>
+                            <span id="header-ano-activo"
+                                class="font-black text-gray-800 transition-colors duration-300">Cargando...</span>
+                        </div>
+
+                    </div>
+
+                    <div class="w-px h-8 bg-gray-200"></div>
+
+                    <div class="flex items-center gap-3 cursor-pointer group">
+                        <div class="text-right hidden lg:block">
+                            <p class="text-sm font-bold text-gray-700 group-hover:text-pink-600 transition-colors"
+                                id="header-profile-name">Docente</p>
+                            <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Panel de Control</p>
+                        </div>
+                        <div class="relative">
+                            <div class="w-11 h-11 rounded-full bg-pink-100 flex items-center justify-center text-pink-600 font-black text-lg border-2 border-white shadow-md group-hover:shadow-pink-200 group-hover:scale-105 transition-all"
+                                id="header-profile-initial">
+                                D
+                            </div>
+                            <div
+                                class="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full shadow-sm">
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </header>
 
@@ -240,152 +290,255 @@
                 <!-- ============================================ -->
                 <!-- SECCIÓN 1: DASHBOARD (INICIO) -->
                 <!-- ============================================ -->
-                <section id="section-dashboard" class="page-section">
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <section id="section-dashboard" class="page-section fade-in">
 
-                        <!-- Card: Asistencia del Día -->
-                        <div class="bg-white p-6 rounded-2xl shadow-md transition-all hover:shadow-lg">
-                            <h2 class="text-xl font-bold text-gray-800 mb-4">Asistencia del Día</h2>
-                            <div class="flex items-center justify-center space-x-4 mb-4">
-                                <div class="text-center">
-                                    <p class="text-4xl font-bold text-green-500">22</p>
-                                    <p class="text-gray-500">Presentes</p>
-                                </div>
-                                <div class="border-l h-10 border-gray-200"></div>
-                                <div class="text-center">
-                                    <p class="text-4xl font-bold text-gray-400">25</p>
-                                    <p class="text-gray-500">Total</p>
-                                </div>
+                    <div
+                        class="bg-gradient-to-br from-pink-500 to-pink-600 rounded-3xl p-8 mb-8 text-white relative overflow-hidden shadow-lg shadow-pink-200/50 transform hover:scale-[1.01] transition-transform duration-300 cursor-default group">
+                        <div
+                            class="absolute -right-16 -top-16 text-white opacity-20 pointer-events-none transform group-hover:rotate-45 transition-transform duration-700">
+                            <i class="ph-fill ph-sparkle text-9xl"></i>
+                        </div>
+                        <div
+                            class="absolute -left-10 -bottom-10 text-white opacity-10 pointer-events-none transform group-hover:scale-125 transition-transform duration-1000">
+                            <i class="ph-fill ph-chalkboard-teacher text-9xl"></i>
+                        </div>
+
+                        <div class="relative z-10 flex flex-col md:flex-row justify-between items-center gap-4">
+                            <div>
+                                <h1 class="text-4xl font-black tracking-tighter leading-tight">
+                                    ¡Hola, <span id="dashboard-docente-nombres">Cargando...</span>!
+                                </h1>
+                                <p class="text-lg font-medium text-pink-50/90 mt-2 max-w-lg">
+                                    Te damos la bienvenida a tu panel central del <span class="font-bold">CEI La
+                                        Paragua</span>. Aquí tienes el resumen de tu clase hoy.
+                                </p>
                             </div>
-                            <button data-target="section-asistencia"
-                                class="nav-button w-full text-center px-4 py-2 bg-blue-500 text-white rounded-lg font-semibold hover:bg-blue-600 transition-all">
-                                Gestionar Asistencia
-                            </button>
-                        </div>
-
-                        <!-- Card: Evaluaciones Pendientes -->
-                        <div class="bg-white p-6 rounded-2xl shadow-md transition-all hover:shadow-lg">
-                            <h2 class="text-xl font-bold text-gray-800 mb-4">Evaluaciones Pendientes</h2>
-                            <p class="text-gray-500 mb-2">Período 2 (en curso)</p>
-                            <div class="w-full bg-gray-200 rounded-full h-2.5 mb-2">
-                                <div class="bg-yellow-400 h-2.5 rounded-full" style="width: 60%"></div>
+                            <div
+                                class="px-5 py-3 rounded-2xl bg-white/20 border border-white/20 text-center shadow-inner backdrop-blur-sm whitespace-nowrap">
+                                <p class="text-xs font-bold uppercase tracking-widest text-pink-100">Año Escolar Activo
+                                </p>
+                                <p class="text-xl font-bold mt-1" id="header-periodo">
+                                    <span id="dashboard-periodo-activo">...</span>
+                                </p>
                             </div>
-                            <p class="text-gray-600 mb-4 text-sm">Progreso: 15 / 25 evaluados</p>
-                            <button data-target="section-evaluaciones"
-                                class="nav-button w-full text-center px-4 py-2 bg-yellow-500 text-white rounded-lg font-semibold hover:bg-yellow-600 transition-all">
-                                Ir a Evaluar
-                            </button>
                         </div>
-
-                        <!-- Card: Accesos Rápidos (PDF) -->
-                        <div class="bg-white p-6 rounded-2xl shadow-md transition-all hover:shadow-lg">
-                            <h2 class="text-xl font-bold text-gray-800 mb-4">Accesos Rápidos</h2>
-                            <p class="text-gray-500 mb-4">Genera el listado oficial de tu sección en formato PDF.</p>
-                            <!-- Botón inspirado en el rosa/coral de la imagen -->
-                            <button data-target="section-listados"
-                                class="nav-button w-full text-center px-4 py-3 bg-pink-500 text-white rounded-lg font-semibold hover:bg-pink-600 transition-all flex items-center justify-center space-x-2">
-                                <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                    stroke-width="1.5" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                        d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
-                                </svg>
-                                <span>Generar Listado PDF</span>
-                            </button>
-                        </div>
-
                     </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+                        <div
+                            class="bg-white rounded-3xl p-6 border border-pink-100 shadow-md group hover:border-pink-300 hover:shadow-xl transform hover:scale-[1.02] transition-all duration-300 cursor-default flex flex-col relative overflow-hidden">
+                            <div class="flex items-center gap-3 mb-10 relative z-10">
+                                <div
+                                    class="w-12 h-12 rounded-xl bg-pink-50 flex items-center justify-center text-pink-600 shadow-sm border border-pink-100 transition-colors group-hover:bg-pink-100">
+                                    <i class="ph-fill ph-users text-2xl"></i>
+                                </div>
+                                <div>
+                                    <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest">Matrícula
+                                        Total</h3>
+                                    <p class="text-sm font-semibold text-pink-600 mt-0.5">Alumnos Inscritos</p>
+                                </div>
+                            </div>
+                            <div class="flex-1 flex flex-col justify-end relative z-10">
+                                <p class="text-5xl font-black text-gray-800 tracking-tighter"
+                                    id="dashboard-total-matricula">--</p>
+                                <p class="text-xs text-gray-500 font-medium mt-1">Sincronizado con Base de Datos</p>
+                            </div>
+                            <i
+                                class="ph-fill ph-student absolute -right-8 -bottom-8 text-pink-50 text-9xl group-hover:scale-110 group-hover:text-pink-100/50 transition-all duration-500"></i>
+                        </div>
+
+                        <div
+                            class="bg-white rounded-3xl p-6 border border-blue-100 shadow-md group hover:border-blue-300 hover:shadow-xl transform hover:scale-[1.02] transition-all duration-300 cursor-default flex flex-col relative overflow-hidden">
+                            <div class="flex items-center gap-3 mb-10 relative z-10">
+                                <div
+                                    class="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600 shadow-sm border border-blue-100 transition-colors group-hover:bg-blue-100">
+                                    <i class="ph-fill ph-chalkboard-teacher text-2xl"></i>
+                                </div>
+                                <div>
+                                    <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest">Sección
+                                        Asignada</h3>
+                                    <p class="text-sm font-semibold text-blue-600 mt-0.5">Grupo Actual</p>
+                                </div>
+                            </div>
+                            <div class="flex-1 flex flex-col justify-end relative z-10">
+                                <p class="text-4xl font-black text-gray-800 tracking-tight"
+                                    id="dashboard-seccion-activa">--</p>
+                                <p class="text-xs text-gray-500 font-medium mt-1">Período en curso</p>
+                            </div>
+                            <i
+                                class="ph-fill ph-presentation-chart absolute -right-8 -bottom-8 text-blue-50 text-9xl group-hover:scale-110 group-hover:text-blue-100/50 transition-all duration-500"></i>
+                        </div>
+
+                        <div
+                            class="bg-white rounded-3xl p-6 border border-green-100 shadow-md group hover:border-green-300 hover:shadow-xl transform hover:scale-[1.02] transition-all duration-300 cursor-default flex flex-col relative overflow-hidden">
+                            <div class="flex items-center gap-3 mb-10 relative z-10">
+                                <div
+                                    class="w-12 h-12 rounded-xl bg-green-50 flex items-center justify-center text-green-600 shadow-sm border border-green-100 transition-colors group-hover:bg-green-100">
+                                    <i class="ph-fill ph-check-square-offset text-2xl"></i>
+                                </div>
+                                <div>
+                                    <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest">Asistencia Hoy
+                                    </h3>
+                                    <p class="text-sm font-semibold text-green-600 mt-0.5" id="dashboard-fecha-hoy">
+                                        DD/MM/YYYY</p>
+                                </div>
+                            </div>
+                            <div class="flex-1 flex flex-col justify-end relative z-10">
+                                <p class="text-5xl font-black text-gray-800 tracking-tighter"
+                                    id="dashboard-asistencia-hoy">--</p>
+                                <p class="text-xs text-gray-500 font-medium mt-1">Cálculo en tiempo real</p>
+                            </div>
+                            <i
+                                class="ph-fill ph-calendar-check absolute -right-8 -bottom-8 text-green-50 text-9xl group-hover:scale-110 group-hover:text-green-100/50 transition-all duration-500"></i>
+                        </div>
+                    </div>
+
+                    <div
+                        class="mt-8 px-6 py-4 bg-white rounded-2xl border border-gray-100 text-center shadow-sm cursor-default">
+                        <p class="text-sm font-bold text-pink-600 tracking-wider uppercase">
+                            <i class="ph-fill ph-megaphone mr-1.5"></i> Tip del día:
+                        </p>
+                        <p class="text-xs text-gray-500 mt-1 max-w-xl mx-auto">
+                            "La educación no cambia el mundo, cambia a las personas que van a cambiar el mundo." -
+                            Recuerda registrar las observaciones descriptivas al finalizar la jornada.
+                        </p>
+                    </div>
+
                 </section>
 
                 <!-- ============================================ -->
                 <!-- SECCIÓN 2: GESTIÓN DE ASISTENCIA -->
                 <!-- ============================================ -->
-                <section id="section-asistencia" class="page-section hidden">
-                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-pink-100 flex flex-col sm:flex-row items-center justify-between mb-6">
-                        <div class="mb-4 sm:mb-0 text-center sm:text-left">
-                            <h2 class="text-xl font-bold text-gray-800">Registro Diario</h2>
-                            <p class="text-sm text-gray-500">Confirma la fecha para habilitar la lista de alumnos</p>
-                        </div>
-                        
-                        <div class="relative group w-full sm:w-auto">
-                            <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                                <svg class="w-6 h-6 text-pink-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                            </div>
-                            <input type="date" id="attendance-date" 
-                                class="bg-pink-50 border-2 border-pink-200 text-gray-800 text-lg font-bold rounded-xl focus:ring-pink-500 focus:border-pink-500 block w-full pl-12 pr-4 py-3 shadow-sm transition-all cursor-pointer hover:bg-pink-100 outline-none">
-                        </div>
-                    </div>
+                <section id="section-asistencia" class="page-section hidden fade-in">
+                    <div
+                        class="bg-white/95 backdrop-blur-xl p-6 md:p-10 rounded-[2.5rem] shadow-xl border border-white">
 
-                    <div id="attendance-empty-state" class="text-center py-10 hidden">
-                        <div class="inline-block p-4 bg-gray-50 rounded-full mb-3">
-                            <svg class="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                        </div>
-                        <p class="text-gray-500 font-medium">Por favor, selecciona una fecha para ver los estudiantes.</p>
-                    </div>
-
-                    <div id="attendance-list-container" class="bg-white rounded-2xl shadow-md border border-gray-100 overflow-hidden hidden">
-                        
-                        <div class="p-6 border-b border-gray-100 flex flex-col md:flex-row justify-between items-center gap-4 bg-gray-50/30">
-                            <div>
-                                <h3 class="text-lg font-bold text-gray-800">Control de Asistencia</h3>
-                                <p class="text-sm text-gray-500">Marca el estado de los estudiantes y añade justificativos si es necesario.</p>
-                            </div>
-                            <div class="text-xs font-semibold px-3 py-1.5 rounded-lg bg-pink-50 text-pink-600 border border-pink-100">
-                                Sección Activa
-                            </div>
-                        </div>
-
-                        <div class="px-6 py-3 bg-white border-b border-gray-100 flex flex-col sm:flex-row justify-between items-center gap-4 font-normal">
-                            <div class="flex items-center gap-4 text-sm font-semibold">
-                                <span class="flex items-center gap-1.5 px-3 py-1.5 bg-green-50 text-green-700 rounded-lg border border-green-100 shadow-sm">
-                                    <span class="w-2.5 h-2.5 rounded-full bg-green-500"></span> Presentes: <span id="contador-presentes" class="text-lg">0</span>
-                                </span>
-                                <span class="flex items-center gap-1.5 px-3 py-1.5 bg-gray-50 text-gray-600 rounded-lg border border-gray-200 shadow-sm">
-                                    <span class="w-2.5 h-2.5 rounded-full bg-gray-400"></span> Ausentes: <span id="contador-ausentes" class="text-lg">0</span>
-                                </span>
-                            </div>
-                            <div id="master-switch-container" class="flex items-center gap-3 bg-pink-50/80 px-4 py-2 rounded-2xl border border-pink-100 shadow-sm transition-colors duration-500">
-                                <span class="text-[10px] font-extrabold text-gray-400 uppercase tracking-widest select-none">Marcar Todos:</span>
-                                
-                                <label class="relative inline-flex items-center cursor-pointer group">
-                                    <input type="checkbox" id="master-attendance-switch" class="sr-only peer" onchange="toggleTodosAsistencia(this.checked)"> 
-                                    
-                                    <div class="w-12 h-6 bg-gray-200 rounded-full peer peer-focus:ring-4 peer-focus:ring-green-100 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-400 shadow-inner"></div>
-                                    
-                                    <span id="master-switch-text" class="ml-3 text-sm font-bold text-gray-400 w-16 select-none transition-colors">Ausentes</span>
-                                </label>
-                            </div>
-                        </div>
-
-                        <div class="px-6 py-4 bg-gray-50/50 border-b border-gray-100 flex items-center">
-                            <div class="relative w-full max-w-md group">
-                                <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-                                    <svg class="w-5 h-5 text-gray-400 group-focus-within:text-pink-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6 mb-10">
+                            <div class="flex items-center gap-4">
+                                <div
+                                    class="w-14 h-14 rounded-2xl bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center shadow-lg shadow-green-200 transform -rotate-6">
+                                    <i class="ph-bold ph-calendar-check text-3xl text-white"></i>
                                 </div>
-                                <input type="text" id="attendance-search-input" class="block w-full pl-11 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-pink-200 focus:border-pink-400 transition-all shadow-sm font-normal" placeholder="Buscar alumno por cédula o nombre...">
+                                <div>
+                                    <h2 class="text-3xl font-black text-gray-800 tracking-tight">Control de Asistencia
+                                    </h2>
+                                    <p class="text-gray-500 font-medium mt-1">Registra la asistencia diaria y añade
+                                        justificativos.</p>
+                                </div>
+                            </div>
+
+                            <div
+                                class="flex flex-col sm:flex-row items-center gap-3 bg-gray-50 p-2 rounded-2xl border border-gray-200 shadow-sm">
+                                <div
+                                    class="flex items-center gap-2 bg-white px-4 py-2.5 rounded-xl border border-gray-100 shadow-sm">
+                                    <i class="ph-fill ph-calendar-blank text-green-500 text-xl"></i>
+                                    <input type="date" id="attendance-date"
+                                        class="text-sm font-bold text-gray-700 bg-transparent outline-none cursor-pointer focus:text-green-600 transition-colors">
+                                </div>
+                                <div class="flex items-center gap-1.5 w-full sm:w-auto">
+                                    <button type="button" onclick="setAsistenciaDate('hoy')"
+                                        class="flex-1 sm:flex-none px-5 py-2.5 text-xs font-extrabold rounded-xl transition-all duration-300 bg-green-100 text-green-700 hover:bg-green-500 hover:text-white shadow-sm">
+                                        Hoy
+                                    </button>
+                                    <button type="button" onclick="setAsistenciaDate('ayer')"
+                                        class="flex-1 sm:flex-none px-5 py-2.5 text-xs font-extrabold rounded-xl transition-all duration-300 bg-white text-gray-600 hover:bg-gray-100 border border-gray-200 shadow-sm">
+                                        Ayer
+                                    </button>
+                                </div>
                             </div>
                         </div>
 
-                        <div class="overflow-x-auto">
-                            <table class="w-full text-left border-collapse">
-                                <thead class="bg-gray-50 text-gray-500 uppercase text-xs font-semibold">
-                                    <tr>
-                                        <th class="px-6 py-4 w-32">Cédula Escolar</th>
-                                        <th class="px-6 py-4">Estudiante</th>
-                                        <th class="px-6 py-4 text-center">Estado</th>
-                                        <th class="px-6 py-4">Observaciones / Justificativo</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="attendance-table-body" class="divide-y divide-gray-100 text-sm">
-                                    </tbody>
-                            </table>
+                        <div id="attendance-empty-state"
+                            class="text-center py-16 hidden bg-gray-50/50 rounded-3xl border border-gray-200 border-dashed">
+                            <div class="inline-block p-5 bg-white rounded-full mb-4 shadow-sm border border-gray-100">
+                                <i class="ph-duotone ph-calendar-x text-5xl text-gray-400"></i>
+                            </div>
+                            <h3 class="text-xl font-bold text-gray-700 mb-1">Sin fecha seleccionada</h3>
+                            <p class="text-gray-500 font-medium">Por favor, elige un día en el calendario superior para
+                                ver los estudiantes.</p>
                         </div>
-                    </div>
 
-                    <div class="mt-8 text-right">
-                        <button id="btn-save-attendance"
-                            class="px-8 py-3 bg-pink-500 text-white rounded-xl font-bold shadow-lg shadow-pink-200 hover:bg-pink-600 hover:shadow-pink-300 transition-all transform hover:-translate-y-1">
-                            Guardar Registro del Día
-                        </button>
+                        <div id="attendance-list-container" class="hidden fade-in">
+
+                            <div
+                                class="p-5 bg-gray-50/50 rounded-3xl border border-gray-100 flex flex-col xl:flex-row justify-between gap-4 mb-8">
+
+                                <div class="flex flex-col sm:flex-row gap-4 items-center w-full xl:w-auto">
+                                    <div id="master-switch-container"
+                                        class="flex items-center gap-3 bg-pink-50/80 px-5 py-3 rounded-2xl border border-pink-100 shadow-sm transition-colors duration-500 w-full sm:w-auto justify-center">
+                                        <span
+                                            class="text-[11px] font-extrabold text-gray-500 uppercase tracking-widest select-none">Marcar
+                                            Todos:</span>
+                                        <label class="relative inline-flex items-center cursor-pointer group">
+                                            <input type="checkbox" id="master-attendance-switch" class="sr-only peer"
+                                                onchange="toggleTodosAsistencia(this.checked)">
+                                            <div
+                                                class="w-12 h-6 bg-gray-200 rounded-full peer peer-focus:ring-4 peer-focus:ring-green-100 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-400 shadow-inner">
+                                            </div>
+                                            <span id="master-switch-text"
+                                                class="ml-3 text-sm font-bold text-gray-400 w-16 select-none transition-colors">Ausentes</span>
+                                        </label>
+                                    </div>
+
+                                    <div
+                                        class="flex items-center gap-2 bg-white px-4 py-2.5 rounded-2xl border border-gray-200 shadow-sm w-full sm:w-auto justify-center">
+                                        <div class="flex items-center gap-2 px-2">
+                                            <span
+                                                class="w-2.5 h-2.5 rounded-full bg-green-500 shadow-sm shadow-green-200"></span>
+                                            <span
+                                                class="text-[11px] font-bold text-gray-500 uppercase tracking-wider">Presentes:</span>
+                                            <span id="contador-presentes"
+                                                class="text-base font-black text-green-600">0</span>
+                                        </div>
+                                        <div class="w-px h-6 bg-gray-200 mx-2"></div>
+                                        <div class="flex items-center gap-2 px-2">
+                                            <span
+                                                class="w-2.5 h-2.5 rounded-full bg-gray-400 shadow-sm shadow-gray-200"></span>
+                                            <span
+                                                class="text-[11px] font-bold text-gray-500 uppercase tracking-wider">Ausentes:</span>
+                                            <span id="contador-ausentes"
+                                                class="text-base font-black text-gray-600">0</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="relative w-full xl:max-w-xs group">
+                                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                        <i
+                                            class="ph-bold ph-magnifying-glass text-gray-400 group-focus-within:text-green-500 transition-colors text-lg"></i>
+                                    </div>
+                                    <input type="text" id="attendance-search-input"
+                                        class="block w-full pl-12 pr-4 py-3 bg-white border border-gray-200 rounded-2xl text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-200 focus:border-green-400 transition-all shadow-sm"
+                                        placeholder="Buscar alumno...">
+                                </div>
+                            </div>
+
+                            <div class="overflow-x-auto rounded-2xl border border-gray-100 shadow-sm bg-white mb-8">
+                                <table class="w-full text-left border-collapse">
+                                    <thead
+                                        class="bg-gray-50 text-gray-500 uppercase text-[11px] font-bold tracking-wider">
+                                        <tr>
+                                            <th class="px-6 py-4 border-b border-gray-100 w-32">Cédula Escolar</th>
+                                            <th class="px-6 py-4 border-b border-gray-100">Estudiante</th>
+                                            <th class="px-6 py-4 border-b border-gray-100 text-center">Estado</th>
+                                            <th class="px-6 py-4 border-b border-gray-100">Observaciones / Justificativo
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="attendance-table-body" class="divide-y divide-gray-100 text-sm">
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <div class="flex justify-end pt-4 border-t border-gray-100">
+                                <button id="btn-save-attendance"
+                                    class="w-full md:w-auto px-8 py-3.5 bg-green-500 text-white rounded-xl font-bold shadow-lg shadow-green-200 hover:bg-green-600 hover:shadow-green-300 transform hover:-translate-y-1 transition-all flex items-center justify-center gap-2 text-base">
+                                    <i class="ph-bold ph-floppy-disk text-xl"></i>
+                                    <span>Guardar Registro del Día</span>
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </section>
 
@@ -438,44 +591,47 @@
                 <!-- ============================================ -->
                 <!-- SECCIÓN 4: LISTADO DE ALUMNOS (PDF) -->
                 <!-- ============================================ -->
-                <section id="section-listados" class="page-section hidden">
-                    <div class="bg-white p-6 rounded-2xl shadow-md">
-                        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
-                            <h2 class="text-2xl font-bold text-gray-800">Listado de Alumnos</h2>
-                            <button id="btn-download-pdf"
-                                class="w-full md:w-auto px-4 py-2 bg-pink-500 text-white rounded-lg font-semibold hover:bg-pink-600 transition-all flex items-center justify-center space-x-2">
-                                <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                    stroke-width="1.5" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                        d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
-                                </svg>
+                <section id="section-listados" class="page-section hidden fade-in">
+                    <div class="bg-white/95 backdrop-blur-xl p-6 md:p-10 rounded-[2.5rem] shadow-xl border border-white">
+
+                        <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-4">
+                            <div class="flex items-center gap-4">
+                                <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center shadow-lg shadow-blue-200 transform -rotate-6">
+                                    <i class="ph-bold ph-users-three text-3xl text-white"></i>
+                                </div>
+                                <div>
+                                    <h2 class="text-3xl font-black text-gray-800 tracking-tight">Listado de Alumnos</h2>
+                                    <p class="text-gray-500 font-medium mt-1">Vista previa del listado oficial de la sección.</p>
+                                </div>
+                            </div>
+                            <button id="btn-download-pdf" class="w-full md:w-auto px-6 py-3.5 bg-pink-500 text-white rounded-xl font-bold shadow-lg shadow-pink-200 hover:bg-pink-600 hover:shadow-pink-300 transform hover:-translate-y-1 transition-all flex items-center justify-center gap-2">
+                                <i class="ph-bold ph-download-simple text-xl"></i>
                                 <span>Descargar Listado (PDF)</span>
                             </button>
                         </div>
 
-                        <p class="text-gray-600 mb-4">Vista previa del listado oficial de la sección.</p>
-
-                        <div class="px-6 py-4 bg-gray-50/50 border-t border-b border-gray-100 flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4 font-normal">
+                        <div class="p-5 bg-gray-50/50 rounded-3xl border border-gray-100 flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
                             <div class="relative w-full max-w-md group">
-                                <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-                                    <svg class="w-5 h-5 text-gray-400 group-focus-within:text-pink-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                                <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                    <i class="ph-bold ph-magnifying-glass text-gray-400 group-focus-within:text-blue-500 transition-colors text-lg"></i>
                                 </div>
-                                <input type="text" id="listado-search-input" class="block w-full pl-11 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-pink-200 focus:border-pink-400 transition-all shadow-sm" placeholder="Buscar por cédula o nombre...">
+                                <input type="text" id="listado-search-input" class="block w-full pl-12 pr-4 py-3 bg-white border border-gray-200 rounded-xl text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-400 transition-all shadow-sm" placeholder="Buscar por cédula o nombre...">
                             </div>
-                            <div class="text-sm font-semibold text-gray-600 bg-white px-4 py-2 rounded-lg border border-gray-200 shadow-sm whitespace-nowrap">
-                                Total matriculados: <span id="listado-total-count" class="text-pink-600 font-bold text-lg">0</span> alumnos
+                            <div class="text-sm font-semibold text-gray-600 bg-white px-5 py-3 rounded-xl border border-gray-200 shadow-sm whitespace-nowrap flex items-center gap-2">
+                                <i class="ph-fill ph-student text-blue-500 text-lg"></i>
+                                Total matriculados: <span id="listado-total-count" class="text-blue-600 font-black text-lg ml-1">0</span> alumnos
                             </div>
                         </div>
 
-                        <div class="overflow-x-auto">
+                        <div class="overflow-x-auto rounded-2xl border border-gray-100 shadow-sm bg-white">
                             <table class="w-full text-left border-collapse">
-                                <thead class="bg-gray-50 text-gray-500 uppercase text-xs font-semibold">
+                                <thead class="bg-gray-50 text-gray-500 uppercase text-[11px] font-bold tracking-wider">
                                     <tr>
-                                        <th class="px-6 py-4">Cédula Escolar</th>
-                                        <th class="px-6 py-4">Estudiante</th>
-                                        <th class="px-6 py-4">Grupo</th>
-                                        <th class="px-6 py-4">Representante</th>
-                                        <th class="px-6 py-4 text-center">Acciones</th>
+                                        <th class="px-6 py-4 border-b border-gray-100">Cédula Escolar</th>
+                                        <th class="px-6 py-4 border-b border-gray-100">Estudiante</th>
+                                        <th class="px-6 py-4 border-b border-gray-100">Grupo</th>
+                                        <th class="px-6 py-4 border-b border-gray-100">Representante</th>
+                                        <th class="px-6 py-4 border-b border-gray-100 text-center">Acciones</th>
                                     </tr>
                                 </thead>
                                 <tbody id="preview-table-body" class="divide-y divide-gray-100 text-sm">
@@ -486,7 +642,153 @@
                 </section>
 
                 <!-- ============================================ -->
-                <!-- SECCIÓN 5: PERFIL (Placeholder) -->
+                <!-- SECCIÓN 5: ESTADÍSTICAS Y REPORTES -->
+                <!-- ============================================ -->
+                <section id="section-estadisticas" class="page-section hidden fade-in">
+                    <div
+                        class="bg-white/95 backdrop-blur-xl p-6 md:p-10 rounded-[2.5rem] shadow-xl border border-white">
+
+                        <div class="mb-6 flex items-center gap-4">
+                            <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-pink-400 to-pink-600 flex items-center justify-center shadow-lg shadow-pink-200 transform -rotate-6">
+                                <i class="ph-bold ph-chart-pie-slice text-3xl text-white"></i>
+                            </div>
+                            <div>
+                                <h2 class="text-3xl font-black text-gray-800 tracking-tight">Estadísticas y Reportes</h2>
+                                <p class="text-gray-500 font-medium mt-1">Genera resúmenes oficiales y reportes de asistencia.</p>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+
+                            <div
+                                class="bg-blue-50/30 p-6 md:p-8 rounded-3xl border border-blue-100 flex flex-col h-full relative overflow-hidden group hover:bg-blue-50/50 transition-colors">
+                                <div
+                                    class="absolute -right-6 -top-6 text-blue-100 opacity-50 pointer-events-none transform group-hover:scale-110 transition-transform duration-500">
+                                    <i class="ph-fill ph-calendar-dots text-9xl"></i>
+                                </div>
+
+                                <div class="flex items-center gap-3 mb-6 relative z-10">
+                                    <div
+                                        class="w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center text-blue-600 shadow-sm">
+                                        <i class="ph-fill ph-calendar-dots text-2xl"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="text-xl font-bold text-gray-800">Asistencia por Período</h3>
+                                        <p class="text-xs text-blue-500 font-bold uppercase tracking-wider mt-0.5">
+                                            Filtro Personalizado</p>
+                                    </div>
+                                </div>
+
+                                <div class="flex-1 space-y-5 relative z-10">
+                                    <div class="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label
+                                                class="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Desde</label>
+                                            <input type="date" id="stat-fecha-inicio"
+                                                class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-400 outline-none text-sm text-gray-700 bg-white focus:shadow-md transition-all">
+                                        </div>
+                                        <div>
+                                            <label
+                                                class="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Hasta</label>
+                                            <input type="date" id="stat-fecha-fin"
+                                                class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-400 outline-none text-sm text-gray-700 bg-white focus:shadow-md transition-all">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="mt-8 relative z-10">
+                                    <button id="btn-generar-rango"
+                                        class="w-full py-3.5 bg-white text-blue-600 border border-blue-200 font-bold rounded-xl hover:bg-blue-600 hover:text-white hover:border-blue-600 shadow-sm hover:shadow-md transition-all flex items-center justify-center gap-2 text-base">
+                                        <i class="ph-bold ph-magnifying-glass"></i> Consultar Período
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div
+                                class="bg-pink-50/30 p-6 md:p-8 rounded-3xl border border-pink-200 flex flex-col h-full relative overflow-hidden group hover:bg-pink-50/50 transition-colors shadow-sm">
+                                <div
+                                    class="absolute -right-6 -top-6 text-pink-100 opacity-50 pointer-events-none transform group-hover:scale-110 transition-transform duration-500">
+                                    <i class="ph-fill ph-file-text text-9xl"></i>
+                                </div>
+
+                                <div class="flex items-center gap-3 mb-6 relative z-10">
+                                    <div
+                                        class="w-12 h-12 rounded-xl bg-pink-100 flex items-center justify-center text-pink-600 shadow-sm">
+                                        <i class="ph-bold ph-files text-2xl"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="text-xl font-bold text-gray-800">Estadística Mensual</h3>
+                                        <p class="text-xs text-pink-500 font-bold uppercase tracking-wider mt-0.5">
+                                            Formato Oficial MPPE</p>
+                                    </div>
+                                </div>
+
+                                <div class="flex-1 space-y-5 relative z-10">
+                                    <div class="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label
+                                                class="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Mes
+                                                a procesar</label>
+                                            <select id="stat-mes"
+                                                class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-pink-400 outline-none text-sm text-gray-700 bg-white focus:shadow-md transition-all appearance-none cursor-pointer">
+                                                <option value="1">Enero</option>
+                                                <option value="2">Febrero</option>
+                                                <option value="3">Marzo</option>
+                                                <option value="4">Abril</option>
+                                                <option value="5">Mayo</option>
+                                                <option value="6">Junio</option>
+                                                <option value="7">Julio</option>
+                                                <option value="8">Agosto</option>
+                                                <option value="9">Septiembre</option>
+                                                <option value="10">Octubre</option>
+                                                <option value="11">Noviembre</option>
+                                                <option value="12">Diciembre</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label
+                                                class="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Año</label>
+                                            <input type="number" id="stat-anio" value="2026"
+                                                class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-pink-400 outline-none text-sm text-gray-700 bg-white focus:shadow-md transition-all">
+                                        </div>
+                                    </div>
+
+                                    <div class="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label
+                                                class="block text-[11px] font-bold text-pink-600 uppercase tracking-widest mb-2">Días
+                                                Hábiles <span class="text-red-500">*</span></label>
+                                            <input type="number" id="stat-dias-habiles" placeholder="Ej: 18" min="1"
+                                                max="31"
+                                                class="w-full px-4 py-3 border-2 border-pink-200 rounded-xl focus:border-pink-400 focus:ring-2 focus:ring-pink-100 outline-none text-sm text-gray-800 bg-white shadow-inner transition-all font-bold"
+                                                required>
+                                        </div>
+                                        <div>
+                                            <label
+                                                class="block text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-2">Auxiliar
+                                                (Opcional)</label>
+                                            <input type="text" id="stat-auxiliar" placeholder="Nombre..."
+                                                class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-pink-400 outline-none text-sm text-gray-700 bg-white focus:shadow-md transition-all">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="mt-8 relative z-10">
+                                    <button id="btn-generar-mensual"
+                                        class="w-full py-3.5 bg-pink-500 text-white font-bold rounded-xl hover:bg-pink-600 shadow-lg shadow-pink-200/50 transition-all flex items-center justify-center gap-2 transform hover:-translate-y-1 text-base">
+                                        <i class="ph-bold ph-magic-wand text-xl"></i> Procesar Estadística MPPE
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="stat-resultados-container" class="mt-10 hidden fade-in">
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ============================================ -->
+                <!-- SECCIÓN 6: PERFIL (Placeholder) -->
                 <!-- ============================================ -->
                 <section id="section-perfil" class="page-section hidden">
                     <div class="bg-white p-6 rounded-2xl shadow-md">
@@ -499,24 +801,39 @@
         </main>
     </div>
 
-    <div id="modal-ficha-estudiante" class="fixed inset-0 bg-black/60 z-50 hidden flex items-center justify-center backdrop-blur-sm opacity-0 transition-opacity duration-300">
-        <div id="modal-ficha-content" class="bg-white rounded-2xl shadow-2xl w-full max-w-5xl mx-4 max-h-[90vh] flex flex-col transform scale-95 transition-transform duration-300">
-            
-            <div class="px-6 py-4 border-b border-pink-100 flex justify-between items-center bg-pink-50/50 rounded-t-2xl flex-shrink-0">
+    <div id="modal-ficha-estudiante"
+        class="fixed inset-0 bg-black/60 z-50 hidden flex items-center justify-center backdrop-blur-sm opacity-0 transition-opacity duration-300">
+        <div id="modal-ficha-content"
+            class="bg-white rounded-2xl shadow-2xl w-full max-w-5xl mx-4 max-h-[90vh] flex flex-col transform scale-95 transition-transform duration-300">
+
+            <div
+                class="px-6 py-4 border-b border-pink-100 flex justify-between items-center bg-pink-50/50 rounded-t-2xl flex-shrink-0">
                 <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-full bg-pink-200 text-pink-700 flex items-center justify-center font-bold text-lg" id="ficha-inicial">A</div>
+                    <div class="w-10 h-10 rounded-full bg-pink-200 text-pink-700 flex items-center justify-center font-bold text-lg"
+                        id="ficha-inicial">A</div>
                     <div>
-                        <h3 class="font-bold text-gray-800 text-lg leading-tight" id="ficha-nombre-completo">Cargando...</h3>
-                        <p class="text-xs text-pink-600 font-semibold tracking-wider">Cédula: <span id="ficha-cedula">...</span></p>
+                        <h3 class="font-bold text-gray-800 text-lg leading-tight" id="ficha-nombre-completo">Cargando...
+                        </h3>
+                        <p class="text-xs text-pink-600 font-semibold tracking-wider">Cédula: <span
+                                id="ficha-cedula">...</span></p>
                     </div>
                 </div>
                 <div class="flex items-center gap-2">
-                    <button type="button" id="btn-editar-ficha" onclick="toggleEditFicha()" class="px-4 py-2 bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 rounded-lg text-sm font-semibold transition-all shadow-sm flex items-center gap-2">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                    <button type="button" id="btn-editar-ficha" onclick="toggleEditFicha()"
+                        class="px-4 py-2 bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 rounded-lg text-sm font-semibold transition-all shadow-sm flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z">
+                            </path>
+                        </svg>
                         Editar Ficha
                     </button>
-                    <button onclick="cerrarModalFicha()" class="text-gray-400 hover:text-red-500 transition-colors p-2 hover:bg-white rounded-lg">
-                        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    <button onclick="cerrarModalFicha()"
+                        class="text-gray-400 hover:text-red-500 transition-colors p-2 hover:bg-white rounded-lg">
+                        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
                     </button>
                 </div>
             </div>
@@ -525,66 +842,116 @@
                 <form id="form-ficha-estudiante">
                     <input type="hidden" id="ficha-hijo-id">
 
-                    <h4 class="text-sm font-bold text-pink-500 uppercase tracking-widest mb-3 border-b border-pink-100 pb-2"><i class="ph-fill ph-user mr-1"></i> Datos Personales</h4>
+                    <h4
+                        class="text-sm font-bold text-pink-500 uppercase tracking-widest mb-3 border-b border-pink-100 pb-2">
+                        <i class="ph-fill ph-user mr-1"></i> Datos Personales</h4>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                        <div><label class="block text-xs font-semibold text-gray-500 mb-1">Nombres</label><input type="text" id="f-nombres" class="ficha-input w-full px-3 py-2 border border-gray-200 rounded-lg bg-gray-100 text-gray-700 text-sm focus:ring-2 focus:ring-pink-300 outline-none" disabled></div>
-                        <div><label class="block text-xs font-semibold text-gray-500 mb-1">Apellidos</label><input type="text" id="f-apellidos" class="ficha-input w-full px-3 py-2 border border-gray-200 rounded-lg bg-gray-100 text-gray-700 text-sm focus:ring-2 focus:ring-pink-300 outline-none" disabled></div>
-                        <div><label class="block text-xs font-semibold text-gray-500 mb-1">Fecha de Nacimiento</label><input type="date" id="f-fecha-nac" class="ficha-input w-full px-3 py-2 border border-gray-200 rounded-lg bg-gray-100 text-gray-700 text-sm focus:ring-2 focus:ring-pink-300 outline-none" disabled></div>
+                        <div><label class="block text-xs font-semibold text-gray-500 mb-1">Nombres</label><input
+                                type="text" id="f-nombres"
+                                class="ficha-input w-full px-3 py-2 border border-gray-200 rounded-lg bg-gray-100 text-gray-700 text-sm focus:ring-2 focus:ring-pink-300 outline-none"
+                                disabled></div>
+                        <div><label class="block text-xs font-semibold text-gray-500 mb-1">Apellidos</label><input
+                                type="text" id="f-apellidos"
+                                class="ficha-input w-full px-3 py-2 border border-gray-200 rounded-lg bg-gray-100 text-gray-700 text-sm focus:ring-2 focus:ring-pink-300 outline-none"
+                                disabled></div>
+                        <div><label class="block text-xs font-semibold text-gray-500 mb-1">Fecha de
+                                Nacimiento</label><input type="date" id="f-fecha-nac"
+                                class="ficha-input w-full px-3 py-2 border border-gray-200 rounded-lg bg-gray-100 text-gray-700 text-sm focus:ring-2 focus:ring-pink-300 outline-none"
+                                disabled></div>
                         <div><label class="block text-xs font-semibold text-gray-500 mb-1">Sexo</label>
-                            <select id="f-sexo" class="ficha-input w-full px-3 py-2 border border-gray-200 rounded-lg bg-gray-100 text-gray-700 text-sm outline-none" disabled>
-                                <option value="F">Femenino</option><option value="M">Masculino</option>
+                            <select id="f-sexo"
+                                class="ficha-input w-full px-3 py-2 border border-gray-200 rounded-lg bg-gray-100 text-gray-700 text-sm outline-none"
+                                disabled>
+                                <option value="F">Femenino</option>
+                                <option value="M">Masculino</option>
                             </select>
                         </div>
-                        <div class="md:col-span-2"><label class="block text-xs font-semibold text-gray-500 mb-1">Dirección de Habitación</label><input type="text" id="f-direccion" class="ficha-input w-full px-3 py-2 border border-gray-200 rounded-lg bg-gray-100 text-gray-700 text-sm focus:ring-2 focus:ring-pink-300 outline-none" disabled></div>
+                        <div class="md:col-span-2"><label
+                                class="block text-xs font-semibold text-gray-500 mb-1">Dirección de
+                                Habitación</label><input type="text" id="f-direccion"
+                                class="ficha-input w-full px-3 py-2 border border-gray-200 rounded-lg bg-gray-100 text-gray-700 text-sm focus:ring-2 focus:ring-pink-300 outline-none"
+                                disabled></div>
                     </div>
 
-                    <h4 class="text-sm font-bold text-pink-500 uppercase tracking-widest mb-3 border-b border-pink-100 pb-2 mt-6"><i class="ph-fill ph-users mr-1"></i> Contactos de Emergencia</h4>
+                    <h4
+                        class="text-sm font-bold text-pink-500 uppercase tracking-widest mb-3 border-b border-pink-100 pb-2 mt-6">
+                        <i class="ph-fill ph-users mr-1"></i> Contactos de Emergencia</h4>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                         <div class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
                             <p class="font-bold text-sm text-gray-800 mb-3">Datos de la Madre</p>
                             <div class="space-y-3">
-                                <div><label class="block text-xs text-gray-500">Nombre Completo</label><input type="text" id="f-madre-nombre" class="ficha-input w-full px-3 py-1.5 border border-gray-200 rounded-md bg-gray-50 text-sm" disabled></div>
+                                <div><label class="block text-xs text-gray-500">Nombre Completo</label><input
+                                        type="text" id="f-madre-nombre"
+                                        class="ficha-input w-full px-3 py-1.5 border border-gray-200 rounded-md bg-gray-50 text-sm"
+                                        disabled></div>
                                 <div class="flex gap-2">
-                                    <div class="w-1/2"><label class="block text-xs text-gray-500">Cédula</label><input type="text" id="f-madre-ci" class="ficha-input w-full px-3 py-1.5 border border-gray-200 rounded-md bg-gray-50 text-sm" disabled></div>
-                                    <div class="w-1/2"><label class="block text-xs text-gray-500">Teléfono</label><input type="text" id="f-madre-tel" class="ficha-input w-full px-3 py-1.5 border border-gray-200 rounded-md bg-gray-50 text-sm font-bold text-blue-600" disabled></div>
+                                    <div class="w-1/2"><label class="block text-xs text-gray-500">Cédula</label><input
+                                            type="text" id="f-madre-ci"
+                                            class="ficha-input w-full px-3 py-1.5 border border-gray-200 rounded-md bg-gray-50 text-sm"
+                                            disabled></div>
+                                    <div class="w-1/2"><label class="block text-xs text-gray-500">Teléfono</label><input
+                                            type="text" id="f-madre-tel"
+                                            class="ficha-input w-full px-3 py-1.5 border border-gray-200 rounded-md bg-gray-50 text-sm font-bold text-blue-600"
+                                            disabled></div>
                                 </div>
                             </div>
                         </div>
                         <div class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
                             <p class="font-bold text-sm text-gray-800 mb-3">Datos del Padre</p>
                             <div class="space-y-3">
-                                <div><label class="block text-xs text-gray-500">Nombre Completo</label><input type="text" id="f-padre-nombre" class="ficha-input w-full px-3 py-1.5 border border-gray-200 rounded-md bg-gray-50 text-sm" disabled></div>
-                                <div><label class="block text-xs text-gray-500">Teléfono</label><input type="text" id="f-padre-tel" class="ficha-input w-full px-3 py-1.5 border border-gray-200 rounded-md bg-gray-50 text-sm font-bold text-blue-600" disabled></div>
+                                <div><label class="block text-xs text-gray-500">Nombre Completo</label><input
+                                        type="text" id="f-padre-nombre"
+                                        class="ficha-input w-full px-3 py-1.5 border border-gray-200 rounded-md bg-gray-50 text-sm"
+                                        disabled></div>
+                                <div><label class="block text-xs text-gray-500">Teléfono</label><input type="text"
+                                        id="f-padre-tel"
+                                        class="ficha-input w-full px-3 py-1.5 border border-gray-200 rounded-md bg-gray-50 text-sm font-bold text-blue-600"
+                                        disabled></div>
                             </div>
                         </div>
                     </div>
 
-                    <h4 class="text-sm font-bold text-red-500 uppercase tracking-widest mb-3 border-b border-red-100 pb-2 mt-6"><i class="ph-fill ph-heartbeat mr-1"></i> Información Médica</h4>
+                    <h4
+                        class="text-sm font-bold text-red-500 uppercase tracking-widest mb-3 border-b border-red-100 pb-2 mt-6">
+                        <i class="ph-fill ph-heartbeat mr-1"></i> Información Médica</h4>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-2">
                         <div class="flex items-center gap-2 bg-white p-3 rounded-lg border border-gray-100">
-                            <input type="checkbox" id="f-alergico" class="ficha-input w-4 h-4 text-red-500 rounded focus:ring-red-400" disabled>
+                            <input type="checkbox" id="f-alergico"
+                                class="ficha-input w-4 h-4 text-red-500 rounded focus:ring-red-400" disabled>
                             <label class="text-sm font-bold text-gray-700">Es Alérgico</label>
                         </div>
                         <div class="flex items-center gap-2 bg-white p-3 rounded-lg border border-gray-100">
-                            <input type="checkbox" id="f-prematuro" class="ficha-input w-4 h-4 text-red-500 rounded focus:ring-red-400" disabled>
+                            <input type="checkbox" id="f-prematuro"
+                                class="ficha-input w-4 h-4 text-red-500 rounded focus:ring-red-400" disabled>
                             <label class="text-sm font-bold text-gray-700">Fue Prematuro</label>
                         </div>
                         <div class="flex items-center gap-2 bg-white p-3 rounded-lg border border-gray-100">
-                            <input type="checkbox" id="f-cesarea" class="ficha-input w-4 h-4 text-red-500 rounded focus:ring-red-400" disabled>
+                            <input type="checkbox" id="f-cesarea"
+                                class="ficha-input w-4 h-4 text-red-500 rounded focus:ring-red-400" disabled>
                             <label class="text-sm font-bold text-gray-700">Nacido por Cesárea</label>
                         </div>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div><label class="block text-xs font-semibold text-gray-500 mb-1">Enfermedades Crónicas</label><input type="text" id="f-enfermedad" class="ficha-input w-full px-3 py-2 border border-gray-200 rounded-lg bg-gray-100 text-gray-700 text-sm" disabled></div>
-                        <div><label class="block text-xs font-semibold text-gray-500 mb-1">Medicamento para Fiebre</label><input type="text" id="f-fiebre" class="ficha-input w-full px-3 py-2 border border-gray-200 rounded-lg bg-gray-100 text-gray-700 text-sm" disabled></div>
+                        <div><label class="block text-xs font-semibold text-gray-500 mb-1">Enfermedades
+                                Crónicas</label><input type="text" id="f-enfermedad"
+                                class="ficha-input w-full px-3 py-2 border border-gray-200 rounded-lg bg-gray-100 text-gray-700 text-sm"
+                                disabled></div>
+                        <div><label class="block text-xs font-semibold text-gray-500 mb-1">Medicamento para
+                                Fiebre</label><input type="text" id="f-fiebre"
+                                class="ficha-input w-full px-3 py-2 border border-gray-200 rounded-lg bg-gray-100 text-gray-700 text-sm"
+                                disabled></div>
                     </div>
 
                 </form>
             </div>
 
-            <div id="ficha-footer" class="px-6 py-4 border-t border-gray-100 bg-gray-50 flex justify-end gap-3 hidden flex-shrink-0 rounded-b-2xl">
-                <button type="button" onclick="toggleEditFicha()" class="px-5 py-2 text-gray-600 font-semibold hover:bg-gray-200 rounded-xl transition-colors text-sm">Cancelar Edición</button>
-                <button type="button" id="btn-guardar-ficha" onclick="guardarFicha()" class="px-6 py-2 bg-pink-500 text-white rounded-xl font-bold shadow-md shadow-pink-200 hover:bg-pink-600 transition-all text-sm flex items-center gap-2">
+            <div id="ficha-footer"
+                class="px-6 py-4 border-t border-gray-100 bg-gray-50 flex justify-end gap-3 hidden flex-shrink-0 rounded-b-2xl">
+                <button type="button" onclick="toggleEditFicha()"
+                    class="px-5 py-2 text-gray-600 font-semibold hover:bg-gray-200 rounded-xl transition-colors text-sm">Cancelar
+                    Edición</button>
+                <button type="button" id="btn-guardar-ficha" onclick="guardarFicha()"
+                    class="px-6 py-2 bg-pink-500 text-white rounded-xl font-bold shadow-md shadow-pink-200 hover:bg-pink-600 transition-all text-sm flex items-center gap-2">
                     Guardar Cambios
                 </button>
             </div>
@@ -624,11 +991,11 @@
 
         async function initApp() {
             setupNavigation();
-            
+
             // Setear la fecha de hoy en el picker de asistencia
             const today = new Date().toISOString().split('T')[0];
             const dateInput = document.getElementById('attendance-date');
-            
+
             dateInput.value = today;
             dateInput.max = today; // ¡NUEVO! Bloquea días futuros en el calendario nativo
 
@@ -663,7 +1030,7 @@
             try {
                 const token = localStorage.getItem('auth_token');
                 const baseUrl = typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : 'http://127.0.0.1:5000';
-                
+
                 const response = await fetch(`${baseUrl}/api/docente/mi-clase`, {
                     method: 'GET',
                     headers: { 'Authorization': `Bearer ${token}` }
@@ -694,7 +1061,7 @@
                     listaEstudiantes = result.estudiantes.map(e => ({
                         ...e,
                         nombre_completo: `${e.nombre} ${e.apellido}`,
-                        cedula: e.cedula_escolar || "S/N", 
+                        cedula: e.cedula_escolar || "S/N",
                         representante: e.representante || "No asignado",
                         seccion: `${result.seccion.nivel} - ${result.seccion.letra}`
                     }));
@@ -706,15 +1073,46 @@
                     document.getElementById('header-nombre-docente').innerText = result.docente || '¡Bienvenida, Profesor(a)!';
                     document.getElementById('header-seccion-info').innerText = `Grupo: ${result.seccion.nivel} - ${result.seccion.letra}`;
 
-                    // 3. Poblar las tablas y selectores con los datos reales
+                    // LLAMADA INTELIGENTE PARA EL PERÍODO
+                    actualizarBadgePeriodo(result.periodo, result.periodo_estado);
+
+                    // Avatar y perfil
+                    if (document.getElementById('header-profile-name')) {
+                        document.getElementById('header-profile-name').innerText = nombrePila.split(' ')[0];
+                    }
+                    if (document.getElementById('header-profile-initial')) {
+                        document.getElementById('header-profile-initial').innerText = nombrePila.charAt(0).toUpperCase();
+                    }
+
+                    // 3. Poblar Dashboard Nuevo (Si existe)
+                    if (document.getElementById('dashboard-docente-nombres')) {
+                        document.getElementById('dashboard-docente-nombres').innerText = result.docente || nombrePila;
+                    }
+                    if (document.getElementById('dashboard-periodo-activo')) {
+                        document.getElementById('dashboard-periodo-activo').innerText = result.periodo || '...';
+                    }
+                    if (document.getElementById('dashboard-total-matricula')) {
+                        document.getElementById('dashboard-total-matricula').innerText = result.estudiantes.length || '0';
+                    }
+                    if (document.getElementById('dashboard-seccion-activa')) {
+                        document.getElementById('dashboard-seccion-activa').innerText = `${result.seccion.nivel} - ${result.seccion.letra}`;
+                    }
+                    if (document.getElementById('dashboard-fecha-hoy')) {
+                        const hoy = new Date();
+                        const dias = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+                        const meses = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+                        document.getElementById('dashboard-fecha-hoy').innerText = `${dias[hoy.getDay()]}, ${hoy.getDate()} ${meses[hoy.getMonth()]}`;
+                    }
+
+                    // 4. Poblar las tablas y selectores con los datos reales
                     populateStudentDropdowns();
                     populatePreviewTable();
-                    
+
                     // Si ya hay una fecha, cargar la lista de asistencia
-                    if(document.getElementById('attendance-date').value) {
+                    if (document.getElementById('attendance-date').value) {
                         populateAttendanceList();
                     }
-                    
+
                 } else {
                     Swal.fire({
                         title: 'Aviso',
@@ -805,7 +1203,7 @@
                 // 2. Consultar al backend si ya hay asistencia para este día
                 const token = localStorage.getItem('auth_token');
                 const baseUrl = typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : 'http://127.0.0.1:5000';
-                
+
                 const response = await fetch(`${baseUrl}/api/asistencias/${seccionActivaId}/${selectedDate}`, {
                     method: 'GET',
                     headers: { 'Authorization': `Bearer ${token}` }
@@ -838,7 +1236,7 @@
                     const regBD = registrosPrevios[student.id] || { estado: 'ausente', observacion: '' };
                     const isPresent = (regBD.estado === 'presente');
                     const inicial = student.nombre_completo.charAt(0).toUpperCase();
-                    
+
                     // ¿Tiene observación guardada?
                     const tieneObs = regBD.observacion.trim().length > 0;
 
@@ -1026,7 +1424,7 @@
             });
 
             doc.save('listado_alumnos.pdf');
-            
+
             Swal.fire({
                 title: 'PDF Generado',
                 text: 'El listado se ha descargado correctamente.',
@@ -1046,21 +1444,21 @@
             // Asistencia - Validación Estricta de Fechas
             document.getElementById('attendance-date').addEventListener('change', (e) => {
                 const dateStr = e.target.value;
-                if(!dateStr) return;
+                if (!dateStr) return;
 
                 // Descomponer fecha para evitar errores de zona horaria de JS
                 const parts = dateStr.split('-');
                 const year = parseInt(parts[0], 10);
                 const month = parseInt(parts[1], 10) - 1; // JS los meses van del 0 al 11
                 const day = parseInt(parts[2], 10);
-                
+
                 const dateObj = new Date(year, month, day);
                 const dayOfWeek = dateObj.getDay(); // 0 = Domingo, 6 = Sábado
-                
+
                 // 1. Validar que no sea una fecha futura
                 const hoy = new Date();
                 hoy.setHours(0, 0, 0, 0); // Ignorar la hora, solo comparar el día
-                
+
                 if (dateObj > hoy) {
                     Swal.fire({
                         title: 'Fecha inválida',
@@ -1071,7 +1469,7 @@
                     });
                     // Devolver el calendario al día de hoy
                     e.target.value = new Date().toISOString().split('T')[0];
-                    populateAttendanceList(); 
+                    populateAttendanceList();
                     return;
                 }
 
@@ -1086,7 +1484,7 @@
                     });
                     // Devolver el calendario al día de hoy
                     e.target.value = new Date().toISOString().split('T')[0];
-                    populateAttendanceList(); 
+                    populateAttendanceList();
                     return;
                 }
 
@@ -1101,32 +1499,90 @@
 
             // Listados (PDF)
             document.getElementById('btn-download-pdf').addEventListener('click', generatePDF);
-            
-            // Buscador del Listado de Alumnos
+
+            // 1. Buscador del Listado de Alumnos
             const searchInput = document.getElementById('listado-search-input');
-            if(searchInput) {
-                searchInput.addEventListener('input', function() {
+            if (searchInput) {
+                searchInput.addEventListener('input', function () {
                     const term = this.value.toLowerCase();
-                    const rows = document.querySelectorAll('#preview-table-body tr');
+                    const tbody = document.getElementById('preview-table-body');
+                    // Ignorar la fila del empty state para no ocultarla por error
+                    const rows = tbody.querySelectorAll('tr:not(.empty-search-state)');
+                    let visibles = 0;
+
                     rows.forEach(row => {
                         const text = row.textContent.toLowerCase();
-                        row.style.display = text.includes(term) ? '' : 'none';
+                        if (text.includes(term)) {
+                            row.style.display = '';
+                            visibles++;
+                        } else {
+                            row.style.display = 'none';
+                        }
                     });
+
+                    // Llamar a la magia
+                    verificarEstadoVacio('preview-table-body', this.value, visibles);
                 });
             }
 
-            // --> NUEVO: Buscador de Asistencia <--
+            // 2. Buscador de Asistencia
             const attendanceSearchInput = document.getElementById('attendance-search-input');
-            if(attendanceSearchInput) {
-                attendanceSearchInput.addEventListener('input', function() {
+            if (attendanceSearchInput) {
+                attendanceSearchInput.addEventListener('input', function () {
                     const term = this.value.toLowerCase();
-                    // Usamos la clase específica para no ocultar mensajes de "Cargando..."
+                    // Usamos tr.student-attendance-row para evitar contar la fila de "Cargando..."
                     const rows = document.querySelectorAll('#attendance-table-body tr.student-attendance-row');
+                    let visibles = 0;
+
                     rows.forEach(row => {
                         const text = row.textContent.toLowerCase();
-                        row.style.display = text.includes(term) ? '' : 'none';
+                        if (text.includes(term)) {
+                            row.style.display = '';
+                            visibles++;
+                        } else {
+                            row.style.display = 'none';
+                        }
                     });
+
+                    // Llamar a la magia
+                    verificarEstadoVacio('attendance-table-body', this.value, visibles);
                 });
+            }
+
+            // --- BOTONES DE ESTADÍSTICAS ---
+            const btnGenerarRango = document.getElementById('btn-generar-rango');
+            if (btnGenerarRango) {
+                btnGenerarRango.addEventListener('click', () => {
+                    const desde = document.getElementById('stat-fecha-inicio').value;
+                    const hasta = document.getElementById('stat-fecha-fin').value;
+                    if (!desde || !hasta) {
+                        Swal.fire('Faltan datos', 'Selecciona la fecha de inicio y fin.', 'warning');
+                        return;
+                    }
+                    Swal.fire('Construyendo...', `Aquí consultaremos la API desde ${desde} hasta ${hasta}`, 'info');
+                });
+            }
+
+            const btnGenerarMensual = document.getElementById('btn-generar-mensual');
+            if (btnGenerarMensual) {
+                btnGenerarMensual.addEventListener('click', () => {
+                    const mes = document.getElementById('stat-mes').value;
+                    const anio = document.getElementById('stat-anio').value;
+                    const diasHabiles = document.getElementById('stat-dias-habiles').value;
+
+                    if (!diasHabiles) {
+                        Swal.fire('Dato Obligatorio', 'Debes indicar cuántos días hábiles tuvo el mes para poder calcular la estadística.', 'warning');
+                        return;
+                    }
+
+                    Swal.fire('Procesando...', `Aquí enviaremos al Backend: Mes ${mes}, Año ${anio}, Días Hábiles: ${diasHabiles}`, 'success');
+                });
+            }
+
+            // Setear el mes actual por defecto
+            const statMes = document.getElementById('stat-mes');
+            if (statMes) {
+                statMes.value = new Date().getMonth() + 1; // getMonth es 0-11
             }
         }
 
@@ -1138,15 +1594,15 @@
         // Actualiza los números 🟩 y ⬜ y sincroniza el Switch Maestro
         function actualizarContadoresAsistencia() {
             const checkboxes = document.querySelectorAll('.asistencia-checkbox');
-            if(checkboxes.length === 0) return;
-            
+            if (checkboxes.length === 0) return;
+
             let presentes = 0;
             let ausentes = 0;
             checkboxes.forEach(cb => {
                 if (cb.checked) presentes++;
                 else ausentes++;
             });
-            
+
             document.getElementById('contador-presentes').innerText = presentes;
             document.getElementById('contador-ausentes').innerText = ausentes;
 
@@ -1172,6 +1628,13 @@
                     masterContainer.classList.replace('border-green-200', 'border-pink-100');
                 }
             }
+
+            // --- Sincronizar Dashboard (Si existe) ---
+            const dashboardAsistencia = document.getElementById('dashboard-asistencia-hoy');
+            if (dashboardAsistencia) {
+                const total = checkboxes.length;
+                dashboardAsistencia.innerText = `${presentes} / ${total}`;
+            }
         }
 
         // Función Toggle Maestro: Recibe el estado del switch principal y se lo aplica a todos
@@ -1180,23 +1643,23 @@
             if (checkboxes.length === 0) return;
 
             let cambios = false;
-            
+
             checkboxes.forEach(cb => {
                 // Si el checkbox actual es distinto al estado maestro, lo cambiamos
                 if (cb.checked !== nuevoEstado) {
                     cb.checked = nuevoEstado;
                     const id = cb.dataset.hijoId;
-                    
+
                     // Llamamos a tu función visual existente para ocultar/mostrar justificativos
-                    if(typeof cambiarTextoSwitch === 'function') {
-                        cambiarTextoSwitch(cb, id); 
+                    if (typeof cambiarTextoSwitch === 'function') {
+                        cambiarTextoSwitch(cb, id);
                     }
                     cambios = true;
                 }
             });
-            
+
             // Al final, actualizamos los contadores y colores del contenedor maestro
-            if(cambios) actualizarContadoresAsistencia();
+            if (cambios) actualizarContadoresAsistencia();
         }
 
         // ============================================
@@ -1230,10 +1693,10 @@
         async function abrirModalFicha(hijo_id) {
             const modal = document.getElementById('modal-ficha-estudiante');
             const content = document.getElementById('modal-ficha-content');
-            
+
             // Resetear el modo edición siempre que se abra
-            if(modoEdicionFicha) toggleEditFicha();
-            
+            if (modoEdicionFicha) toggleEditFicha();
+
             // 1. Mostrar estado de carga en el UI
             document.getElementById('ficha-nombre-completo').innerText = "Cargando datos...";
             document.getElementById('ficha-cedula').innerText = "...";
@@ -1250,17 +1713,17 @@
             try {
                 const token = localStorage.getItem('auth_token');
                 const baseUrl = typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : 'http://127.0.0.1:5000';
-                
+
                 const response = await fetch(`${baseUrl}/api/estudiantes/${hijo_id}/ficha`, {
                     method: 'GET',
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
-                
+
                 const data = await response.json();
-                
+
                 if (response.ok && data.success) {
                     const f = data.ficha;
-                    
+
                     // Llenar Header
                     document.getElementById('ficha-hijo-id').value = hijo_id;
                     document.getElementById('ficha-nombre-completo').innerText = `${f.nombres} ${f.apellidos}`;
@@ -1273,7 +1736,7 @@
                     document.getElementById('f-fecha-nac').value = f.fecha_nacimiento || '';
                     document.getElementById('f-sexo').value = f.sexo || '';
                     document.getElementById('f-direccion').value = f.direccion_habitacion || '';
-                    
+
                     document.getElementById('f-madre-nombre').value = f.nombre_madre || '';
                     document.getElementById('f-madre-ci').value = f.ci_madre || '';
                     document.getElementById('f-madre-tel').value = f.telefono_madre || 'No registrado';
@@ -1300,7 +1763,7 @@
         function cerrarModalFicha() {
             const modal = document.getElementById('modal-ficha-estudiante');
             const content = document.getElementById('modal-ficha-content');
-            
+
             modal.classList.add('opacity-0');
             content.classList.add('scale-95');
             setTimeout(() => modal.classList.add('hidden'), 300);
@@ -1311,7 +1774,7 @@
             const inputs = document.querySelectorAll('.ficha-input');
             const footer = document.getElementById('ficha-footer');
             const btnEdit = document.getElementById('btn-editar-ficha');
-            
+
             if (modoEdicionFicha) {
                 // Activar Edición
                 inputs.forEach(input => {
@@ -1363,18 +1826,18 @@
             try {
                 const token = localStorage.getItem('auth_token');
                 const baseUrl = typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : 'http://127.0.0.1:5000';
-                
+
                 const response = await fetch(`${baseUrl}/api/estudiantes/${hijo_id}/ficha`, {
                     method: 'PUT',
-                    headers: { 
+                    headers: {
                         'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json' 
+                        'Content-Type': 'application/json'
                     },
                     body: JSON.stringify(payload)
                 });
-                
+
                 const data = await response.json();
-                
+
                 if (response.ok && data.success) {
                     Swal.fire({
                         title: '¡Actualizado!',
@@ -1383,15 +1846,15 @@
                         confirmButtonColor: '#EC4899',
                         customClass: { popup: 'rounded-3xl' }
                     });
-                    
+
                     // Bloqueamos los inputs de nuevo
-                    toggleEditFicha(); 
-                    
+                    toggleEditFicha();
+
                     // Actualizamos el nombre en el encabezado del modal por si lo editaron
                     document.getElementById('ficha-nombre-completo').innerText = `${payload.nombres} ${payload.apellidos}`;
-                    
+
                     // Recargamos la tabla principal silenciosamente para reflejar cambios
-                    cargarDatosMiClase(); 
+                    cargarDatosMiClase();
                 } else {
                     Swal.fire('Error', data.message || 'No se pudo guardar.', 'error');
                 }
@@ -1413,6 +1876,146 @@
                 }
             }
         });
+        // ============================================
+        // UTILIDADES: BOTONES RÁPIDOS DE FECHA
+        // ============================================
+        function setAsistenciaDate(dia) {
+            const dateInput = document.getElementById('attendance-date');
+            if (!dateInput) return;
+
+            let targetDate = new Date(); // Hoy por defecto
+
+            if (dia === 'ayer') {
+                targetDate.setDate(targetDate.getDate() - 1); // Restar un día
+
+                // Lógica Inteligente: Saltar el fin de semana
+                // getDay() devuelve: 0 = Domingo, 6 = Sábado
+                while (targetDate.getDay() === 0 || targetDate.getDay() === 6) {
+                    targetDate.setDate(targetDate.getDate() - 1);
+                }
+            }
+
+            // Formatear a YYYY-MM-DD respetando la zona horaria local
+            const year = targetDate.getFullYear();
+            const month = String(targetDate.getMonth() + 1).padStart(2, '0');
+            const day = String(targetDate.getDate()).padStart(2, '0');
+            const formattedDate = `${year}-${month}-${day}`;
+
+            // Cambiar el valor del input
+            dateInput.value = formattedDate;
+
+            // ¡Magia! Disparar el evento 'change' para que el sistema cargue la tabla
+            // y haga todas las validaciones de seguridad automáticamente
+            dateInput.dispatchEvent(new Event('change'));
+        }
+
+        // ============================================
+        // UTILIDADES: ESTADOS VACÍOS EN BUSCADORES
+        // ============================================
+        function verificarEstadoVacio(tbodyId, searchTerm, visiblesCount) {
+            const tbody = document.getElementById(tbodyId);
+            if (!tbody) return;
+
+            let emptyRow = tbody.querySelector('.empty-search-state');
+
+            // Si no hay resultados y el usuario escribió algo
+            if (visiblesCount === 0 && searchTerm.trim() !== '') {
+                if (!emptyRow) {
+                    emptyRow = document.createElement('tr');
+                    emptyRow.className = 'empty-search-state fade-in';
+                    tbody.appendChild(emptyRow);
+                }
+
+                // Calcular cuántas columnas tiene la tabla para que el mensaje ocupe todo el ancho
+                const table = tbody.closest('table');
+                const numCols = table.querySelectorAll('thead th').length || 5;
+
+                emptyRow.innerHTML = `
+                    <td colspan="${numCols}" class="px-6 py-16 text-center bg-white">
+                        <div class="flex flex-col items-center justify-center">
+                            <div class="relative w-20 h-20 mb-4">
+                                <div class="absolute inset-0 bg-pink-100 rounded-full animate-ping opacity-20"></div>
+                                <div class="absolute inset-0 bg-pink-50 rounded-full flex items-center justify-center border border-pink-100 shadow-inner">
+                                    <i class="ph-duotone ph-magnifying-glass text-4xl text-pink-400 transform -scale-x-100"></i>
+                                </div>
+                                <div class="absolute -top-1 -right-1 bg-white rounded-full p-1 shadow-sm border border-gray-100">
+                                    <i class="ph-bold ph-x text-xs text-gray-400"></i>
+                                </div>
+                            </div>
+                            <h3 class="text-gray-800 font-extrabold text-lg mb-1 tracking-tight">Sin resultados</h3>
+                            <p class="text-gray-500 text-sm font-medium">
+                                No encontramos a <span class="text-pink-600 font-bold break-words px-2 py-0.5 bg-pink-50 rounded border border-pink-100">"${searchTerm}"</span>
+                            </p>
+                            <p class="text-xs text-gray-400 mt-2">Verifica que el nombre o la cédula estén bien escritos.</p>
+                        </div>
+                    </td>
+                `;
+                emptyRow.style.display = '';
+            } else if (emptyRow) {
+                // Si borran la búsqueda o encuentran a alguien, se esconde la alerta
+                emptyRow.style.display = 'none';
+            }
+        }
+
+        // ============================================
+        // UTILIDADES: BADGE DE AÑO ESCOLAR INTELIGENTE
+        // ============================================
+        function actualizarBadgePeriodo(nombre, estado) {
+            const container = document.getElementById('header-ano-container');
+            const iconBg = document.getElementById('header-ano-icon-bg');
+            const icon = document.getElementById('header-ano-icon');
+            const textLabel = document.getElementById('header-ano-label');
+            const textValue = document.getElementById('header-ano-activo');
+
+            if (!container || !textValue) return;
+
+            // 1. Limpiar colores previos
+            container.classList.remove('bg-yellow-50', 'border-yellow-200', 'bg-green-50', 'border-green-200', 'bg-gray-50', 'border-gray-200');
+            if (iconBg) iconBg.classList.remove('bg-yellow-100', 'bg-green-100', 'bg-gray-200');
+            if (icon) {
+                icon.classList.remove('text-yellow-600', 'text-green-600', 'text-gray-500', 'ph-fill');
+                icon.classList.add('ph-bold');
+            }
+            if (textLabel) textLabel.classList.remove('text-yellow-700', 'text-green-700', 'text-gray-600');
+            textValue.classList.remove('text-yellow-900', 'text-green-900', 'text-gray-800');
+
+            const est = (estado || 'activo').toLowerCase();
+            let estadoTexto = '';
+
+            // 2. Aplicar colores según el estado
+            if (est === 'planificacion' || est === 'planificación') {
+                container.classList.add('bg-yellow-50', 'border-yellow-200');
+                if (iconBg) iconBg.classList.add('bg-yellow-100');
+                if (icon) icon.classList.add('text-yellow-600');
+                if (textLabel) textLabel.classList.add('text-yellow-700');
+                textValue.classList.add('text-yellow-900');
+                estadoTexto = 'Planificación';
+            } else if (est === 'finalizado') {
+                container.classList.add('bg-gray-50', 'border-gray-200');
+                if (iconBg) iconBg.classList.add('bg-gray-200');
+                if (icon) icon.classList.add('text-gray-500');
+                if (textLabel) textLabel.classList.add('text-gray-600');
+                textValue.classList.add('text-gray-800');
+                estadoTexto = 'Finalizado';
+            } else { // activo por defecto
+                container.classList.add('bg-green-50', 'border-green-200');
+                if (iconBg) iconBg.classList.add('bg-green-100');
+                if (icon) icon.classList.add('text-green-600');
+                if (textLabel) textLabel.classList.add('text-green-700');
+                textValue.classList.add('text-green-900');
+                estadoTexto = 'Activo';
+            }
+
+            // 3. Setear los textos en el Header
+            const textoFinal = `${nombre || 'Sin asignar'} (${estadoTexto})`;
+            textValue.innerText = textoFinal;
+
+            // 4. Actualizar también el Banner Rosa del Dashboard Principal
+            const dashboardPeriodo = document.getElementById('dashboard-periodo-activo');
+            if (dashboardPeriodo) {
+                dashboardPeriodo.innerText = textoFinal;
+            }
+        }
     </script>
     <script src="js/config.js"></script>
     <script>

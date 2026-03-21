@@ -67,12 +67,20 @@ function renderizarTablaUsuarios(usuarios) {
     tbody.innerHTML = '';
 
     if (!usuarios || usuarios.length === 0) {
-        tbody.innerHTML = `
-            <tr>
-                <td colspan="4" class="px-6 py-10 text-center text-gray-400 text-sm">
-                    ${document.getElementById('user-search-input')?.value ? 'No se encontraron usuarios que coincidan con la búsqueda.' : 'No hay usuarios registrados todavía.'}
-                </td>
-            </tr>`;
+        const query = document.getElementById('user-search-input')?.value || '';
+        if (query.trim() !== '' && typeof verificarEstadoVacio === 'function') {
+            verificarEstadoVacio('user-table-body', query, 0);
+        } else {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="4" class="px-6 py-12 text-center text-gray-400">
+                        <div class="flex flex-col items-center gap-2 opacity-60">
+                            <i class="ph-duotone ph-users-three text-5xl mb-2"></i>
+                            <p class="text-sm font-medium">No hay usuarios registrados todavía.</p>
+                        </div>
+                    </td>
+                </tr>`;
+        }
         return;
     }
 
@@ -87,50 +95,55 @@ function renderizarTablaUsuarios(usuarios) {
 
         const rolDisplay = u.rol === 'administrador' ? 'Administrador' : 'Docente';
         const rolBadge = u.rol === 'administrador'
-            ? 'bg-purple-100 text-purple-700'
-            : 'bg-pink-100 text-pink-700';
+            ? 'bg-purple-50 text-purple-700 border-purple-100'
+            : 'bg-pink-50 text-pink-700 border-pink-100';
 
         const estadoDisplay = u.estado
             ? u.estado.charAt(0).toUpperCase() + u.estado.slice(1)
             : 'Desconocido';
 
         const estadoConfig = {
-            activo: { dot: 'bg-green-500', text: 'text-green-700' },
-            pendiente: { dot: 'bg-yellow-500', text: 'text-yellow-700' },
-            inactivo: { dot: 'bg-red-400', text: 'text-red-700' },
+            activo: { dot: 'bg-green-500', text: 'text-green-700', bg: 'bg-green-50/50' },
+            pendiente: { dot: 'bg-yellow-500', text: 'text-yellow-700', bg: 'bg-yellow-50/50' },
+            inactivo: { dot: 'bg-red-400', text: 'text-red-700', bg: 'bg-red-50/50' },
         };
-        const estilo = estadoConfig[u.estado] || { dot: 'bg-gray-400', text: 'text-gray-600' };
+        const estilo = estadoConfig[u.estado] || { dot: 'bg-gray-400', text: 'text-gray-600', bg: 'bg-gray-50' };
 
         // El admin no puede eliminarse a sí mismo
         const esMismoUsuario = u.id === currentUserId;
 
         html += `
-            <tr class="hover:bg-gray-50 border-b border-gray-50 transition-colors">
+            <tr class="hover:bg-gray-50/80 border-b border-gray-100 transition-colors group">
                 <td class="px-6 py-4">
-                    <div class="flex items-center gap-3">
-                        <div class="w-9 h-9 rounded-full bg-purple-100 text-purple-700 flex items-center justify-center font-bold text-sm flex-shrink-0">
+                    <div class="flex items-center gap-4">
+                        <div class="w-11 h-11 rounded-2xl bg-gradient-to-br from-purple-500 to-purple-700 text-white flex items-center justify-center font-bold text-lg shadow-sm transform group-hover:scale-110 transition-transform duration-300">
                             ${inicial}
                         </div>
                         <div>
-                            <p class="font-medium text-gray-800 leading-none">${nombreCompleto}</p>
-                            <p class="text-xs text-gray-400 mt-0.5">${u.email}</p>
+                            <p class="font-bold text-gray-800 leading-none mb-1">${nombreCompleto}</p>
+                            <p class="text-xs font-medium text-gray-400 flex items-center gap-1.5">
+                                <i class="ph-bold ph-envelope-simple"></i>
+                                ${u.email}
+                            </p>
                         </div>
                     </div>
                 </td>
                 <td class="px-6 py-4">
-                    <span class="px-2.5 py-1 rounded-full text-xs font-semibold ${rolBadge}">
+                    <span class="px-3 py-1 rounded-xl text-[11px] font-black uppercase tracking-wider border ${rolBadge}">
                         ${rolDisplay}
                     </span>
                 </td>
                 <td class="px-6 py-4">
-                    <span class="flex items-center gap-1.5 text-sm ${estilo.text}">
-                        <span class="w-2 h-2 rounded-full ${estilo.dot}"></span>
-                        ${estadoDisplay}
-                    </span>
+                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-transparent ${estilo.bg} ${estilo.text} transition-all duration-300 group-hover:border-current/10">
+                        <span class="relative flex h-2 w-2">
+                            ${u.estado === 'activo' ? `<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>` : ''}
+                            <span class="relative inline-flex rounded-full h-2 w-2 ${estilo.dot}"></span>
+                        </span>
+                        <span class="text-xs font-bold uppercase tracking-tight">${estadoDisplay}</span>
+                    </div>
                 </td>
                 <td class="px-6 py-4 text-right">
-                    <div class="flex items-center justify-end gap-2">
-                        <!-- Botón Editar: data-* evita break por comillas en nombres -->
+                    <div class="flex items-center justify-end gap-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                         <button
                             data-user-id="${u.id}"
                             data-nombres="${u.nombres}"
@@ -141,26 +154,19 @@ function renderizarTablaUsuarios(usuarios) {
                             data-es-mismo-usuario="${esMismoUsuario}"
                             onclick="abrirModalEditarDesdeBtn(this)"
                             title="Editar usuario"
-                            class="p-1.5 text-blue-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                            </svg>
+                            class="p-2.5 text-blue-500 hover:text-white hover:bg-blue-500 rounded-xl transition-all duration-300 shadow-sm hover:shadow-blue-200">
+                            <i class="ph-bold ph-pencil-simple text-xl"></i>
                         </button>
-                        <!-- Botón Eliminar -->
                         <button
                             data-user-id="${u.id}"
                             data-nombre-completo="${nombreCompleto}"
                             onclick="${esMismoUsuario ? '' : 'confirmarEliminarDesdeBtn(this)'}"
                             title="${esMismoUsuario ? 'No puedes eliminarte a ti mismo' : 'Eliminar usuario'}"
                             ${esMismoUsuario ? 'disabled' : ''}
-                            class="p-1.5 rounded-lg transition ${esMismoUsuario
-                ? 'text-gray-200 cursor-not-allowed'
-                : 'text-red-400 hover:text-red-600 hover:bg-red-50'}">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                            </svg>
+                            class="p-2.5 rounded-xl transition-all duration-300 shadow-sm ${esMismoUsuario
+                                ? 'text-gray-200 bg-gray-50 cursor-not-allowed shadow-none'
+                                : 'text-red-500 hover:text-white hover:bg-red-500 hover:shadow-red-200'}">
+                            <i class="ph-bold ph-trash text-xl"></i>
                         </button>
                     </div>
                 </td>
@@ -169,6 +175,7 @@ function renderizarTablaUsuarios(usuarios) {
 
     tbody.innerHTML = html;
 }
+
 
 // ─────────────────────────────────────────────────────────────
 // FILTRAR USUARIOS (BÚSQUEDA LOCAL)

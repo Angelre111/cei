@@ -19,7 +19,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    
+
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
 
     <script>
@@ -124,118 +124,72 @@
         <!-- SIDEBAR DE NAVEGACIÓN (Estilo Docente) -->
         <!-- ============================================ -->
         <nav id="sidebar"
-            class="w-64 flex flex-col h-screen bg-white shadow-lg flex-shrink-0 fixed inset-y-0 left-0 z-40 transform -translate-x-full transition-transform duration-300 md:translate-x-0 md:static border-r border-gray-100">
-            <div class="p-6 flex-shrink-0">
-                <!-- Logo -->
-                <a href="#" class="flex flex-col items-center space-y-2">
-                    <div class="flex items-center justify-center w-20 h-20 bg-pink-100 rounded-full shadow-sm">
-                        <!-- Reutilizamos img/cei.png o un icono svg similar -->
+            class="w-72 flex flex-col h-screen bg-white shadow-[4px_0_24px_rgba(0,0,0,0.02)] flex-shrink-0 fixed inset-y-0 left-0 z-40 transform -translate-x-full transition-transform duration-300 md:translate-x-0 md:static border-r border-gray-100">
+
+            <div class="p-8 flex flex-col items-center justify-center border-b border-gray-50 flex-shrink-0">
+                <a href="#" class="flex flex-col items-center gap-3">
+                    <div
+                        class="flex items-center justify-center w-24 h-24 bg-pink-50 rounded-full shadow-inner border-4 border-white">
                         <img src="img/cei.png" onerror="this.src='https://placehold.co/100x100/FCE7F3/EC4899?text=CEI'"
-                            width="80" height="80" class="rounded-full" alt="Logo">
+                            class="w-full h-full rounded-full object-cover p-1" alt="Logo CEI La Paragua">
                     </div>
                     <div class="text-center">
-                        <span class="text-xl font-bold text-gray-800 block">CEI La Paragua</span>
-                        <span
-                            class="text-xs font-semibold text-secondary-pink uppercase tracking-widest">Administración</span>
+                        <h2 class="text-[19px] font-black text-slate-800 tracking-tight">CEI La Paragua</h2>
+                        <p class="text-[10px] font-black text-pink-400 uppercase tracking-[0.15em] mt-0.5">
+                            Administración</p>
                     </div>
                 </a>
             </div>
 
-            <!-- Links de Navegación -->
-            <ul class="space-y-2 p-4 flex-1 overflow-y-auto">
+            <ul class="space-y-1.5 p-5 flex-1 overflow-y-auto">
                 <li>
                     <a href="#" data-section="section-dashboard"
-                        class="nav-link flex items-center space-x-3 p-3 rounded-xl transition-all duration-200 nav-link-active">
-                        <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                            stroke-width="1.5" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" />
-                        </svg>
-                        <span>Inicio</span>
+                        class="nav-link flex items-center space-x-3.5 px-4 py-3.5 rounded-2xl transition-all duration-200 nav-link-active text-gray-500 hover:bg-gray-50">
+                        <i class="ph-fill ph-squares-four text-xl"></i>
+                        <span class="font-semibold text-sm">Inicio</span>
                     </a>
                 </li>
-
-                <!-- Nuevo Panel de Usuarios -->
                 <li>
                     <a href="#" data-section="section-usuarios"
-                        class="nav-link flex items-center space-x-3 p-3 rounded-xl hover:bg-blue-50 transition-all duration-200">
-                        <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                            stroke-width="1.5" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" />
-                        </svg>
-                        <span>Usuarios del Sistema</span>
+                        class="nav-link flex items-center space-x-3.5 px-4 py-3.5 rounded-2xl transition-all duration-200 text-gray-500 hover:bg-gray-50">
+                        <i class="ph-fill ph-users text-xl"></i>
+                        <span class="font-semibold text-sm">Usuarios del Sistema</span>
                     </a>
                 </li>
-
-
                 <li>
                     <a href="#" data-section="section-alumnos"
-                        class="nav-link flex items-center space-x-3 p-3 rounded-xl hover:bg-blue-50 transition-all duration-200">
-                        <!-- Icono Alumno -->
-                        <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                            stroke-width="1.5" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m.94 3.198l.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0112 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 016 18.719m12 0a5.971 5.971 0 00-.941-3.197m0 0A5.995 5.995 0 0012 12.75a5.995 5.995 0 00-5.058 2.772m0 0a3 3 0 00-4.681 2.72 8.986 8.986 0 003.74.477m.94-3.197a5.971 5.971 0 00-.94 3.197M15 6.75a3 3 0 11-6 0 3 3 0 016 0zm6 3a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0zm-13.5 0a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z" />
-                        </svg>
-                        <span>Registro Alumnos</span>
+                        class="nav-link flex items-center space-x-3.5 px-4 py-3.5 rounded-2xl transition-all duration-200 text-gray-500 hover:bg-gray-50">
+                        <i class="ph-fill ph-student text-xl"></i>
+                        <span class="font-semibold text-sm">Registro Alumnos</span>
                     </a>
                 </li>
                 <li>
                     <a href="#" data-section="section-historial"
-                        class="nav-link flex items-center space-x-3 p-3 rounded-xl hover:bg-blue-50 transition-all duration-200">
-                        <!-- Icono Historial -->
-                        <svg class="w-6 h-6 outline-none" xmlns="http://www.w3.org/2000/svg" fill="none"
-                            viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25" />
-                        </svg>
-                        <span>Historial Estudiantil</span>
+                        class="nav-link flex items-center space-x-3.5 px-4 py-3.5 rounded-2xl transition-all duration-200 text-gray-500 hover:bg-gray-50">
+                        <i class="ph-fill ph-book-open text-xl"></i>
+                        <span class="font-semibold text-sm">Historial Estudiantil</span>
                     </a>
                 </li>
                 <li>
                     <a href="#" data-section="section-secciones"
-                        class="nav-link flex items-center space-x-3 p-3 rounded-xl hover:bg-blue-50 transition-all duration-200">
-                        <!-- Icono Finanzas -->
-                        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
-                        </svg>
-                        <span>Grupos/Secciones</span>
+                        class="nav-link flex items-center space-x-3.5 px-4 py-3.5 rounded-2xl transition-all duration-200 text-gray-500 hover:bg-gray-50">
+                        <i class="ph-fill ph-layout text-xl"></i>
+                        <span class="font-semibold text-sm">Grupos/Secciones</span>
                     </a>
                 </li>
                 <li>
                     <a href="#" data-section="section-periodos"
-                        class="nav-link flex items-center space-x-3 p-3 rounded-xl hover:bg-blue-50 transition-all duration-200">
-                        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
-                        </svg>
-                        <span>Períodos Académicos</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="#" data-section="section-config"
-                        class="nav-link flex items-center space-x-3 p-3 rounded-xl hover:bg-blue-50 transition-all duration-200">
-                        <!-- Icono Config -->
-                        <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                            stroke-width="1.5" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M10.34 15.84c-.688-.06-1.386-.09-2.09-.09H7.5a4.5 4.5 0 110-9h.75c.704 0 1.402-.03 2.09-.09m0 9.18c.253.962.584 1.892.985 2.783.247.55.06 1.21-.463 1.511l-.657.38c-.551.318-1.26.117-1.527-.461a20.845 20.845 0 01-1.44-4.282m3.102.069a18.03 18.03 0 01-.59-4.59c0-1.586.205-3.124.59-4.59m0 9.18a23.848 23.848 0 018.835 2.535M10.34 6.66a23.847 23.847 0 008.835-2.535m0 0A23.74 23.74 0 0018.795 3m.38 1.125a23.91 23.91 0 011.014 5.395m-1.014 8.855c-.118.38-.245.754-.38 1.125m.38-1.125a23.91 23.91 0 001.014-5.395m0-3.46c.495.413.811 1.035.811 1.73 0 .695-.316 1.317-.811 1.73m0-3.46a24.42 24.42 0 010 3.46" />
-                        </svg>
-                        <span>Configuración</span>
+                        class="nav-link flex items-center space-x-3.5 px-4 py-3.5 rounded-2xl transition-all duration-200 text-gray-500 hover:bg-gray-50">
+                        <i class="ph-fill ph-calendar-star text-xl"></i>
+                        <span class="font-semibold text-sm">Períodos Académicos</span>
                     </a>
                 </li>
             </ul>
 
-            <div class="p-4 border-t border-gray-100 mt-auto flex-shrink-0">
+            <div class="p-5 border-t border-gray-50 mt-auto flex-shrink-0 bg-gray-50/50">
                 <button onclick="logout()"
-                    class="w-full text-center p-3 text-sm text-gray-500 hover:text-secondary-pink transition duration-150 rounded-lg flex items-center justify-center">
-                    <svg class="w-4 h-4 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                        stroke-width="1.5" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round"
-                            d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75" />
-                    </svg>
+                    class="w-full text-center px-4 py-3.5 text-sm font-bold text-gray-500 hover:text-red-500 hover:bg-red-50 transition-all duration-200 rounded-xl flex items-center justify-center gap-2 shadow-sm border border-transparent hover:border-red-100">
+                    <i class="ph-bold ph-sign-out text-lg"></i>
                     Cerrar Sesión
                 </button>
             </div>
@@ -259,18 +213,52 @@
 
             <!-- Header Desktop -->
             <header
-                class="sticky top-0 z-10 hidden md:flex items-center justify-between p-6 bg-white/80 backdrop-blur-md border-b border-gray-200 shadow-sm">
-                <div>
-                    <h1 class="text-2xl font-bold text-gray-800">Panel de Administración</h1>
-                    <p class="text-sm text-gray-500">Gestión central del Preescolar</p>
+                class="sticky top-0 z-20 hidden md:flex items-center justify-between px-8 py-4 bg-white/80 backdrop-blur-xl border-b border-white/50 shadow-[0_4px_30px_-10px_rgba(0,0,0,0.05)]">
+
+                <div class="flex items-center gap-4">
+                    <div
+                        class="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center shadow-lg shadow-blue-200 text-white transform -rotate-3">
+                        <i class="ph-fill ph-shield-check text-2xl"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-xl font-black text-gray-800 tracking-tight leading-tight">Panel de
+                            Administración</h1>
+                        <div class="flex items-center gap-1.5 mt-0.5">
+                            <i class="ph-fill ph-buildings text-gray-400 text-sm"></i>
+                            <p class="text-xs font-bold text-gray-500 tracking-wider uppercase">Gestión Central</p>
+                        </div>
+                    </div>
                 </div>
-                <div class="flex items-center space-x-4">
-                    <span id="header-ano-container"
-                        class="text-xs font-semibold px-3 py-1 rounded-full border transition-colors bg-gray-100 text-gray-500 border-gray-200">
-                        Año Escolar: <span id="header-ano-activo" class="font-bold">...</span>
-                    </span>
-                    <img src="https://placehold.co/100x100/DBEAFE/1E3A8A?text=AD" alt="Admin"
-                        class="w-10 h-10 rounded-full border-2 border-blue-200">
+
+                <div class="flex items-center space-x-6">
+
+                    <div id="header-ano-container"
+                        class="flex items-center gap-3 bg-white border-y border-r border-l-4 border-l-gray-400 border-gray-200 px-4 py-2 rounded-r-xl rounded-l-sm shadow-sm transition-all duration-300">
+                        <div class="flex flex-col justify-center">
+                            <span class="text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-0.5">Período
+                                Académico</span>
+                            <span id="header-ano-activo" class="text-sm font-black">Cargando...</span>
+                        </div>
+                    </div>
+
+                    <div class="w-px h-8 bg-gray-200"></div>
+
+                    <div class="flex items-center gap-3 cursor-pointer group">
+                        <div class="text-right hidden lg:block">
+                            <p class="text-sm font-bold text-gray-700 group-hover:text-blue-600 transition-colors"
+                                id="header-profile-name">Administrador</p>
+                            <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Dirección</p>
+                        </div>
+                        <div class="relative">
+                            <div class="w-11 h-11 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 font-black text-lg border-2 border-white shadow-md group-hover:shadow-blue-200 group-hover:scale-105 transition-all"
+                                id="header-profile-initial">
+                                A
+                            </div>
+                            <div
+                                class="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full shadow-sm">
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </header>
 
@@ -280,184 +268,238 @@
                 <!-- SECCIÓN 1: DASHBOARD (RESUMEN) -->
                 <!-- ============================================ -->
                 <section id="section-dashboard" class="page-section fade-in">
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                        <!-- Stat Card 1: Alumnos -->
+
+                    <div
+                        class="bg-gradient-to-br from-blue-600 to-indigo-800 rounded-3xl p-8 mb-8 text-white relative overflow-hidden shadow-lg shadow-blue-200/50 transform hover:scale-[1.01] transition-transform duration-300 cursor-default group">
                         <div
-                            class="bg-white p-6 rounded-2xl shadow-md transition-all hover:shadow-lg border border-blue-50">
-                            <div class="flex items-center space-x-4">
-                                <div class="p-4 bg-primary-blue rounded-xl text-blue-600">
-                                    <svg class="w-8 h-8" xmlns="http://www.w3.org/2000/svg" fill="none"
-                                        viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                            d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" />
-                                    </svg>
-                                </div>
-                                <div>
-                                    <p class="text-sm text-gray-500 font-medium">Total Alumnos</p>
-                                    <h3 class="text-3xl font-bold text-gray-800" id="dash-total-students">
-                                        <span
-                                            class="inline-block w-10 h-7 bg-gray-200 rounded-lg animate-pulse align-middle"></span>
-                                    </h3>
-                                </div>
-                            </div>
+                            class="absolute -right-16 -top-16 text-white opacity-10 pointer-events-none transform group-hover:rotate-45 transition-transform duration-700">
+                            <i class="ph-fill ph-shield-star text-9xl"></i>
                         </div>
-                        <!-- Stat Card 2: Docentes -->
                         <div
-                            class="bg-white p-6 rounded-2xl shadow-md transition-all hover:shadow-lg border border-pink-50">
-                            <div class="flex items-center space-x-4">
-                                <div class="p-4 bg-pink-100 text-secondary-pink rounded-xl">
-                                    <svg class="w-8 h-8" xmlns="http://www.w3.org/2000/svg" fill="none"
-                                        viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                            d="M4.26 10.147a60.436 60.436 0 00-.491 6.347A48.627 48.627 0 0112 20.904a48.627 48.627 0 018.232-4.41 60.46 60.46 0 00-.491-6.347m-15.482 0a50.57 50.57 0 00-2.658-.813A59.905 59.905 0 0112 3.493a59.902 59.902 0 0110.499 5.258 50.55 50.55 0 00-2.658.813m-15.482 0A50.697 50.697 0 0112 13.489a50.702 50.702 0 017.74-3.342M6.75 15a.75.75 0 100-1.5.75.75 0 000 1.5zm0 0v-3.675A55.378 55.378 0 0112 8.443m-7.007 11.55A5.981 5.981 0 006.75 15.75v-1.5" />
-                                    </svg>
-                                </div>
-                                <div>
-                                    <p class="text-sm text-gray-500 font-medium">Docentes Registradas</p>
-                                    <h3 class="text-3xl font-bold text-gray-800" id="dash-total-teachers">
-                                        <span
-                                            class="inline-block w-10 h-7 bg-gray-200 rounded-lg animate-pulse align-middle"></span>
-                                    </h3>
-                                </div>
-                            </div>
-                        </div>
-                        <!-- Stat Card 3: Administradores -->
-                        <div
-                            class="bg-white p-6 rounded-2xl shadow-md transition-all hover:shadow-lg border border-purple-50">
-                            <div class="flex items-center space-x-4">
-                                <div class="p-4 bg-purple-100 text-purple-600 rounded-xl">
-                                    <svg class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-                                    </svg>
-                                </div>
-                                <div>
-                                    <p class="text-sm text-gray-500 font-medium">Administradores</p>
-                                    <h3 class="text-3xl font-bold text-gray-800" id="dash-total-admins">
-                                        <span
-                                            class="inline-block w-10 h-7 bg-gray-200 rounded-lg animate-pulse align-middle"></span>
-                                    </h3>
-                                </div>
-                            </div>
+                            class="absolute -left-10 -bottom-10 text-white opacity-10 pointer-events-none transform group-hover:scale-125 transition-transform duration-1000">
+                            <i class="ph-fill ph-buildings text-9xl"></i>
                         </div>
 
+                        <div class="relative z-10 flex flex-col md:flex-row justify-between items-center gap-4">
+                            <div>
+                                <h1 class="text-4xl font-black tracking-tighter leading-tight">
+                                    ¡Hola, <span id="dashboard-admin-nombres">Administrador</span>!
+                                </h1>
+                                <p class="text-lg font-medium text-blue-100 mt-2 max-w-lg">
+                                    Te damos la bienvenida al centro de control del <span class="font-bold">CEI La
+                                        Paragua</span>. Aquí tienes el resumen general de la institución.
+                                </p>
+                            </div>
+                            <div
+                                class="px-5 py-3 rounded-2xl bg-white/10 border border-white/20 text-center shadow-inner backdrop-blur-sm whitespace-nowrap">
+                                <p class="text-xs font-bold uppercase tracking-widest text-blue-200">Estado del Sistema
+                                </p>
+                                <p class="text-xl font-bold mt-1 text-white flex items-center justify-center gap-1.5">
+                                    <span
+                                        class="w-3 h-3 rounded-full bg-green-400 animate-pulse shadow-[0_0_10px_rgba(74,222,128,0.8)]"></span>
+                                    Operativo
+                                </p>
+                            </div>
+                        </div>
                     </div>
 
-                    <!-- Accesos Rápidos -->
-                    <div class="space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
 
-
-                        <!-- Contenedor blanco detrás del título -->
                         <div
-                            class="inline-flex items-center gap-3 bg-white/90 backdrop-blur-md px-10 py-3 rounded-2xl shadow-sm border border-white/50">
-                            <!-- Barra decorativa para anclar la vista -->
-                            <div class="w-1.5 h-7 bg-secondary-pink rounded-full"></div>
-                            <h2 class="text-2xl font-extrabold text-slate-900 tracking-tight">Gestión Rápida</h2>
+                            class="bg-white rounded-3xl p-6 border border-blue-100 shadow-md group hover:border-blue-300 hover:shadow-xl transform hover:scale-[1.02] transition-all duration-300 cursor-default flex flex-col relative overflow-hidden">
+                            <div class="flex items-center gap-3 mb-10 relative z-10">
+                                <div
+                                    class="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600 shadow-sm border border-blue-100 transition-colors group-hover:bg-blue-100">
+                                    <i class="ph-fill ph-student text-2xl"></i>
+                                </div>
+                                <div>
+                                    <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest">Matrícula
+                                        Total</h3>
+                                    <p class="text-sm font-semibold text-blue-600 mt-0.5">Alumnos Inscritos</p>
+                                </div>
+                            </div>
+                            <div class="flex-1 flex flex-col justify-end relative z-10">
+                                <p class="text-5xl font-black text-gray-800 tracking-tighter" id="dash-total-students">
+                                    <span class="inline-block w-12 h-10 bg-gray-100 rounded-lg animate-pulse"></span>
+                                </p>
+                                <p class="text-xs text-gray-500 font-medium mt-1">Sincronizado con Base de Datos</p>
+                            </div>
+                            <i
+                                class="ph-fill ph-users-three absolute -right-8 -bottom-8 text-blue-50 text-9xl group-hover:scale-110 group-hover:text-blue-100/50 transition-all duration-500"></i>
+                        </div>
+
+                        <div
+                            class="bg-white rounded-3xl p-6 border border-pink-100 shadow-md group hover:border-pink-300 hover:shadow-xl transform hover:scale-[1.02] transition-all duration-300 cursor-default flex flex-col relative overflow-hidden">
+                            <div class="flex items-center gap-3 mb-10 relative z-10">
+                                <div
+                                    class="w-12 h-12 rounded-xl bg-pink-50 flex items-center justify-center text-pink-600 shadow-sm border border-pink-100 transition-colors group-hover:bg-pink-100">
+                                    <i class="ph-fill ph-chalkboard-teacher text-2xl"></i>
+                                </div>
+                                <div>
+                                    <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest">Docentes</h3>
+                                    <p class="text-sm font-semibold text-pink-600 mt-0.5">Personal Activo</p>
+                                </div>
+                            </div>
+                            <div class="flex-1 flex flex-col justify-end relative z-10">
+                                <p class="text-5xl font-black text-gray-800 tracking-tighter" id="dash-total-teachers">
+                                    <span class="inline-block w-12 h-10 bg-gray-100 rounded-lg animate-pulse"></span>
+                                </p>
+                                <p class="text-xs text-gray-500 font-medium mt-1">Registradas en el sistema</p>
+                            </div>
+                            <i
+                                class="ph-fill ph-apple-logo absolute -right-8 -bottom-8 text-pink-50 text-9xl group-hover:scale-110 group-hover:text-pink-100/50 transition-all duration-500"></i>
+                        </div>
+
+                        <div
+                            class="bg-white rounded-3xl p-6 border border-purple-100 shadow-md group hover:border-purple-300 hover:shadow-xl transform hover:scale-[1.02] transition-all duration-300 cursor-default flex flex-col relative overflow-hidden">
+                            <div class="flex items-center gap-3 mb-10 relative z-10">
+                                <div
+                                    class="w-12 h-12 rounded-xl bg-purple-50 flex items-center justify-center text-purple-600 shadow-sm border border-purple-100 transition-colors group-hover:bg-purple-100">
+                                    <i class="ph-fill ph-shield-check text-2xl"></i>
+                                </div>
+                                <div>
+                                    <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest">Directiva</h3>
+                                    <p class="text-sm font-semibold text-purple-600 mt-0.5">Administradores</p>
+                                </div>
+                            </div>
+                            <div class="flex-1 flex flex-col justify-end relative z-10">
+                                <p class="text-5xl font-black text-gray-800 tracking-tighter" id="dash-total-admins">
+                                    <span class="inline-block w-12 h-10 bg-gray-100 rounded-lg animate-pulse"></span>
+                                </p>
+                                <p class="text-xs text-gray-500 font-medium mt-1">Con acceso total</p>
+                            </div>
+                            <i
+                                class="ph-fill ph-identification-card absolute -right-8 -bottom-8 text-purple-50 text-9xl group-hover:scale-110 group-hover:text-purple-100/50 transition-all duration-500"></i>
+                        </div>
+                    </div>
+
+                    <div class="space-y-6">
+                        <div
+                            class="inline-flex items-center gap-3 bg-white/90 backdrop-blur-md px-8 py-3 rounded-2xl shadow-sm border border-white/50">
+                            <div class="w-1.5 h-6 bg-indigo-500 rounded-full"></div>
+                            <h2 class="text-xl font-extrabold text-slate-800 tracking-tight">Accesos Directos</h2>
                         </div>
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <!-- Card: Inscribir Alumno -->
                             <button data-target="section-alumnos"
-                                class="nav-button group relative overflow-hidden bg-white p-6 rounded-2xl shadow-md hover:shadow-lg transition-all text-left">
+                                class="nav-button group relative overflow-hidden bg-white p-6 rounded-3xl border border-gray-100 shadow-sm hover:shadow-lg hover:border-yellow-200 transition-all text-left flex flex-col justify-between min-h-[140px]">
                                 <div
-                                    class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                                    <svg class="w-24 h-24 text-blue-500" xmlns="http://www.w3.org/2000/svg"
-                                        viewBox="0 0 24 24" fill="currentColor">
-                                        <path
-                                            d="M6.25 6.375a4.125 4.125 0 118.25 0 4.125 4.125 0 01-8.25 0zM3.25 19.125a7.125 7.125 0 0114.25 0v.003l-.001.119a.75.75 0 01-.363.63 13.067 13.067 0 01-6.761 1.873c-2.472 0-4.786-.684-6.76-1.873a.75.75 0 01-.364-.63l-.001-.122zM19.75 7.5a.75.75 0 00-1.5 0v2.25H16a.75.75 0 000 1.5h2.25v2.25a.75.75 0 001.5 0v-2.25H22a.75.75 0 000-1.5h-2.25V7.5z" />
-                                    </svg>
+                                    class="absolute -right-4 -top-4 p-4 opacity-5 group-hover:opacity-10 transition-opacity transform group-hover:scale-110 duration-500">
+                                    <i class="ph-fill ph-student text-9xl text-yellow-600"></i>
                                 </div>
-                                <h3 class="text-lg font-bold text-blue-600 mb-1">Inscribir Nuevo Alumno</h3>
-                                <p class="text-sm text-gray-500">Registrar datos personales y asignar grupo.</p>
-                                <span
-                                    class="mt-4 inline-block px-4 py-2 bg-blue-100 text-blue-600 rounded-lg text-sm font-semibold">Ir
-                                    al Registro</span>
+                                <div>
+                                    <h3
+                                        class="text-lg font-bold text-gray-800 mb-1 group-hover:text-yellow-600 transition-colors">
+                                        Inscribir Nuevo Alumno</h3>
+                                    <p class="text-sm text-gray-500 max-w-[80%]">Registrar datos personales, verificar
+                                        representantes y asignar a un grupo.</p>
+                                </div>
+                                <div class="mt-4 flex items-center gap-2 text-yellow-600 font-bold text-sm">
+                                    <span>Ir al Registro</span>
+                                    <i
+                                        class="ph-bold ph-arrow-right group-hover:translate-x-1 transition-transform"></i>
+                                </div>
                             </button>
 
-                            <!-- Card: Crear Usuario -->
                             <button data-target="section-usuarios"
-                                class="nav-button group relative overflow-hidden bg-white p-6 rounded-2xl shadow-md hover:shadow-lg transition-all text-left">
+                                class="nav-button group relative overflow-hidden bg-white p-6 rounded-3xl border border-gray-100 shadow-sm hover:shadow-lg hover:border-purple-200 transition-all text-left flex flex-col justify-between min-h-[140px]">
                                 <div
-                                    class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                                    <svg class="w-24 h-24 text-accent-purple" xmlns="http://www.w3.org/2000/svg"
-                                        viewBox="0 0 24 24" fill="currentColor">
-                                        <path
-                                            d="M4.5 6.375a4.125 4.125 0 118.25 0 4.125 4.125 0 01-8.25 0zM1.495 10.515a.75.75 0 000 1.5l5.166.002a7.148 7.148 0 01.352-1.502H1.495zM1.495 13.5a.75.75 0 000 1.5H3.6c.158-.518.377-1.014.646-1.488l.006-.012H1.495zM22.5 10.515a.75.75 0 000 1.5h-5.516c.148.487.266.988.352 1.502l5.164-.002zM22.5 13.5a.75.75 0 000 1.5h-2.106l.006.012c.27.474.488.97.646 1.488h1.454zM15.544 19.141a7.125 7.125 0 01-12.588 0l-.003.018a.75.75 0 01-.263.928 12.35 12.35 0 006.557 1.913c2.476 0 4.796-.687 6.557-1.913a.75.75 0 01-.26-.946z" />
-                                    </svg>
+                                    class="absolute -right-4 -top-4 p-4 opacity-5 group-hover:opacity-10 transition-opacity transform group-hover:scale-110 duration-500">
+                                    <i class="ph-fill ph-user-plus text-9xl text-purple-600"></i>
                                 </div>
-                                <h3 class="text-lg font-bold text-purple-500 mb-1">Registrar Usuario</h3>
-                                <p class="text-sm text-gray-500">Crear accesos para Administradores y Docentes.</p>
-                                <span
-                                    class="mt-4 inline-block px-4 py-2 bg-purple-100 text-purple-600 rounded-lg text-sm font-semibold">Gestionar
-                                    Accesos</span>
+                                <div>
+                                    <h3
+                                        class="text-lg font-bold text-gray-800 mb-1 group-hover:text-purple-600 transition-colors">
+                                        Registrar Usuario</h3>
+                                    <p class="text-sm text-gray-500 max-w-[80%]">Crear y gestionar accesos para el
+                                        personal Docente y Directivo.</p>
+                                </div>
+                                <div class="mt-4 flex items-center gap-2 text-purple-600 font-bold text-sm">
+                                    <span>Gestionar Accesos</span>
+                                    <i
+                                        class="ph-bold ph-arrow-right group-hover:translate-x-1 transition-transform"></i>
+                                </div>
                             </button>
                         </div>
+                    </div>
                 </section>
 
                 <!-- ============================================ -->
                 <!-- SECCIÓN: GESTIÓN DE USUARIOS (NUEVO) -->
                 <!-- ============================================ -->
                 <section id="section-usuarios" class="page-section hidden fade-in">
-                    <div class="bg-white rounded-2xl shadow-md border border-gray-100 overflow-hidden">
-                        <div
-                            class="p-6 border-b border-gray-100 flex flex-col md:flex-row justify-between items-center gap-4">
-                            <div>
-                                <h2 class="text-xl font-bold text-gray-800">Usuarios del Sistema</h2>
-                                <p class="text-sm text-gray-500">Gestiona los accesos de Administradores y Docentes.</p>
+                    <div
+                        class="bg-white/95 backdrop-blur-xl p-6 md:p-10 rounded-[2.5rem] shadow-xl border border-white">
+
+                        <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-6">
+                            <div class="flex items-center gap-4">
+                                <div
+                                    class="w-14 h-14 rounded-2xl bg-gradient-to-br from-purple-400 to-purple-600 flex items-center justify-center shadow-lg shadow-purple-200 transform -rotate-6">
+                                    <i class="ph-bold ph-users-three text-3xl text-white"></i>
+                                </div>
+                                <div>
+                                    <h2 class="text-3xl font-black text-gray-800 tracking-tight">Usuarios del Sistema
+                                    </h2>
+                                    <p class="text-gray-500 font-medium mt-1">Gestiona los accesos de Administradores y
+                                        Docentes.</p>
+                                </div>
                             </div>
+
                             <button onclick="abrirModalCrearUsuario()"
-                                class="w-full md:w-auto px-4 py-2 bg-accent-purple text-gray-800 rounded-lg font-semibold hover:bg-purple-300 transition shadow-md flex items-center justify-center gap-2">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z">
-                                    </path>
-                                </svg>
-                                Nuevo Usuario
+                                class="w-full md:w-auto px-6 py-3.5 bg-purple-500 text-white rounded-xl font-bold shadow-lg shadow-purple-200 hover:bg-purple-600 hover:shadow-purple-300 transform hover:-translate-y-1 transition-all flex items-center justify-center gap-2 text-base">
+                                <i class="ph-bold ph-user-plus text-xl"></i>
+                                <span>Nuevo Usuario</span>
                             </button>
                         </div>
 
-                        <!-- Barra de Búsqueda de Usuarios -->
-                        <div class="px-6 py-4 bg-gray-50/50 border-b border-gray-100 flex items-center">
+                        <div
+                            class="p-5 bg-gray-50/50 rounded-3xl border border-gray-100 flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
                             <div class="relative w-full max-w-md group">
-                                <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-                                    <svg class="w-5 h-5 text-gray-400 group-focus-within:text-purple-500 transition-colors"
-                                        fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                                    </svg>
+                                <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                    <i
+                                        class="ph-bold ph-magnifying-glass text-gray-400 group-focus-within:text-purple-500 transition-colors text-lg"></i>
                                 </div>
                                 <input type="text" id="user-search-input"
-                                    class="block w-full pl-11 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-200 focus:border-purple-400 transition-all shadow-sm"
+                                    class="block w-full pl-12 pr-4 py-3 bg-white border border-gray-200 rounded-xl text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-200 focus:border-purple-400 transition-all shadow-sm"
                                     placeholder="Buscar por nombre, correo o estado...">
                             </div>
-                            <div class="ml-4 text-xs text-gray-400 font-medium hidden md:block" id="user-search-count">
+
+                            <div class="text-sm font-semibold text-gray-600 bg-white px-5 py-3 rounded-xl border border-gray-200 shadow-sm whitespace-nowrap flex items-center gap-2"
+                                id="user-search-count">
+                                <i class="ph-fill ph-users text-purple-500 text-lg"></i>
                                 Mostrando todos los usuarios
                             </div>
                         </div>
 
-                        <!-- Modal Crear Usuario -->
+                        <div class="overflow-x-auto rounded-2xl border border-gray-100 shadow-sm bg-white">
+                            <table class="w-full text-left border-collapse">
+                                <thead class="bg-gray-50 text-gray-500 uppercase text-[11px] font-bold tracking-wider">
+                                    <tr>
+                                        <th class="px-6 py-4 border-b border-gray-100">Usuario</th>
+                                        <th class="px-6 py-4 border-b border-gray-100">Rol</th>
+                                        <th class="px-6 py-4 border-b border-gray-100">Estado</th>
+                                        <th class="px-6 py-4 border-b border-gray-100 text-right">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="user-table-body" class="divide-y divide-gray-100 text-sm">
+                                </tbody>
+                            </table>
+                        </div>
+
                         <div id="modal-crear-usuario"
                             class="fixed inset-0 bg-black/60 z-50 hidden flex items-center justify-center backdrop-blur-sm transition-opacity opacity-0"
                             style="transition: opacity 0.3s ease;">
                             <div id="modal-crear-usuario-content"
-                                class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl mx-4 overflow-hidden transform scale-95 transition-transform duration-300">
+                                class="bg-white rounded-3xl shadow-2xl w-full max-w-2xl mx-4 overflow-hidden transform scale-95 transition-transform duration-300">
                                 <div
                                     class="px-6 py-5 border-b border-purple-100 flex justify-between items-center bg-purple-50/50">
                                     <h3 class="font-bold text-gray-800 text-lg flex items-center gap-2">
-                                        <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor"
-                                            viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z">
-                                            </path>
-                                        </svg>
+                                        <i class="ph-bold ph-user-plus text-purple-600 text-2xl"></i>
                                         Registrar Nuevo Usuario
                                     </h3>
                                     <button onclick="cerrarModalCrearUsuario()"
-                                        class="text-gray-400 hover:text-red-500 transition-colors p-1.5 hover:bg-white rounded-lg focus:outline-none focus:ring-2 focus:ring-red-200">
-                                        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M6 18L18 6M6 6l12 12"></path>
-                                        </svg>
+                                        class="text-gray-400 hover:text-red-500 transition-colors p-1.5 hover:bg-white rounded-lg focus:outline-none">
+                                        <i class="ph-bold ph-x text-xl"></i>
                                     </button>
                                 </div>
                                 <div class="p-6 md:p-8">
@@ -466,27 +508,27 @@
                                             <label
                                                 class="block text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Nombre</label>
                                             <input type="text" id="user-first-name" placeholder="Ej: Juan"
-                                                class="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-400 focus:border-purple-400 outline-none transition-all bg-gray-50 focus:bg-white text-sm">
+                                                class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-400 outline-none transition-all bg-white focus:shadow-md text-sm">
                                         </div>
                                         <div>
                                             <label
                                                 class="block text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Apellido</label>
                                             <input type="text" id="user-last-name" placeholder="Ej: Pérez"
-                                                class="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-400 focus:border-purple-400 outline-none transition-all bg-gray-50 focus:bg-white text-sm">
+                                                class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-400 outline-none transition-all bg-white focus:shadow-md text-sm">
                                         </div>
                                         <div>
                                             <label
                                                 class="block text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Correo
                                                 Electrónico</label>
                                             <input type="email" id="user-email" placeholder="correo@ejemplo.com"
-                                                class="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-400 focus:border-purple-400 outline-none transition-all bg-gray-50 focus:bg-white text-sm">
+                                                class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-400 outline-none transition-all bg-white focus:shadow-md text-sm">
                                         </div>
                                         <div>
                                             <label
                                                 class="block text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Rol
                                                 en el Sistema</label>
                                             <select id="user-role"
-                                                class="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-400 focus:border-purple-400 outline-none transition-all bg-gray-50 focus:bg-white text-sm">
+                                                class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-400 outline-none transition-all bg-white focus:shadow-md text-sm">
                                                 <option value="">Seleccionar Rol...</option>
                                                 <option value="Administrador">Administrador</option>
                                                 <option value="Docente">Docente</option>
@@ -496,7 +538,7 @@
                                             <label
                                                 class="block text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Estado</label>
                                             <select id="user-status"
-                                                class="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-400 focus:border-purple-400 outline-none transition-all bg-gray-50 focus:bg-white text-sm">
+                                                class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-400 outline-none transition-all bg-white focus:shadow-md text-sm">
                                                 <option value="activo">Activo (Acceso inmediato)</option>
                                                 <option value="pendiente">Pendiente (Requiere Email)</option>
                                                 <option value="inactivo">Inactivo / Suspendido</option>
@@ -507,24 +549,18 @@
                                                 class="block text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Contraseña
                                                 Temporal</label>
                                             <input type="password" id="user-password" placeholder="Mínimo 6 caracteres"
-                                                class="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-400 focus:border-purple-400 outline-none transition-all bg-gray-50 focus:bg-white text-sm">
-                                            <p class="text-[11px] text-gray-400 mt-1.5 flex items-center gap-1.5">
-                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor"
-                                                    viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                        stroke-width="2"
-                                                        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z">
-                                                    </path>
-                                                </svg>
+                                                class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-400 outline-none transition-all bg-white focus:shadow-md text-sm">
+                                            <p class="text-[11px] text-gray-400 mt-2 flex items-center gap-1.5">
+                                                <i class="ph-fill ph-info text-purple-400"></i>
                                                 El usuario deberá usar esta contraseña en su primer inicio de sesión.
                                             </p>
                                         </div>
                                     </div>
                                     <div class="mt-8 pt-5 border-t border-gray-100 flex justify-end gap-3">
                                         <button onclick="cerrarModalCrearUsuario()"
-                                            class="px-5 py-2.5 text-gray-600 font-semibold hover:bg-gray-100 rounded-xl transition-colors text-sm">Cancelar</button>
+                                            class="px-5 py-3 text-gray-600 font-bold hover:bg-gray-100 rounded-xl transition-colors text-sm">Cancelar</button>
                                         <button id="btn-add-user"
-                                            class="px-6 py-2.5 bg-purple-600 text-white rounded-xl font-semibold hover:bg-purple-700 transition shadow-md shadow-purple-600/20 flex items-center gap-2 text-sm">
+                                            class="px-6 py-3 bg-purple-600 text-white rounded-xl font-bold hover:bg-purple-700 transition shadow-lg shadow-purple-200 flex items-center gap-2 text-sm">
                                             Confirmar y Crear
                                         </button>
                                     </div>
@@ -532,74 +568,79 @@
                             </div>
                         </div>
 
-                        <!-- Modal Editar Usuario -->
                         <div id="modal-editar-usuario"
                             class="fixed inset-0 bg-black/60 z-50 hidden flex items-center justify-center backdrop-blur-sm transition-opacity opacity-0"
                             style="transition: opacity 0.3s ease;">
                             <div id="modal-editar-usuario-content"
-                                class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl mx-4 overflow-hidden transform scale-95 transition-transform duration-300">
+                                class="bg-white rounded-3xl shadow-2xl w-full max-w-2xl mx-4 overflow-hidden transform scale-95 transition-transform duration-300">
                                 <div
                                     class="px-6 py-5 border-b border-purple-100 flex justify-between items-center bg-purple-50/50">
                                     <h3 class="font-bold text-gray-800 text-lg flex items-center gap-2">
-                                        <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-                                        </svg>
+                                        <i class="ph-bold ph-pencil-simple text-purple-600 text-2xl"></i>
                                         Editar Usuario
                                     </h3>
                                     <button onclick="cerrarModalEditarUsuario()"
-                                        class="text-gray-400 hover:text-red-500 transition-colors p-1.5 hover:bg-white rounded-lg focus:outline-none focus:ring-2 focus:ring-red-200">
-                                        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                                        </svg>
+                                        class="text-gray-400 hover:text-red-500 transition-colors p-1.5 hover:bg-white rounded-lg focus:outline-none">
+                                        <i class="ph-bold ph-x text-xl"></i>
                                     </button>
                                 </div>
                                 <div class="p-6 md:p-8">
                                     <input type="hidden" id="edit-user-id">
                                     <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
                                         <div>
-                                            <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Nombre</label>
+                                            <label
+                                                class="block text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Nombre</label>
                                             <input type="text" id="edit-user-first-name" placeholder="Ej: Juan"
-                                                class="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-400 focus:border-purple-400 outline-none transition-all bg-gray-50 focus:bg-white text-sm">
+                                                class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-400 outline-none transition-all bg-white focus:shadow-md text-sm">
                                         </div>
                                         <div>
-                                            <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Apellido</label>
+                                            <label
+                                                class="block text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Apellido</label>
                                             <input type="text" id="edit-user-last-name" placeholder="Ej: Pérez"
-                                                class="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-400 focus:border-purple-400 outline-none transition-all bg-gray-50 focus:bg-white text-sm">
+                                                class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-400 outline-none transition-all bg-white focus:shadow-md text-sm">
                                         </div>
-                                        <div>
-                                            <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Correo Electrónico</label>
+                                        <div class="md:col-span-2">
+                                            <label
+                                                class="block text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Correo
+                                                Electrónico</label>
                                             <input type="email" id="edit-user-email" placeholder="correo@ejemplo.com"
-                                                class="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-400 focus:border-purple-400 outline-none transition-all bg-gray-50 focus:bg-white text-sm">
+                                                class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-400 outline-none transition-all bg-white focus:shadow-md text-sm">
                                         </div>
                                         <div>
-                                            <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Rol en el Sistema</label>
+                                            <label
+                                                class="block text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Rol
+                                                en el Sistema</label>
                                             <select id="edit-user-role"
-                                                class="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-400 focus:border-purple-400 outline-none transition-all bg-gray-50 focus:bg-white text-sm">
+                                                class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-400 outline-none transition-all bg-white focus:shadow-md text-sm">
                                                 <option value="administrador">Administrador</option>
                                                 <option value="docente">Docente</option>
                                             </select>
-                                            <p id="edit-user-role-warn" class="hidden text-[11px] text-gray-400 mt-1.5 flex items-center gap-1.5">
-                                                ⚠️ No puedes cambiar tu propio rol
+                                            <p id="edit-user-role-warn"
+                                                class="hidden text-[10px] font-bold text-red-400 mt-2 uppercase tracking-wider">
+                                                <i class="ph-fill ph-warning-circle mr-1"></i> No puedes cambiar tu rol
                                             </p>
                                         </div>
                                         <div>
-                                            <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Estado</label>
+                                            <label
+                                                class="block text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Estado</label>
                                             <select id="edit-user-status"
-                                                class="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-400 focus:border-purple-400 outline-none transition-all bg-gray-50 focus:bg-white text-sm">
+                                                class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-400 outline-none transition-all bg-white focus:shadow-md text-sm">
                                                 <option value="activo">Activo</option>
                                                 <option value="pendiente">Pendiente</option>
                                                 <option value="inactivo">Inactivo / Suspendido</option>
                                             </select>
-                                            <p id="edit-user-status-warn" class="hidden text-[11px] text-gray-400 mt-1.5 flex items-center gap-1.5">
-                                                ⚠️ No puedes cambiar tu propio estado
+                                            <p id="edit-user-status-warn"
+                                                class="hidden text-[10px] font-bold text-red-400 mt-2 uppercase tracking-wider">
+                                                <i class="ph-fill ph-warning-circle mr-1"></i> No puedes cambiar tu
+                                                estado
                                             </p>
                                         </div>
                                     </div>
                                     <div class="mt-8 pt-5 border-t border-gray-100 flex justify-end gap-3">
                                         <button onclick="cerrarModalEditarUsuario()"
-                                            class="px-5 py-2.5 text-gray-600 font-semibold hover:bg-gray-100 rounded-xl transition-colors text-sm">Cancelar</button>
+                                            class="px-5 py-3 text-gray-600 font-bold hover:bg-gray-100 rounded-xl transition-colors text-sm">Cancelar</button>
                                         <button id="btn-update-user"
-                                            class="px-6 py-2.5 bg-purple-600 text-white rounded-xl font-semibold hover:bg-purple-700 transition shadow-md shadow-purple-600/20 flex items-center gap-2 text-sm">
+                                            class="px-6 py-3 bg-purple-600 text-white rounded-xl font-bold hover:bg-purple-700 transition shadow-lg shadow-purple-200 flex items-center gap-2 text-sm">
                                             Guardar Cambios
                                         </button>
                                     </div>
@@ -607,22 +648,6 @@
                             </div>
                         </div>
 
-                        <!-- Tabla Usuarios -->
-                        <div class="overflow-x-auto">
-                            <table class="w-full text-left border-collapse">
-                                <thead class="bg-gray-50 text-gray-500 uppercase text-xs font-semibold">
-                                    <tr>
-                                        <th class="px-6 py-4">Usuario</th>
-                                        <th class="px-6 py-4">Rol</th>
-                                        <th class="px-6 py-4">Estado</th>
-                                        <th class="px-6 py-4 text-right">Acciones</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="user-table-body" class="divide-y divide-gray-100">
-                                    <!-- JS populated -->
-                                </tbody>
-                            </table>
-                        </div>
                     </div>
                 </section>
 
@@ -633,164 +658,57 @@
                 <!-- SECCIÓN 3: REGISTRO DE ALUMNOS -->
                 <!-- ============================================ -->
                 <section id="section-alumnos" class="page-section hidden fade-in">
-                    <div class="bg-white rounded-2xl shadow-md border border-gray-100 overflow-hidden">
+                    <div
+                        class="bg-white/95 backdrop-blur-xl p-6 md:p-10 rounded-[2.5rem] shadow-xl border border-white">
 
-                        <!-- Encabezado -->
-                        <div
-                            class="p-6 border-b border-gray-100 flex flex-col md:flex-row justify-between items-center gap-4">
-                            <div>
-                                <h2 class="text-xl font-bold text-gray-800">Matr&iacute;cula General</h2>
-                                <p class="text-sm text-gray-500">Consulta y gestiona los alumnos inscritos en el
-                                    sistema.</p>
+                        <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-6">
+                            <div class="flex items-center gap-4">
+                                <div
+                                    class="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center shadow-lg shadow-blue-200 transform -rotate-6">
+                                    <i class="ph-bold ph-student text-3xl text-white"></i>
+                                </div>
+                                <div>
+                                    <h2 class="text-3xl font-black text-gray-800 tracking-tight">Matrícula General</h2>
+                                    <p class="text-gray-500 font-medium mt-1">Consulta y gestiona los alumnos inscritos
+                                        en el sistema.</p>
+                                </div>
                             </div>
+
                             <button onclick="abrirModalRegistrarAlumno()"
-                                class="w-full md:w-auto px-4 py-2 bg-accent-yellow text-gray-800 rounded-lg font-semibold hover:bg-yellow-400 transition shadow-md flex items-center justify-center gap-2">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M12 4v16m8-8H4"></path>
-                                </svg>
-                                Registrar Alumno
+                                class="w-full md:w-auto px-6 py-3.5 bg-blue-500 text-white rounded-xl font-bold shadow-lg shadow-blue-200 hover:bg-blue-600 hover:shadow-blue-300 transform hover:-translate-y-1 transition-all flex items-center justify-center gap-2 text-base">
+                                <i class="ph-bold ph-user-plus text-xl"></i>
+                                <span>Registrar Alumno</span>
                             </button>
                         </div>
 
-                        <!-- Modal Registrar Alumno -->
-                        <div id="modal-registrar-alumno"
-                            class="fixed inset-0 bg-black/60 z-50 hidden flex items-center justify-center backdrop-blur-sm opacity-0"
-                            style="transition: opacity 0.3s ease;">
-                            <div id="modal-registrar-alumno-content"
-                                class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl mx-4 overflow-hidden transform scale-95 transition-transform duration-300">
-                                <div
-                                    class="px-6 py-5 border-b border-yellow-100 flex justify-between items-center bg-yellow-50/50">
-                                    <h3 class="font-bold text-gray-800 text-lg flex items-center gap-2">
-                                        <svg class="w-6 h-6 text-yellow-500" fill="none" stroke="currentColor"
-                                            viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z">
-                                            </path>
-                                        </svg>
-                                        Inscribir Nuevo Alumno
-                                    </h3>
-                                    <button onclick="cerrarModalRegistrarAlumno()"
-                                        class="text-gray-400 hover:text-red-500 transition-colors p-1.5 hover:bg-white rounded-lg">
-                                        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M6 18L18 6M6 6l12 12"></path>
-                                        </svg>
-                                    </button>
-                                </div>
-                                <div class="p-6 md:p-8">
-                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
-                                        <!-- Buscador de Cédula Escolar (Abarca ambas columnas) -->
-                                        <div class="md:col-span-2 relative">
-                                            <label
-                                                class="block text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">
-                                                Buscar por Cédula (Escolar o Representante) <span
-                                                    class="text-yellow-500">*</span>
-                                            </label>
-                                            <div class="flex gap-2">
-                                                <input type="text" id="student-cedula"
-                                                    placeholder="Ej: 10430587333 o 12345678"
-                                                    onkeypress="if(event.key === 'Enter') buscarEstudiantePorCedula()"
-                                                    class="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 outline-none transition-all bg-gray-50 focus:bg-white text-sm">
-                                                <button type="button" onclick="buscarEstudiantePorCedula()"
-                                                    id="btn-buscar-cedula"
-                                                    class="px-5 bg-yellow-400 text-gray-800 rounded-xl font-bold hover:bg-yellow-500 transition shadow flex items-center gap-2">
-                                                    <svg class="w-5 h-5" fill="none" stroke="currentColor"
-                                                        viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                                            stroke-width="2"
-                                                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                                                    </svg>
-                                                    <span class="hidden md:block">Buscar</span>
-                                                </button>
-                                            </div>
-                                            <p class="text-[11px] text-gray-400 mt-1.5 flex items-center gap-1.5">
-                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor"
-                                                    viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                        stroke-width="2"
-                                                        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z">
-                                                    </path>
-                                                </svg>
-                                                Auto-completará Nombre y Representante si se llenó la ficha de
-                                                pre-inscripción online.
-                                            </p>
-                                        </div>
-
-                                        <!-- Auto-completados -->
-                                        <div>
-                                            <label
-                                                class="block text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Nombre
-                                                del Estudiante</label>
-                                            <input type="text" id="student-name"
-                                                placeholder="Ej: Sof&iacute;a P&eacute;rez"
-                                                class="w-full px-4 py-2.5 border border-gray-200 rounded-xl outline-none transition-all bg-gray-100 text-gray-500 text-sm font-medium cursor-not-allowed"
-                                                readonly>
-                                        </div>
-                                        <div>
-                                            <label
-                                                class="block text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Representante</label>
-                                            <input type="text" id="student-rep" placeholder="Nombre Padre/Madre"
-                                                class="w-full px-4 py-2.5 border border-gray-200 rounded-xl outline-none transition-all bg-gray-100 text-gray-500 text-sm font-medium cursor-not-allowed"
-                                                readonly>
-                                        </div>
-
-                                        <!-- Selección de Grupo para matriculación final -->
-                                        <div class="md:col-span-2 pt-2 border-t border-gray-100">
-                                            <label
-                                                class="block text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Matricular
-                                                en Grupo / Nivel</label>
-                                            <select id="student-group"
-                                                class="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 outline-none transition-all bg-gray-50 focus:bg-white text-sm">
-                                                <option value="Maternal">Maternal</option>
-                                                <option value="1ER GRUPO">1ER GRUPO</option>
-                                                <option value="2DO GRUPO">2DO GRUPO</option>
-                                                <option value="3ER GRUPO">3ER GRUPO</option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                    <div class="mt-8 pt-5 border-t border-gray-100 flex justify-end gap-3">
-                                        <button onclick="cerrarModalRegistrarAlumno()"
-                                            class="px-5 py-2.5 text-gray-600 font-semibold hover:bg-gray-100 rounded-xl transition-colors text-sm">Cancelar</button>
-                                        <button id="btn-add-student"
-                                            class="px-6 py-2.5 bg-yellow-400 text-gray-800 rounded-xl font-semibold hover:bg-yellow-500 transition shadow-md flex items-center gap-2 text-sm">
-                                            Confirmar Inscripción
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Barra de Búsqueda de Matrícula -->
-                        <div class="px-6 py-4 bg-gray-50/50 border-b border-gray-100 flex items-center">
+                        <div
+                            class="p-5 bg-gray-50/50 rounded-3xl border border-gray-100 flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
                             <div class="relative w-full max-w-md group">
-                                <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-                                    <svg class="w-5 h-5 text-gray-400 group-focus-within:text-yellow-500 transition-colors"
-                                        fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                                    </svg>
+                                <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                    <i
+                                        class="ph-bold ph-magnifying-glass text-gray-400 group-focus-within:text-blue-500 transition-colors text-lg"></i>
                                 </div>
                                 <input type="text" id="student-search-input"
-                                    class="block w-full pl-11 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-yellow-200 focus:border-yellow-400 transition-all shadow-sm"
-                                    placeholder="Buscar por nombre, cédula, grupo o representante...">
+                                    class="block w-full pl-12 pr-4 py-3 bg-white border border-gray-200 rounded-xl text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-400 transition-all shadow-sm"
+                                    placeholder="Buscar por nombre, cédula o representante...">
                             </div>
-                            <div class="ml-4 text-xs text-gray-400 font-medium hidden md:block"
+
+                            <div class="text-sm font-semibold text-gray-600 bg-white px-5 py-3 rounded-xl border border-gray-200 shadow-sm whitespace-nowrap flex items-center gap-2"
                                 id="student-search-count">
-                                Mostrando todos los estudiantes matriculados
+                                <i class="ph-fill ph-users-three text-blue-500 text-lg"></i>
+                                Mostrando todos los estudiantes
                             </div>
                         </div>
 
-                        <!-- Tabla Alumnos -->
-                        <div class="overflow-x-auto">
+                        <div class="overflow-x-auto rounded-2xl border border-gray-100 shadow-sm bg-white">
                             <table class="w-full text-left border-collapse">
-                                <thead class="bg-gray-50 text-gray-500 uppercase text-xs font-semibold">
+                                <thead class="bg-gray-50 text-gray-500 uppercase text-[11px] font-bold tracking-wider">
                                     <tr>
-                                        <th class="px-6 py-4">Cédula Escolar</th>
-                                        <th class="px-6 py-4">Estudiante</th>
-                                        <th class="px-6 py-4">Grupo</th>
-                                        <th class="px-6 py-4">Representante</th>
-                                        <th class="px-6 py-4 text-right">Acciones</th>
+                                        <th class="px-6 py-4 border-b border-gray-100">Cédula Escolar</th>
+                                        <th class="px-6 py-4 border-b border-gray-100">Estudiante</th>
+                                        <th class="px-6 py-4 border-b border-gray-100">Grupo</th>
+                                        <th class="px-6 py-4 border-b border-gray-100">Representante</th>
+                                        <th class="px-6 py-4 border-b border-gray-100 text-right">Acciones</th>
                                     </tr>
                                 </thead>
                                 <tbody id="student-table-body" class="divide-y divide-gray-100 text-sm">
@@ -801,61 +719,150 @@
                                 </tbody>
                             </table>
                         </div>
+
+                        <div id="modal-registrar-alumno"
+                            class="fixed inset-0 bg-black/60 z-50 hidden flex items-center justify-center backdrop-blur-sm transition-opacity opacity-0"
+                            style="transition: opacity 0.3s ease;">
+                            <div id="modal-registrar-alumno-content"
+                                class="bg-white rounded-3xl shadow-2xl w-full max-w-2xl mx-4 overflow-hidden transform scale-95 transition-transform duration-300">
+                                <div
+                                    class="px-6 py-5 border-b border-blue-100 flex justify-between items-center bg-blue-50/50">
+                                    <h3 class="font-bold text-gray-800 text-lg flex items-center gap-2">
+                                        <i class="ph-bold ph-student text-blue-600 text-2xl"></i>
+                                        Inscribir Nuevo Alumno
+                                    </h3>
+                                    <button onclick="cerrarModalRegistrarAlumno()"
+                                        class="text-gray-400 hover:text-red-500 transition-colors p-1.5 hover:bg-white rounded-lg focus:outline-none">
+                                        <i class="ph-bold ph-x text-xl"></i>
+                                    </button>
+                                </div>
+                                <div class="p-6 md:p-8">
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
+
+                                        <div class="md:col-span-2 relative">
+                                            <label
+                                                class="block text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">
+                                                Buscar por Cédula (Escolar o Representante) <span
+                                                    class="text-blue-500">*</span>
+                                            </label>
+                                            <div class="flex gap-2">
+                                                <input type="text" id="student-cedula"
+                                                    placeholder="Ej: 10430587333 o 12345678"
+                                                    onkeypress="if(event.key === 'Enter') buscarEstudiantePorCedula()"
+                                                    class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-400 outline-none transition-all bg-white focus:shadow-md text-sm">
+                                                <button type="button" onclick="buscarEstudiantePorCedula()"
+                                                    id="btn-buscar-cedula"
+                                                    class="px-5 bg-blue-50 text-blue-600 border border-blue-200 rounded-xl font-bold hover:bg-blue-500 hover:text-white hover:border-blue-500 transition-all shadow-sm flex items-center gap-2">
+                                                    <i class="ph-bold ph-magnifying-glass text-lg"></i>
+                                                    <span class="hidden md:block">Buscar</span>
+                                                </button>
+                                            </div>
+                                            <p class="text-[11px] text-gray-400 mt-2 flex items-center gap-1.5">
+                                                <i class="ph-fill ph-info text-blue-400"></i>
+                                                Auto-completará Nombre y Representante si se llenó la ficha online.
+                                            </p>
+                                        </div>
+
+                                        <div>
+                                            <label
+                                                class="block text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Nombre
+                                                del Estudiante</label>
+                                            <input type="text" id="student-name" placeholder="Ej: Sofía Pérez"
+                                                class="w-full px-4 py-3 border border-gray-200 rounded-xl outline-none transition-all bg-gray-50 text-gray-500 text-sm font-medium cursor-not-allowed"
+                                                readonly>
+                                        </div>
+                                        <div>
+                                            <label
+                                                class="block text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Representante</label>
+                                            <input type="text" id="student-rep" placeholder="Nombre Padre/Madre"
+                                                class="w-full px-4 py-3 border border-gray-200 rounded-xl outline-none transition-all bg-gray-50 text-gray-500 text-sm font-medium cursor-not-allowed"
+                                                readonly>
+                                        </div>
+
+                                        <div class="md:col-span-2 pt-2 border-t border-gray-100">
+                                            <label
+                                                class="block text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Matricular
+                                                en Grupo / Nivel</label>
+                                            <select id="student-group"
+                                                class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-400 outline-none transition-all bg-white focus:shadow-md text-sm cursor-pointer">
+                                                <option value="">Cargando secciones...</option>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div class="mt-8 pt-5 border-t border-gray-100 flex justify-end gap-3">
+                                        <button onclick="cerrarModalRegistrarAlumno()"
+                                            class="px-5 py-3 text-gray-600 font-bold hover:bg-gray-100 rounded-xl transition-colors text-sm">Cancelar</button>
+                                        <button id="btn-add-student"
+                                            class="px-6 py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition shadow-lg shadow-blue-200 flex items-center gap-2 text-sm">
+                                            Confirmar Inscripción
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                     </div>
                 </section>
                 <!-- ============================================ -->
                 <!-- SECCIÓN: HISTORIAL ESTUDIANTIL -->
                 <!-- ============================================ -->
                 <section id="section-historial" class="page-section hidden fade-in">
-                    <div class="bg-white rounded-2xl shadow-md border border-gray-100 overflow-hidden">
+                    <div
+                        class="bg-white/95 backdrop-blur-xl p-6 md:p-10 rounded-[2.5rem] shadow-xl border border-white">
 
-                        <!-- Encabezado -->
-                        <div
-                            class="p-6 border-b border-gray-100 flex flex-col md:flex-row justify-between items-center gap-4">
-                            <div>
-                                <h2 class="text-xl font-bold text-gray-800">Historial Estudiantil</h2>
-                                <p class="text-sm text-gray-500">Consulta los alumnos egresados o retirados de la
-                                    institución.</p>
+                        <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-6">
+                            <div class="flex items-center gap-4">
+                                <div
+                                    class="w-14 h-14 rounded-2xl bg-gradient-to-br from-teal-400 to-teal-600 flex items-center justify-center shadow-lg shadow-teal-200 transform -rotate-6">
+                                    <i class="ph-bold ph-archive text-3xl text-white"></i>
+                                </div>
+                                <div>
+                                    <h2 class="text-3xl font-black text-gray-800 tracking-tight">Historial Estudiantil
+                                    </h2>
+                                    <p class="text-gray-500 font-medium mt-1">Consulta los alumnos egresados o retirados
+                                        de la institución.</p>
+                                </div>
                             </div>
-                            <div class="flex bg-gray-100 p-1 rounded-xl">
+
+                            <div
+                                class="flex bg-gray-50/80 p-1.5 rounded-2xl border border-gray-100 shadow-inner w-full md:w-auto">
                                 <button onclick="cargarHistorialEstudiantil('egresado')" id="btn-tab-egresados"
-                                    class="px-5 py-2 text-sm font-semibold rounded-lg bg-white shadow text-gray-800 transition">Egresados</button>
+                                    class="flex-1 md:flex-none px-6 py-2.5 text-sm font-bold rounded-xl bg-white shadow-sm text-teal-700 transition-all">Egresados</button>
                                 <button onclick="cargarHistorialEstudiantil('retirado')" id="btn-tab-retirados"
-                                    class="px-5 py-2 text-sm font-semibold rounded-lg text-gray-500 hover:text-gray-700 transition">Retirados</button>
+                                    class="flex-1 md:flex-none px-6 py-2.5 text-sm font-bold rounded-xl text-gray-500 hover:text-gray-700 hover:bg-gray-100/50 transition-all">Retirados</button>
                             </div>
                         </div>
 
-                        <!-- Barra de Búsqueda de Historial -->
-                        <div class="px-6 py-4 bg-gray-50/50 border-b border-gray-100 flex items-center">
+                        <div
+                            class="p-5 bg-gray-50/50 rounded-3xl border border-gray-100 flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
                             <div class="relative w-full max-w-md group">
-                                <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-                                    <svg class="w-5 h-5 text-gray-400 group-focus-within:text-blue-500 transition-colors"
-                                        fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                                    </svg>
+                                <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                    <i
+                                        class="ph-bold ph-magnifying-glass text-gray-400 group-focus-within:text-teal-500 transition-colors text-lg"></i>
                                 </div>
                                 <input type="text" id="historial-search-input" oninput="filtrarHistorial()"
-                                    class="block w-full pl-11 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-400 transition-all shadow-sm"
-                                    placeholder="Buscar por nombre, cédula, grupo o representante...">
+                                    class="block w-full pl-12 pr-4 py-3 bg-white border border-gray-200 rounded-xl text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-teal-200 focus:border-teal-400 transition-all shadow-sm"
+                                    placeholder="Buscar por nombre, cédula o representante...">
                             </div>
-                            <div class="ml-4 text-xs text-gray-400 font-medium hidden md:block"
-                                id="historial-search-count">
-                                Mostrando alumnos
+
+                            <div
+                                class="text-sm font-semibold text-gray-600 bg-white px-5 py-3 rounded-xl border border-gray-200 shadow-sm whitespace-nowrap flex items-center gap-2">
+                                <i class="ph-fill ph-users-three text-teal-500 text-lg"></i>
+                                <span id="historial-search-count">Mostrando alumnos</span>
                             </div>
                         </div>
 
-                        <!-- Tabla Alumnos -->
-                        <div class="overflow-x-auto">
+                        <div class="overflow-x-auto rounded-2xl border border-gray-100 shadow-sm bg-white">
                             <table class="w-full text-left border-collapse">
-                                <thead class="bg-gray-50 text-gray-500 uppercase text-xs font-semibold">
+                                <thead class="bg-gray-50 text-gray-500 uppercase text-[11px] font-bold tracking-wider">
                                     <tr>
-                                        <th class="px-6 py-4">Cédula Escolar</th>
-                                        <th class="px-6 py-4">Estudiante</th>
-                                        <th class="px-6 py-4">Última Sección</th>
-                                        <th class="px-6 py-4">Representante</th>
-                                        <th class="px-6 py-4">Estado</th>
-                                        <th class="px-6 py-4 text-right">Acciones</th>
+                                        <th class="px-6 py-4 border-b border-gray-100">Cédula Escolar</th>
+                                        <th class="px-6 py-4 border-b border-gray-100">Estudiante</th>
+                                        <th class="px-6 py-4 border-b border-gray-100">Última Sección</th>
+                                        <th class="px-6 py-4 border-b border-gray-100">Representante</th>
+                                        <th class="px-6 py-4 border-b border-gray-100">Estado</th>
+                                        <th class="px-6 py-4 border-b border-gray-100 text-right">Acciones</th>
                                     </tr>
                                 </thead>
                                 <tbody id="historial-table-body" class="divide-y divide-gray-100 text-sm">
@@ -873,81 +880,123 @@
                 <!-- SECCIÓN 3: GESTIÓN DE SECCIONES (GRUPOS) -->
                 <!-- ============================================ -->
                 <section id="section-secciones" class="page-section hidden fade-in">
-                    <div class="bg-white rounded-2xl shadow-md border border-gray-100 overflow-hidden">
+                    <div
+                        class="bg-white/95 backdrop-blur-xl p-6 md:p-10 rounded-[2.5rem] shadow-xl border border-white">
 
-                        <!-- Encabezado -->
-                        <div
-                            class="p-6 border-b border-gray-100 flex flex-col md:flex-row justify-between items-center gap-4">
-                            <div>
-                                <h2 class="text-xl font-bold text-gray-800">Gestión de Secciones</h2>
-                                <p class="text-sm text-gray-500">Administra los grupos y secciones del año escolar.</p>
+                        <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-6">
+                            <div class="flex items-center gap-4">
+                                <div
+                                    class="w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center shadow-lg shadow-amber-200 transform -rotate-6">
+                                    <i class="ph-bold ph-chalkboard-teacher text-3xl text-white"></i>
+                                </div>
+                                <div>
+                                    <h2 class="text-3xl font-black text-gray-800 tracking-tight">Gestión de Secciones
+                                    </h2>
+                                    <p class="text-gray-500 font-medium mt-1">Administra los grupos y aulas del año
+                                        escolar.</p>
+                                </div>
                             </div>
+
                             <button onclick="abrirModalCrearSeccion()"
-                                class="w-full md:w-auto px-4 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition shadow-md flex items-center justify-center gap-2">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M12 4v16m8-8H4"></path>
-                                </svg>
-                                Nueva Sección
+                                class="w-full md:w-auto px-6 py-3.5 bg-amber-500 text-white rounded-xl font-bold shadow-lg shadow-amber-200 hover:bg-amber-600 hover:shadow-amber-300 transform hover:-translate-y-1 transition-all flex items-center justify-center gap-2 text-base">
+                                <i class="ph-bold ph-plus-circle text-xl"></i>
+                                <span>Nueva Sección</span>
                             </button>
                         </div>
 
-                        <!-- Modal Crear Sección -->
+                        <div
+                            class="p-5 bg-gray-50/50 rounded-3xl border border-gray-100 flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
+
+                            <div
+                                class="flex bg-white p-1.5 rounded-2xl border border-gray-100 shadow-sm w-full md:w-auto overflow-x-auto">
+                                <button onclick="filtrarSeccionesTab('activo'); actualizarTabsSecciones('activo')"
+                                    id="btn-sec-tab-activo"
+                                    class="flex-1 md:flex-none px-6 py-2.5 text-sm font-bold rounded-xl bg-amber-50 text-amber-700 shadow-sm transition-all whitespace-nowrap">Activos</button>
+                                <button
+                                    onclick="filtrarSeccionesTab('planificacion'); actualizarTabsSecciones('planificacion')"
+                                    id="btn-sec-tab-planificacion"
+                                    class="flex-1 md:flex-none px-6 py-2.5 text-sm font-bold rounded-xl text-gray-500 hover:text-gray-700 hover:bg-gray-50 transition-all whitespace-nowrap">Planificación</button>
+                                <button
+                                    onclick="filtrarSeccionesTab('finalizado'); actualizarTabsSecciones('finalizado')"
+                                    id="btn-sec-tab-finalizado"
+                                    class="flex-1 md:flex-none px-6 py-2.5 text-sm font-bold rounded-xl text-gray-500 hover:text-gray-700 hover:bg-gray-50 transition-all whitespace-nowrap">Finalizados</button>
+                            </div>
+
+                            <div
+                                class="text-sm font-semibold text-gray-600 bg-white px-5 py-3 rounded-xl border border-gray-200 shadow-sm whitespace-nowrap flex items-center gap-2">
+                                <i class="ph-fill ph-chalkboard text-amber-500 text-lg"></i>
+                                <span id="secciones-count">Visualizando grupos</span>
+                            </div>
+                        </div>
+
+                        <div class="overflow-x-auto rounded-2xl border border-gray-100 shadow-sm bg-white">
+                            <table class="w-full text-left border-collapse">
+                                <thead class="bg-gray-50 text-gray-500 uppercase text-[11px] font-bold tracking-wider">
+                                    <tr>
+                                        <th class="px-6 py-4 border-b border-gray-100">Período</th>
+                                        <th class="px-6 py-4 border-b border-gray-100">Nivel</th>
+                                        <th class="px-6 py-4 border-b border-gray-100">Grupo/Letra</th>
+                                        <th class="px-6 py-4 border-b border-gray-100">Capacidad</th>
+                                        <th class="px-6 py-4 border-b border-gray-100">Docentes Asignados</th>
+                                        <th class="px-6 py-4 border-b border-gray-100 text-right">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tabla-secciones" class="divide-y divide-gray-100 text-sm">
+                                    <tr>
+                                        <td colspan="6" class="px-6 py-10 text-center text-gray-400 text-sm">No hay
+                                            secciones registradas todavía.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
                         <div id="modal-crear-seccion"
-                            class="fixed inset-0 bg-black/60 z-50 hidden flex items-center justify-center backdrop-blur-sm opacity-0"
+                            class="fixed inset-0 bg-black/60 z-50 hidden flex items-center justify-center backdrop-blur-sm transition-opacity opacity-0"
                             style="transition: opacity 0.3s ease;">
                             <div id="modal-crear-seccion-content"
-                                class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl mx-4 overflow-hidden transform scale-95 transition-transform duration-300">
+                                class="bg-white rounded-3xl shadow-2xl w-full max-w-2xl mx-4 overflow-hidden transform scale-95 transition-transform duration-300">
                                 <div
-                                    class="px-6 py-5 border-b border-blue-100 flex justify-between items-center bg-blue-50/50">
+                                    class="px-6 py-5 border-b border-amber-100 flex justify-between items-center bg-amber-50/50">
                                     <h3 class="font-bold text-gray-800 text-lg flex items-center gap-2">
-                                        <svg class="w-6 h-6 text-blue-500" fill="none" stroke="currentColor"
-                                            viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4">
-                                            </path>
-                                        </svg>
+                                        <i class="ph-bold ph-chalkboard-teacher text-amber-600 text-2xl"></i>
                                         Nueva Sección
                                     </h3>
                                     <button onclick="cerrarModalCrearSeccion()"
-                                        class="text-gray-400 hover:text-red-500 transition-colors p-1.5 hover:bg-white rounded-lg">
-                                        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M6 18L18 6M6 6l12 12"></path>
-                                        </svg>
+                                        class="text-gray-400 hover:text-red-500 transition-colors p-1.5 hover:bg-white rounded-lg focus:outline-none">
+                                        <i class="ph-bold ph-x text-xl"></i>
                                     </button>
                                 </div>
                                 <div class="p-6 md:p-8">
                                     <input type="hidden" id="seccion-id">
                                     <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
-                                        <!-- Período Escolar -->
+
                                         <div class="md:col-span-2">
                                             <label
                                                 class="block text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Período
                                                 Académico</label>
                                             <select id="seccion-periodo"
-                                                class="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-400 focus:border-blue-400 outline-none transition-all bg-gray-50 focus:bg-white text-sm">
+                                                class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-amber-400 outline-none transition-all bg-white focus:shadow-md text-sm cursor-pointer">
                                                 <option value="">Cargando períodos...</option>
                                             </select>
                                         </div>
-                                        <!-- Nivel Escolar -->
+
                                         <div>
                                             <label
                                                 class="block text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Nivel</label>
                                             <select id="seccion-nivel"
-                                                class="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-400 focus:border-blue-400 outline-none transition-all bg-gray-50 focus:bg-white text-sm">
+                                                class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-amber-400 outline-none transition-all bg-white focus:shadow-md text-sm cursor-pointer">
                                                 <option value="MATERNAL">MATERNAL</option>
                                                 <option value="1ER GRUPO">1ER GRUPO</option>
                                                 <option value="2DO GRUPO">2DO GRUPO</option>
                                                 <option value="3ER GRUPO">3ER GRUPO</option>
                                             </select>
                                         </div>
-                                        <!-- Letra / Grupo -->
+
                                         <div>
                                             <label
                                                 class="block text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Grupo</label>
                                             <select id="seccion-letra"
-                                                class="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-400 focus:border-blue-400 outline-none transition-all bg-gray-50 focus:bg-white text-sm">
+                                                class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-amber-400 outline-none transition-all bg-white focus:shadow-md text-sm cursor-pointer">
                                                 <option value="SECCION A">SECCION A</option>
                                                 <option value="SECCION B">SECCION B</option>
                                                 <option value="SECCION C">SECCION C</option>
@@ -955,85 +1004,43 @@
                                                 <option value="SECCION U">SECCION U</option>
                                             </select>
                                         </div>
-                                        <!-- Docentes -->
-                                        <div class="md:col-span-2">
-                                            <div class="flex items-center justify-between mb-2">
+
+                                        <div class="md:col-span-2 bg-gray-50 p-4 rounded-2xl border border-gray-100">
+                                            <div
+                                                class="flex items-center justify-between mb-3 border-b border-gray-200 pb-2">
                                                 <label
-                                                    class="block text-[11px] font-bold text-gray-500 uppercase tracking-widest">Docentes</label>
+                                                    class="block text-[11px] font-bold text-gray-500 uppercase tracking-widest">Docentes
+                                                    Asignadas</label>
                                                 <button type="button" onclick="agregarSelectDocente()"
-                                                    class="text-xs font-semibold text-blue-600 hover:text-blue-800 flex items-center gap-1 transition-colors px-2 py-1 bg-blue-50 rounded-md hover:bg-blue-100">
-                                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor"
-                                                        viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                                            stroke-width="2" d="M12 4v16m8-8H4"></path>
-                                                    </svg>
-                                                    Añadir otro docente
+                                                    class="text-xs font-bold text-amber-600 hover:text-amber-800 flex items-center gap-1 transition-colors px-3 py-1.5 bg-amber-100 rounded-lg hover:bg-amber-200 shadow-sm">
+                                                    <i class="ph-bold ph-plus"></i> Añadir docente
                                                 </button>
                                             </div>
                                             <div id="seccion-docentes-container" class="space-y-3">
-                                                <!-- Llenado dinámicamente por JS -->
                                             </div>
                                         </div>
-                                        <!-- Capacidad -->
+
                                         <div>
                                             <label
                                                 class="block text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Capacidad
                                                 Máx.</label>
                                             <input type="number" id="seccion-capacidad" value="30" min="1" max="50"
-                                                class="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-400 focus:border-blue-400 outline-none transition-all bg-gray-50 focus:bg-white text-sm">
+                                                class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-amber-400 outline-none transition-all bg-white focus:shadow-md text-sm font-bold text-gray-700">
                                         </div>
                                     </div>
+
                                     <div class="mt-8 pt-5 border-t border-gray-100 flex justify-end gap-3">
                                         <button onclick="cerrarModalCrearSeccion()"
-                                            class="px-5 py-2.5 text-gray-600 font-semibold hover:bg-gray-100 rounded-xl transition-colors text-sm">Cancelar</button>
+                                            class="px-5 py-3 text-gray-600 font-bold hover:bg-gray-100 rounded-xl transition-colors text-sm">Cancelar</button>
                                         <button id="btn-guardar-seccion"
-                                            class="px-6 py-2.5 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition shadow-md shadow-blue-600/20 flex items-center gap-2 text-sm">
-                                            Guardar Sección
+                                            class="px-6 py-3 bg-amber-500 text-white rounded-xl font-bold hover:bg-amber-600 transition shadow-lg shadow-amber-200 flex items-center gap-2 text-sm">
+                                            <i class="ph-bold ph-floppy-disk"></i> Guardar Sección
                                         </button>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Filtro de Tabs para Secciones -->
-                        <div class="px-6 py-3 border-b border-gray-100 flex items-center bg-white">
-                            <div class="flex bg-gray-100 p-1 rounded-xl w-fit">
-                                <button onclick="filtrarSeccionesTab('activo')" id="btn-sec-tab-activo"
-                                    class="px-5 py-2 text-sm font-semibold rounded-lg bg-white shadow text-gray-800 transition">
-                                    Activos
-                                </button>
-                                <button onclick="filtrarSeccionesTab('planificacion')" id="btn-sec-tab-planificacion"
-                                    class="px-5 py-2 text-sm font-semibold rounded-lg text-gray-500 hover:text-gray-700 transition">
-                                    Planificación
-                                </button>
-                                <button onclick="filtrarSeccionesTab('finalizado')" id="btn-sec-tab-finalizado"
-                                    class="px-5 py-2 text-sm font-semibold rounded-lg text-gray-500 hover:text-gray-700 transition">
-                                    Finalizados
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- Tabla Secciones -->
-                        <div class="overflow-x-auto">
-                            <table class="w-full text-left border-collapse">
-                                <thead class="bg-gray-50 text-gray-500 uppercase text-xs font-semibold">
-                                    <tr>
-                                        <th class="px-6 py-4">Período</th>
-                                        <th class="px-6 py-4">Nivel</th>
-                                        <th class="px-6 py-4">Grupo/Letra</th>
-                                        <th class="px-6 py-4">Capacidad</th>
-                                        <th class="px-6 py-4">Docentes Asignados</th>
-                                        <th class="px-6 py-4 text-right">Acciones</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="tabla-secciones" class="divide-y divide-gray-100 text-sm">
-                                    <tr>
-                                        <td colspan="5" class="px-6 py-10 text-center text-gray-400 text-sm">No hay
-                                            secciones registradas todavía.</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
                     </div>
                 </section>
 
@@ -1041,120 +1048,58 @@
                 <!-- SECCIÓN: PERÍODOS ACADÉMICOS -->
                 <!-- ============================================ -->
                 <section id="section-periodos" class="page-section hidden fade-in">
-                    <div class="bg-white rounded-2xl shadow-md border border-gray-100 overflow-hidden">
+                    <div
+                        class="bg-white/95 backdrop-blur-xl p-6 md:p-10 rounded-[2.5rem] shadow-xl border border-white">
 
-                        <!-- Encabezado -->
-                        <div
-                            class="p-6 border-b border-gray-100 flex flex-col md:flex-row justify-between items-center gap-4">
-                            <div>
-                                <h2 class="text-xl font-bold text-gray-800">Períodos Académicos</h2>
-                                <p class="text-sm text-gray-500">Gestiona los años/períodos escolares del sistema.</p>
+                        <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-6">
+                            <div class="flex items-center gap-4">
+                                <div
+                                    class="w-14 h-14 rounded-2xl bg-gradient-to-br from-indigo-400 to-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-200 transform -rotate-6">
+                                    <i class="ph-bold ph-calendar-plus text-3xl text-white"></i>
+                                </div>
+                                <div>
+                                    <h2 class="text-3xl font-black text-gray-800 tracking-tight">Períodos Académicos
+                                    </h2>
+                                    <p class="text-gray-500 font-medium mt-1">Gestiona los años y ciclos escolares del
+                                        sistema.</p>
+                                </div>
                             </div>
+
                             <button onclick="abrirModalPeriodo()"
-                                class="w-full md:w-auto px-4 py-2 bg-indigo-600 text-white rounded-lg font-semibold hover:bg-indigo-700 transition shadow-md flex items-center justify-center gap-2">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M12 4v16m8-8H4"></path>
-                                </svg>
-                                Nuevo Período
+                                class="w-full md:w-auto px-6 py-3.5 bg-indigo-500 text-white rounded-xl font-bold shadow-lg shadow-indigo-200 hover:bg-indigo-600 hover:shadow-indigo-300 transform hover:-translate-y-1 transition-all flex items-center justify-center gap-2 text-base">
+                                <i class="ph-bold ph-plus-circle text-xl"></i>
+                                <span>Nuevo Período</span>
                             </button>
                         </div>
 
-                        <!-- Modal Crear/Editar Período -->
-                        <div id="modal-periodo"
-                            class="fixed inset-0 bg-black/60 z-50 hidden flex items-center justify-center backdrop-blur-sm opacity-0"
-                            style="transition: opacity 0.3s ease;">
-                            <div id="modal-periodo-content"
-                                class="bg-white rounded-2xl shadow-2xl w-full max-w-xl mx-4 overflow-hidden transform scale-95 transition-transform duration-300">
-                                <div
-                                    class="px-6 py-5 border-b border-indigo-100 flex justify-between items-center bg-indigo-50/50">
-                                    <h3 class="font-bold text-gray-800 text-lg flex items-center gap-2">
-                                        <svg class="w-6 h-6 text-indigo-500" fill="none" stroke="currentColor"
-                                            viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5">
-                                            </path>
-                                        </svg>
-                                        <span id="modal-periodo-titulo-texto">Nuevo Período Académico</span>
-                                    </h3>
-                                    <button onclick="cerrarModalPeriodo()"
-                                        class="text-gray-400 hover:text-red-500 transition-colors p-1.5 hover:bg-white rounded-lg">
-                                        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M6 18L18 6M6 6l12 12"></path>
-                                        </svg>
-                                    </button>
-                                </div>
-                                <div class="p-6 md:p-8">
-                                    <input type="hidden" id="periodo-edit-id">
-                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
-                                        <div class="md:col-span-2">
-                                            <label
-                                                class="block text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Nombre
-                                                del Período</label>
-                                            <input type="text" id="periodo-nombre" placeholder="Ej: 2024-2025"
-                                                class="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 outline-none transition-all bg-gray-50 focus:bg-white text-sm">
-                                        </div>
-                                        <div>
-                                            <label
-                                                class="block text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Fecha
-                                                de Inicio</label>
-                                            <input type="date" id="periodo-fecha-inicio"
-                                                class="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 outline-none transition-all bg-gray-50 focus:bg-white text-sm">
-                                        </div>
-                                        <div>
-                                            <label
-                                                class="block text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Fecha
-                                                de Fin</label>
-                                            <input type="date" id="periodo-fecha-fin"
-                                                class="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 outline-none transition-all bg-gray-50 focus:bg-white text-sm">
-                                        </div>
-                                        <div class="md:col-span-2">
-                                            <label
-                                                class="block text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Estado</label>
-                                            <select id="periodo-estado"
-                                                class="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 outline-none transition-all bg-gray-50 focus:bg-white text-sm">
-                                                <option value="planificacion">Planificación</option>
-                                                <option value="activo">Activo</option>
-                                                <option value="finalizado">Finalizado</option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                    <div class="mt-8 pt-5 border-t border-gray-100 flex justify-end gap-3">
-                                        <button onclick="cerrarModalPeriodo()"
-                                            class="px-5 py-2.5 text-gray-600 font-semibold hover:bg-gray-100 rounded-xl transition-colors text-sm">Cancelar</button>
-                                        <button id="btn-guardar-periodo"
-                                            class="px-6 py-2.5 bg-indigo-600 text-white rounded-xl font-semibold hover:bg-indigo-700 transition shadow-md text-sm">
-                                            Guardar Período
-                                        </button>
-                                    </div>
-                                </div>
+                        <div
+                            class="p-5 bg-gray-50/50 rounded-3xl border border-gray-100 flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
+                            <p class="text-sm font-medium text-gray-500"><i
+                                    class="ph-fill ph-info text-indigo-400 mr-1"></i> Listado histórico de todos los
+                                períodos académicos registrados.</p>
+
+                            <div
+                                class="text-sm font-semibold text-gray-600 bg-white px-5 py-3 rounded-xl border border-gray-200 shadow-sm whitespace-nowrap flex items-center gap-2">
+                                <i class="ph-fill ph-calendar text-indigo-500 text-lg"></i>
+                                <span id="periodos-count">Visualizando períodos</span>
                             </div>
                         </div>
 
-                        <!-- Tabla Períodos -->
-                        <div class="overflow-x-auto">
+                        <div class="overflow-x-auto rounded-2xl border border-gray-100 shadow-sm bg-white">
                             <table class="w-full text-left border-collapse">
-                                <thead class="bg-gray-50 text-gray-500 uppercase text-xs font-semibold">
+                                <thead class="bg-gray-50 text-gray-500 uppercase text-[11px] font-bold tracking-wider">
                                     <tr>
-                                        <th class="px-6 py-4">Nombre</th>
-                                        <th class="px-6 py-4">Fecha Inicio</th>
-                                        <th class="px-6 py-4">Fecha Fin</th>
-                                        <th class="px-6 py-4">Estado</th>
-                                        <th class="px-6 py-4 text-right">Acciones</th>
+                                        <th class="px-6 py-4 border-b border-gray-100">Nombre</th>
+                                        <th class="px-6 py-4 border-b border-gray-100">Fecha Inicio</th>
+                                        <th class="px-6 py-4 border-b border-gray-100">Fecha Fin</th>
+                                        <th class="px-6 py-4 border-b border-gray-100">Estado</th>
+                                        <th class="px-6 py-4 border-b border-gray-100 text-right">Acciones</th>
                                     </tr>
                                 </thead>
                                 <tbody id="tabla-periodos" class="divide-y divide-gray-100 text-sm">
                                     <tr>
-                                        <td colspan="5" class="px-6 py-10 text-center text-gray-400 text-sm">
-                                            <svg class="w-8 h-8 mx-auto mb-2 text-gray-300" fill="none"
-                                                stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-                                                    d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5">
-                                                </path>
-                                            </svg>
-                                            No hay períodos registrados todavía.
-                                        </td>
+                                        <td colspan="5" class="px-6 py-10 text-center text-gray-400 text-sm">No hay
+                                            períodos registrados todavía.</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -1203,62 +1148,62 @@
         class="fixed inset-0 bg-black/60 z-50 hidden items-center justify-center backdrop-blur-sm opacity-0"
         style="transition: opacity 0.3s ease;">
         <div id="modal-periodo-content"
-            class="bg-white rounded-2xl shadow-2xl w-full max-w-xl mx-4 overflow-hidden transform scale-95 transition-transform duration-300">
+            class="bg-white rounded-3xl shadow-2xl w-full max-w-xl mx-4 overflow-hidden transform scale-95 transition-transform duration-300">
+
             <div class="px-6 py-5 border-b border-indigo-100 flex justify-between items-center bg-indigo-50/50">
                 <h3 id="modal-periodo-titulo" class="font-bold text-gray-800 text-lg flex items-center gap-2">
-                    <svg class="w-6 h-6 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5">
-                        </path>
-                    </svg>
+                    <i class="ph-bold ph-calendar-plus text-indigo-600 text-2xl"></i>
                     <span id="modal-periodo-titulo-texto">Nuevo Período Académico</span>
                 </h3>
                 <button onclick="cerrarModalPeriodo()"
-                    class="text-gray-400 hover:text-red-500 transition-colors p-1.5 hover:bg-white rounded-lg">
-                    <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
-                        </path>
-                    </svg>
+                    class="text-gray-400 hover:text-red-500 transition-colors p-1.5 hover:bg-white rounded-lg focus:outline-none">
+                    <i class="ph-bold ph-x text-xl"></i>
                 </button>
             </div>
+
             <div class="p-6 md:p-8">
                 <input type="hidden" id="periodo-edit-id">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
+
                     <div>
                         <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Fecha
                             de Inicio</label>
                         <input type="date" id="periodo-fecha-inicio"
-                            class="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 outline-none transition-all bg-gray-50 focus:bg-white text-sm">
+                            class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-400 outline-none transition-all bg-white focus:shadow-md text-sm cursor-pointer">
                     </div>
+
                     <div>
                         <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Fecha
                             de Fin</label>
                         <input type="date" id="periodo-fecha-fin"
-                            class="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 outline-none transition-all bg-gray-50 focus:bg-white text-sm">
+                            class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-400 outline-none transition-all bg-white focus:shadow-md text-sm cursor-pointer">
                     </div>
+
                     <div class="md:col-span-2">
                         <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Nombre
                             del Período (Auto-generado)</label>
                         <input type="text" id="periodo-nombre" placeholder="Ej: 2025-2026" readonly
-                            class="w-full px-4 py-2.5 border border-gray-300 rounded-xl outline-none text-sm bg-gray-100 cursor-not-allowed text-gray-600 font-medium">
+                            class="w-full px-4 py-3 border border-gray-200 rounded-xl outline-none text-sm bg-gray-50 cursor-not-allowed text-gray-600 font-bold">
                     </div>
-                    <div class="md:col-span-2">
-                        <label
-                            class="block text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Estado</label>
+
+                    <div class="md:col-span-2 border-t border-gray-100 pt-3 mt-1">
+                        <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Estado
+                            del Período</label>
                         <select id="periodo-estado"
-                            class="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 outline-none transition-all bg-gray-50 focus:bg-white text-sm">
+                            class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-400 outline-none transition-all bg-white focus:shadow-md text-sm cursor-pointer font-medium">
                             <option value="planificacion">Planificación</option>
                             <option value="activo">Activo</option>
                             <option value="finalizado">Finalizado</option>
                         </select>
                     </div>
                 </div>
+
                 <div class="mt-8 pt-5 border-t border-gray-100 flex justify-end gap-3">
                     <button onclick="cerrarModalPeriodo()"
-                        class="px-5 py-2.5 text-gray-600 font-semibold hover:bg-gray-100 rounded-xl transition-colors text-sm">Cancelar</button>
+                        class="px-5 py-3 text-gray-600 font-bold hover:bg-gray-100 rounded-xl transition-colors text-sm">Cancelar</button>
                     <button id="btn-guardar-periodo"
-                        class="px-6 py-2.5 bg-indigo-600 text-white rounded-xl font-semibold hover:bg-indigo-700 transition shadow-md text-sm">
-                        Guardar Período
+                        class="px-6 py-3 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition shadow-lg shadow-indigo-200 flex items-center gap-2 text-sm">
+                        <i class="ph-bold ph-floppy-disk"></i> Guardar Período
                     </button>
                 </div>
             </div>
@@ -1269,11 +1214,115 @@
     <script>
         const { jsPDF } = window.jspdf;
 
-        // Datos cargados dinámicamente desde la API — sin arrays estáticos
+        // ============================================
+        // UTILIDADES: ESTADOS VACÍOS EN BUSCADORES
+        // ============================================
+        function verificarEstadoVacio(tbodyId, searchTerm, visiblesCount) {
+            const tbody = document.getElementById(tbodyId);
+            if (!tbody) return;
+
+            let emptyRow = tbody.querySelector('.empty-search-state');
+
+            // Si no hay resultados y el usuario escribió algo
+            if (visiblesCount === 0 && searchTerm.trim() !== '') {
+                if (!emptyRow) {
+                    emptyRow = document.createElement('tr');
+                    emptyRow.className = 'empty-search-state fade-in';
+                    tbody.appendChild(emptyRow);
+                }
+
+                // Calcular cuántas columnas tiene la tabla para que el mensaje ocupe todo el ancho
+                const table = tbody.closest('table');
+                const numCols = table.querySelectorAll('thead th').length || 5;
+
+                emptyRow.innerHTML = `
+                    <td colspan="${numCols}" class="px-6 py-16 text-center bg-white">
+                        <div class="flex flex-col items-center justify-center">
+                            <div class="relative w-20 h-20 mb-4">
+                                <div class="absolute inset-0 bg-pink-100 rounded-full animate-ping opacity-20"></div>
+                                <div class="absolute inset-0 bg-pink-50 rounded-full flex items-center justify-center border border-pink-100 shadow-inner">
+                                    <i class="ph-duotone ph-magnifying-glass text-4xl text-pink-400 transform -scale-x-100"></i>
+                                </div>
+                                <div class="absolute -top-1 -right-1 bg-white rounded-full p-1 shadow-sm border border-gray-100">
+                                    <i class="ph-bold ph-x text-xs text-gray-400"></i>
+                                </div>
+                            </div>
+                            <h3 class="text-gray-800 font-extrabold text-lg mb-1 tracking-tight">Sin resultados</h3>
+                            <p class="text-gray-500 text-sm font-medium">
+                                No encontramos a <span class="text-pink-600 font-bold break-words px-2 py-0.5 bg-pink-50 rounded border border-pink-100">"${searchTerm}"</span>
+                            </p>
+                            <p class="text-xs text-gray-400 mt-2">Verifica que el nombre o la cédula estén bien escritos.</p>
+                        </div>
+                    </td>
+                `;
+                emptyRow.style.display = '';
+            } else if (emptyRow) {
+                // Si borran la búsqueda o encuentran a alguien, se esconde la alerta
+                emptyRow.style.display = 'none';
+            }
+        }
+
+        // ============================================
+        // UTILIDADES: BADGE DE AÑO ESCOLAR INTELIGENTE (Versión Robusta)
+        // ============================================
+        // ============================================
+        // UTILIDADES: BADGE DE AÑO ESCOLAR (Universal)
+        // ============================================
+        function actualizarBadgePeriodo(nombre, estado) {
+            const container = document.getElementById('header-ano-container');
+            const textValue = document.getElementById('header-ano-activo');
+            const dot = document.getElementById('header-ano-dot');
+            const ping = document.getElementById('header-ano-ping');
+
+            if (!textValue) return;
+
+            // 1. Limpiar colores previos
+            if (container) {
+                container.classList.remove('bg-yellow-50', 'border-yellow-200', 'border-l-yellow-500', 'text-yellow-800',
+                    'bg-green-50', 'border-green-200', 'border-l-green-500', 'text-green-800',
+                    'bg-gray-50', 'border-gray-200', 'border-l-gray-400', 'text-gray-800');
+            }
+            if (dot) {
+                dot.classList.remove('bg-yellow-500', 'bg-green-500', 'bg-gray-400');
+                ping.classList.remove('bg-yellow-400', 'bg-green-400', 'bg-gray-300');
+            }
+
+            const est = (estado || 'planificacion').toLowerCase();
+            let estadoTexto = '';
+
+            // 2. Aplicar colores de forma inteligente
+            if (est === 'planificacion' || est === 'planificación') {
+                if (container) container.classList.add('bg-yellow-50', 'border-yellow-200', 'border-l-yellow-500', 'text-yellow-800');
+                if (dot) { dot.classList.add('bg-yellow-500'); ping.classList.add('bg-yellow-400'); }
+                estadoTexto = 'Planificación';
+            } else if (est === 'finalizado') {
+                if (container) container.classList.add('bg-gray-50', 'border-gray-200', 'border-l-gray-400', 'text-gray-800');
+                if (dot) { dot.classList.add('bg-gray-400'); ping.classList.add('bg-gray-300'); }
+                estadoTexto = 'Finalizado';
+            } else {
+                if (container) container.classList.add('bg-green-50', 'border-green-200', 'border-l-green-500', 'text-green-800');
+                if (dot) { dot.classList.add('bg-green-500'); ping.classList.add('bg-green-400'); }
+                estadoTexto = 'Activo';
+            }
+
+            // 3. Setear el texto
+            textValue.innerText = `${nombre || '...'} (${estadoTexto})`;
+        }
 
         // --- INIT ---
         document.addEventListener('DOMContentLoaded', () => {
             initNavigation();
+
+            // Cargar datos del perfil en el Header y Banner
+            const nombrePila = localStorage.getItem('user_nombres') || 'Administrador';
+
+            const profileNameEl = document.getElementById('header-profile-name');
+            const profileInitialEl = document.getElementById('header-profile-initial');
+            const dashboardAdminNameEl = document.getElementById('dashboard-admin-nombres');
+
+            if (profileNameEl) profileNameEl.innerText = nombrePila.split(' ')[0];
+            if (profileInitialEl) profileInitialEl.innerText = nombrePila.charAt(0).toUpperCase();
+            if (dashboardAdminNameEl) dashboardAdminNameEl.innerText = nombrePila.split(' ')[0];
         });
 
         // --- NAVIGATION ---
@@ -1451,13 +1500,13 @@
             const btnEgresado = document.getElementById('btn-tab-egresados');
             const btnRetirado = document.getElementById('btn-tab-retirados');
 
-            // UI tab updates
+            // UI tab updates (Nuevas clases premium)
             if (estado === 'egresado') {
-                btnEgresado.className = "px-5 py-2 text-sm font-semibold rounded-lg bg-white shadow text-gray-800 transition";
-                btnRetirado.className = "px-5 py-2 text-sm font-semibold rounded-lg text-gray-500 hover:text-gray-700 transition";
+                btnEgresado.className = "flex-1 md:flex-none px-6 py-2.5 text-sm font-bold rounded-xl bg-white shadow-sm text-teal-700 transition-all";
+                btnRetirado.className = "flex-1 md:flex-none px-6 py-2.5 text-sm font-bold rounded-xl text-gray-500 hover:text-gray-700 hover:bg-gray-100/50 transition-all";
             } else {
-                btnRetirado.className = "px-5 py-2 text-sm font-semibold rounded-lg bg-white shadow text-gray-800 transition";
-                btnEgresado.className = "px-5 py-2 text-sm font-semibold rounded-lg text-gray-500 hover:text-gray-700 transition";
+                btnRetirado.className = "flex-1 md:flex-none px-6 py-2.5 text-sm font-bold rounded-xl bg-white shadow-sm text-teal-700 transition-all";
+                btnEgresado.className = "flex-1 md:flex-none px-6 py-2.5 text-sm font-bold rounded-xl text-gray-500 hover:text-gray-700 hover:bg-gray-100/50 transition-all";
             }
 
             const tbody = document.getElementById('historial-table-body');
@@ -1480,14 +1529,23 @@
         function renderizarHistorial(lista) {
             const tbody = document.getElementById('historial-table-body');
             const countEl = document.getElementById('historial-search-count');
+            const term = document.getElementById('historial-search-input').value; // Capturar qué buscaron
 
             if (countEl) {
                 countEl.innerHTML = `${lista.length} alumno(s)`;
             }
 
             tbody.innerHTML = '';
+
+            // Si la lista está vacía...
             if (lista.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" class="px-6 py-10 text-center text-gray-400 text-sm">No se encontraron alumnos con este estado.</td></tr>`;
+                if (term) {
+                    // Si buscaron algo y no hay, mostramos la animación hermosa
+                    verificarEstadoVacio('historial-table-body', term, 0);
+                } else {
+                    // Si simplemente no hay alumnos egresados/retirados en el sistema
+                    tbody.innerHTML = `<tr><td colspan="6" class="px-6 py-10 text-center text-gray-400 text-sm">No se encontraron alumnos con este estado.</td></tr>`;
+                }
                 return;
             }
 
@@ -1547,7 +1605,7 @@
                 if (modalFicha && !modalFicha.classList.contains('hidden')) {
                     cerrarModalFicha();
                 }
-                
+
                 // Registrar Alumno
                 const modalAlum = document.getElementById('modal-registrar-alumno');
                 if (modalAlum && !modalAlum.classList.contains('hidden') && typeof cerrarModalRegistrarAlumno === 'function') {
@@ -1677,11 +1735,11 @@
                     const tbody = document.getElementById('student-table-body');
                     if (!tbody) return;
 
-                    const rows = tbody.querySelectorAll('tr');
+                    const rows = tbody.querySelectorAll('tr:not(.empty-search-state)');
                     let visibles = 0;
 
                     rows.forEach(row => {
-                        // Skip loading/empty rows
+                        // Saltar las filas por defecto de "Cargando" o "Vacío"
                         if (row.cells.length === 1) return;
 
                         const textContent = row.textContent.toLowerCase();
@@ -1692,6 +1750,9 @@
                             row.style.display = 'none';
                         }
                     });
+
+                    // Llamar a la magia
+                    verificarEstadoVacio('student-table-body', this.value, visibles);
 
                     const countEl = document.getElementById('student-search-count');
                     if (countEl) {
@@ -1888,24 +1949,39 @@
             });
         }
     </script>
-    <div id="modal-ficha-estudiante" class="fixed inset-0 bg-black/60 z-50 hidden flex items-center justify-center backdrop-blur-sm opacity-0 transition-opacity duration-300">
-        <div id="modal-ficha-content" class="bg-white rounded-2xl shadow-2xl w-full max-w-5xl mx-4 max-h-[90vh] flex flex-col transform scale-95 transition-transform duration-300">
-            
-            <div class="px-6 py-4 border-b border-pink-100 flex justify-between items-center bg-pink-50/50 rounded-t-2xl flex-shrink-0">
+    <div id="modal-ficha-estudiante"
+        class="fixed inset-0 bg-black/60 z-50 hidden flex items-center justify-center backdrop-blur-sm opacity-0 transition-opacity duration-300">
+        <div id="modal-ficha-content"
+            class="bg-white rounded-2xl shadow-2xl w-full max-w-5xl mx-4 max-h-[90vh] flex flex-col transform scale-95 transition-transform duration-300">
+
+            <div
+                class="px-6 py-4 border-b border-pink-100 flex justify-between items-center bg-pink-50/50 rounded-t-2xl flex-shrink-0">
                 <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-full bg-pink-200 text-pink-700 flex items-center justify-center font-bold text-lg" id="ficha-inicial">A</div>
+                    <div class="w-10 h-10 rounded-full bg-pink-200 text-pink-700 flex items-center justify-center font-bold text-lg"
+                        id="ficha-inicial">A</div>
                     <div>
-                        <h3 class="font-bold text-gray-800 text-lg leading-tight" id="ficha-nombre-completo">Cargando...</h3>
-                        <p class="text-xs text-pink-600 font-semibold tracking-wider">Cédula: <span id="ficha-cedula">...</span></p>
+                        <h3 class="font-bold text-gray-800 text-lg leading-tight" id="ficha-nombre-completo">Cargando...
+                        </h3>
+                        <p class="text-xs text-pink-600 font-semibold tracking-wider">Cédula: <span
+                                id="ficha-cedula">...</span></p>
                     </div>
                 </div>
                 <div class="flex items-center gap-2">
-                    <button type="button" id="btn-editar-ficha" onclick="toggleEditFicha()" class="px-4 py-2 bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 rounded-lg text-sm font-semibold transition-all shadow-sm flex items-center gap-2">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                    <button type="button" id="btn-editar-ficha" onclick="toggleEditFicha()"
+                        class="px-4 py-2 bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 rounded-lg text-sm font-semibold transition-all shadow-sm flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z">
+                            </path>
+                        </svg>
                         Editar Ficha
                     </button>
-                    <button onclick="cerrarModalFicha()" class="text-gray-400 hover:text-red-500 transition-colors p-2 hover:bg-white rounded-lg">
-                        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    <button onclick="cerrarModalFicha()"
+                        class="text-gray-400 hover:text-red-500 transition-colors p-2 hover:bg-white rounded-lg">
+                        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
                     </button>
                 </div>
             </div>
@@ -1914,65 +1990,115 @@
                 <form id="form-ficha-estudiante">
                     <input type="hidden" id="ficha-hijo-id">
 
-                    <h4 class="text-sm font-bold text-pink-500 uppercase tracking-widest mb-3 border-b border-pink-100 pb-2"><i class="ph-fill ph-user mr-1"></i> Datos Personales</h4>
+                    <h4
+                        class="text-sm font-bold text-pink-500 uppercase tracking-widest mb-3 border-b border-pink-100 pb-2">
+                        <i class="ph-fill ph-user mr-1"></i> Datos Personales</h4>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                        <div><label class="block text-xs font-semibold text-gray-500 mb-1">Nombres</label><input type="text" id="f-nombres" class="ficha-input w-full px-3 py-2 border border-gray-200 rounded-lg bg-gray-100 text-gray-700 text-sm focus:ring-2 focus:ring-pink-300 outline-none" disabled></div>
-                        <div><label class="block text-xs font-semibold text-gray-500 mb-1">Apellidos</label><input type="text" id="f-apellidos" class="ficha-input w-full px-3 py-2 border border-gray-200 rounded-lg bg-gray-100 text-gray-700 text-sm focus:ring-2 focus:ring-pink-300 outline-none" disabled></div>
-                        <div><label class="block text-xs font-semibold text-gray-500 mb-1">Fecha de Nacimiento</label><input type="date" id="f-fecha-nac" class="ficha-input w-full px-3 py-2 border border-gray-200 rounded-lg bg-gray-100 text-gray-700 text-sm focus:ring-2 focus:ring-pink-300 outline-none" disabled></div>
+                        <div><label class="block text-xs font-semibold text-gray-500 mb-1">Nombres</label><input
+                                type="text" id="f-nombres"
+                                class="ficha-input w-full px-3 py-2 border border-gray-200 rounded-lg bg-gray-100 text-gray-700 text-sm focus:ring-2 focus:ring-pink-300 outline-none"
+                                disabled></div>
+                        <div><label class="block text-xs font-semibold text-gray-500 mb-1">Apellidos</label><input
+                                type="text" id="f-apellidos"
+                                class="ficha-input w-full px-3 py-2 border border-gray-200 rounded-lg bg-gray-100 text-gray-700 text-sm focus:ring-2 focus:ring-pink-300 outline-none"
+                                disabled></div>
+                        <div><label class="block text-xs font-semibold text-gray-500 mb-1">Fecha de
+                                Nacimiento</label><input type="date" id="f-fecha-nac"
+                                class="ficha-input w-full px-3 py-2 border border-gray-200 rounded-lg bg-gray-100 text-gray-700 text-sm focus:ring-2 focus:ring-pink-300 outline-none"
+                                disabled></div>
                         <div><label class="block text-xs font-semibold text-gray-500 mb-1">Sexo</label>
-                            <select id="f-sexo" class="ficha-input w-full px-3 py-2 border border-gray-200 rounded-lg bg-gray-100 text-gray-700 text-sm outline-none" disabled>
-                                <option value="F">Femenino</option><option value="M">Masculino</option>
+                            <select id="f-sexo"
+                                class="ficha-input w-full px-3 py-2 border border-gray-200 rounded-lg bg-gray-100 text-gray-700 text-sm outline-none"
+                                disabled>
+                                <option value="F">Femenino</option>
+                                <option value="M">Masculino</option>
                             </select>
                         </div>
-                        <div class="md:col-span-2"><label class="block text-xs font-semibold text-gray-500 mb-1">Dirección de Habitación</label><input type="text" id="f-direccion" class="ficha-input w-full px-3 py-2 border border-gray-200 rounded-lg bg-gray-100 text-gray-700 text-sm focus:ring-2 focus:ring-pink-300 outline-none" disabled></div>
+                        <div class="md:col-span-2"><label
+                                class="block text-xs font-semibold text-gray-500 mb-1">Dirección de
+                                Habitación</label><input type="text" id="f-direccion"
+                                class="ficha-input w-full px-3 py-2 border border-gray-200 rounded-lg bg-gray-100 text-gray-700 text-sm focus:ring-2 focus:ring-pink-300 outline-none"
+                                disabled></div>
                     </div>
 
-                    <h4 class="text-sm font-bold text-pink-500 uppercase tracking-widest mb-3 border-b border-pink-100 pb-2 mt-6"><i class="ph-fill ph-users mr-1"></i> Contactos de Emergencia</h4>
+                    <h4
+                        class="text-sm font-bold text-pink-500 uppercase tracking-widest mb-3 border-b border-pink-100 pb-2 mt-6">
+                        <i class="ph-fill ph-users mr-1"></i> Contactos de Emergencia</h4>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                         <div class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
                             <p class="font-bold text-sm text-gray-800 mb-3">Datos de la Madre</p>
                             <div class="space-y-3">
-                                <div><label class="block text-xs text-gray-500">Nombre Completo</label><input type="text" id="f-madre-nombre" class="ficha-input w-full px-3 py-1.5 border border-gray-200 rounded-md bg-gray-50 text-sm" disabled></div>
+                                <div><label class="block text-xs text-gray-500">Nombre Completo</label><input
+                                        type="text" id="f-madre-nombre"
+                                        class="ficha-input w-full px-3 py-1.5 border border-gray-200 rounded-md bg-gray-50 text-sm"
+                                        disabled></div>
                                 <div class="flex gap-2">
-                                    <div class="w-1/2"><label class="block text-xs text-gray-500">Cédula</label><input type="text" id="f-madre-ci" class="ficha-input w-full px-3 py-1.5 border border-gray-200 rounded-md bg-gray-50 text-sm" disabled></div>
-                                    <div class="w-1/2"><label class="block text-xs text-gray-500">Teléfono</label><input type="text" id="f-madre-tel" class="ficha-input w-full px-3 py-1.5 border border-gray-200 rounded-md bg-gray-50 text-sm font-bold text-blue-600" disabled></div>
+                                    <div class="w-1/2"><label class="block text-xs text-gray-500">Cédula</label><input
+                                            type="text" id="f-madre-ci"
+                                            class="ficha-input w-full px-3 py-1.5 border border-gray-200 rounded-md bg-gray-50 text-sm"
+                                            disabled></div>
+                                    <div class="w-1/2"><label class="block text-xs text-gray-500">Teléfono</label><input
+                                            type="text" id="f-madre-tel"
+                                            class="ficha-input w-full px-3 py-1.5 border border-gray-200 rounded-md bg-gray-50 text-sm font-bold text-blue-600"
+                                            disabled></div>
                                 </div>
                             </div>
                         </div>
                         <div class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
                             <p class="font-bold text-sm text-gray-800 mb-3">Datos del Padre</p>
                             <div class="space-y-3">
-                                <div><label class="block text-xs text-gray-500">Nombre Completo</label><input type="text" id="f-padre-nombre" class="ficha-input w-full px-3 py-1.5 border border-gray-200 rounded-md bg-gray-50 text-sm" disabled></div>
-                                <div><label class="block text-xs text-gray-500">Teléfono</label><input type="text" id="f-padre-tel" class="ficha-input w-full px-3 py-1.5 border border-gray-200 rounded-md bg-gray-50 text-sm font-bold text-blue-600" disabled></div>
+                                <div><label class="block text-xs text-gray-500">Nombre Completo</label><input
+                                        type="text" id="f-padre-nombre"
+                                        class="ficha-input w-full px-3 py-1.5 border border-gray-200 rounded-md bg-gray-50 text-sm"
+                                        disabled></div>
+                                <div><label class="block text-xs text-gray-500">Teléfono</label><input type="text"
+                                        id="f-padre-tel"
+                                        class="ficha-input w-full px-3 py-1.5 border border-gray-200 rounded-md bg-gray-50 text-sm font-bold text-blue-600"
+                                        disabled></div>
                             </div>
                         </div>
                     </div>
 
-                    <h4 class="text-sm font-bold text-red-500 uppercase tracking-widest mb-3 border-b border-red-100 pb-2 mt-6"><i class="ph-fill ph-heartbeat mr-1"></i> Información Médica</h4>
+                    <h4
+                        class="text-sm font-bold text-red-500 uppercase tracking-widest mb-3 border-b border-red-100 pb-2 mt-6">
+                        <i class="ph-fill ph-heartbeat mr-1"></i> Información Médica</h4>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-2">
                         <div class="flex items-center gap-2 bg-white p-3 rounded-lg border border-gray-100">
-                            <input type="checkbox" id="f-alergico" class="ficha-input w-4 h-4 text-red-500 rounded focus:ring-red-400" disabled>
+                            <input type="checkbox" id="f-alergico"
+                                class="ficha-input w-4 h-4 text-red-500 rounded focus:ring-red-400" disabled>
                             <label class="text-sm font-bold text-gray-700">Es Alérgico</label>
                         </div>
                         <div class="flex items-center gap-2 bg-white p-3 rounded-lg border border-gray-100">
-                            <input type="checkbox" id="f-prematuro" class="ficha-input w-4 h-4 text-red-500 rounded focus:ring-red-400" disabled>
+                            <input type="checkbox" id="f-prematuro"
+                                class="ficha-input w-4 h-4 text-red-500 rounded focus:ring-red-400" disabled>
                             <label class="text-sm font-bold text-gray-700">Fue Prematuro</label>
                         </div>
                         <div class="flex items-center gap-2 bg-white p-3 rounded-lg border border-gray-100">
-                            <input type="checkbox" id="f-cesarea" class="ficha-input w-4 h-4 text-red-500 rounded focus:ring-red-400" disabled>
+                            <input type="checkbox" id="f-cesarea"
+                                class="ficha-input w-4 h-4 text-red-500 rounded focus:ring-red-400" disabled>
                             <label class="text-sm font-bold text-gray-700">Nacido por Cesárea</label>
                         </div>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div><label class="block text-xs font-semibold text-gray-500 mb-1">Enfermedades Crónicas</label><input type="text" id="f-enfermedad" class="ficha-input w-full px-3 py-2 border border-gray-200 rounded-lg bg-gray-100 text-gray-700 text-sm" disabled></div>
-                        <div><label class="block text-xs font-semibold text-gray-500 mb-1">Medicamento para Fiebre</label><input type="text" id="f-fiebre" class="ficha-input w-full px-3 py-2 border border-gray-200 rounded-lg bg-gray-100 text-gray-700 text-sm" disabled></div>
+                        <div><label class="block text-xs font-semibold text-gray-500 mb-1">Enfermedades
+                                Crónicas</label><input type="text" id="f-enfermedad"
+                                class="ficha-input w-full px-3 py-2 border border-gray-200 rounded-lg bg-gray-100 text-gray-700 text-sm"
+                                disabled></div>
+                        <div><label class="block text-xs font-semibold text-gray-500 mb-1">Medicamento para
+                                Fiebre</label><input type="text" id="f-fiebre"
+                                class="ficha-input w-full px-3 py-2 border border-gray-200 rounded-lg bg-gray-100 text-gray-700 text-sm"
+                                disabled></div>
                     </div>
                 </form>
             </div>
 
-            <div id="ficha-footer" class="px-6 py-4 border-t border-gray-100 bg-gray-50 flex justify-end gap-3 hidden flex-shrink-0 rounded-b-2xl">
-                <button type="button" onclick="toggleEditFicha()" class="px-5 py-2 text-gray-600 font-semibold hover:bg-gray-200 rounded-xl transition-colors text-sm">Cancelar Edición</button>
-                <button type="button" id="btn-guardar-ficha" onclick="guardarFicha()" class="px-6 py-2 bg-pink-500 text-white rounded-xl font-bold shadow-md shadow-pink-200 hover:bg-pink-600 transition-all text-sm flex items-center gap-2">
+            <div id="ficha-footer"
+                class="px-6 py-4 border-t border-gray-100 bg-gray-50 flex justify-end gap-3 hidden flex-shrink-0 rounded-b-2xl">
+                <button type="button" onclick="toggleEditFicha()"
+                    class="px-5 py-2 text-gray-600 font-semibold hover:bg-gray-200 rounded-xl transition-colors text-sm">Cancelar
+                    Edición</button>
+                <button type="button" id="btn-guardar-ficha" onclick="guardarFicha()"
+                    class="px-6 py-2 bg-pink-500 text-white rounded-xl font-bold shadow-md shadow-pink-200 hover:bg-pink-600 transition-all text-sm flex items-center gap-2">
                     Guardar Cambios
                 </button>
             </div>
@@ -1994,9 +2120,9 @@
         async function abrirModalFicha(hijo_id) {
             const modal = document.getElementById('modal-ficha-estudiante');
             const content = document.getElementById('modal-ficha-content');
-            
-            if(modoEdicionFicha) toggleEditFicha(); // Resetear edición
-            
+
+            if (modoEdicionFicha) toggleEditFicha(); // Resetear edición
+
             // Carga UI
             document.getElementById('ficha-nombre-completo').innerText = "Cargando datos...";
             document.getElementById('ficha-cedula').innerText = "...";
@@ -2011,16 +2137,16 @@
             try {
                 const token = localStorage.getItem('auth_token');
                 const baseUrl = typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : 'http://127.0.0.1:5000';
-                
+
                 const response = await fetch(`${baseUrl}/api/estudiantes/${hijo_id}/ficha`, {
                     method: 'GET',
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 const data = await response.json();
-                
+
                 if (response.ok && data.success) {
                     const f = data.ficha;
-                    
+
                     document.getElementById('ficha-hijo-id').value = hijo_id;
                     document.getElementById('ficha-nombre-completo').innerText = `${f.nombres} ${f.apellidos}`;
                     document.getElementById('ficha-cedula').innerText = f.cedula_escolar;
@@ -2031,7 +2157,7 @@
                     document.getElementById('f-fecha-nac').value = f.fecha_nacimiento || '';
                     document.getElementById('f-sexo').value = f.sexo || '';
                     document.getElementById('f-direccion').value = f.direccion_habitacion || '';
-                    
+
                     document.getElementById('f-madre-nombre').value = f.nombre_madre || '';
                     document.getElementById('f-madre-ci').value = f.ci_madre || '';
                     document.getElementById('f-madre-tel').value = f.telefono_madre || 'No registrado';
@@ -2058,7 +2184,7 @@
         function cerrarModalFicha() {
             const modal = document.getElementById('modal-ficha-estudiante');
             const content = document.getElementById('modal-ficha-content');
-            
+
             modal.classList.add('opacity-0');
             content.classList.add('scale-95');
             setTimeout(() => modal.classList.add('hidden'), 300);
@@ -2069,7 +2195,7 @@
             const inputs = document.querySelectorAll('.ficha-input');
             const footer = document.getElementById('ficha-footer');
             const btnEdit = document.getElementById('btn-editar-ficha');
-            
+
             if (modoEdicionFicha) {
                 inputs.forEach(input => {
                     input.removeAttribute('disabled');
@@ -2118,15 +2244,15 @@
             try {
                 const token = localStorage.getItem('auth_token');
                 const baseUrl = typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : 'http://127.0.0.1:5000';
-                
+
                 const response = await fetch(`${baseUrl}/api/estudiantes/${hijo_id}/ficha`, {
                     method: 'PUT',
                     headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 });
-                
+
                 const data = await response.json();
-                
+
                 if (response.ok && data.success) {
                     Swal.fire({
                         title: '¡Actualizado!',
@@ -2135,10 +2261,10 @@
                         confirmButtonColor: '#EC4899',
                         customClass: { popup: 'rounded-3xl' }
                     });
-                    
-                    toggleEditFicha(); 
+
+                    toggleEditFicha();
                     document.getElementById('ficha-nombre-completo').innerText = `${payload.nombres} ${payload.apellidos}`;
-                    
+
                     // Refrescar tablas del admin silenciosamente
                     if (typeof cargarMatriculaGeneral === 'function') cargarMatriculaGeneral();
                     const btnEgresados = document.getElementById('btn-tab-egresados');
@@ -2158,6 +2284,24 @@
                 btnGuardar.disabled = false;
             }
         }
+
+
+        // ============================================
+        // UTILIDADES: TABS DE SECCIONES (PREMIUM)
+        // ============================================
+        function actualizarTabsSecciones(estado) {
+            const btnActivo = document.getElementById('btn-sec-tab-activo');
+            const btnPlan = document.getElementById('btn-sec-tab-planificacion');
+            const btnFin = document.getElementById('btn-sec-tab-finalizado');
+
+            const classActive = "flex-1 md:flex-none px-6 py-2.5 text-sm font-bold rounded-xl bg-amber-50 text-amber-700 shadow-sm transition-all whitespace-nowrap";
+            const classInactive = "flex-1 md:flex-none px-6 py-2.5 text-sm font-bold rounded-xl text-gray-500 hover:text-gray-700 hover:bg-gray-50 transition-all whitespace-nowrap";
+
+            if (btnActivo) btnActivo.className = (estado === 'activo') ? classActive : classInactive;
+            if (btnPlan) btnPlan.className = (estado === 'planificacion') ? classActive : classInactive;
+            if (btnFin) btnFin.className = (estado === 'finalizado') ? classActive : classInactive;
+        }
+
     </script>
 </body>
 
