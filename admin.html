@@ -232,15 +232,14 @@
 
                 <div class="flex items-center space-x-6">
 
-                    <div id="header-ano-container" class="flex items-center gap-2.5 px-2 py-1 transition-all duration-300">
-                        <span class="relative flex h-3 w-3">
-                            <span id="header-ano-ping" class="animate-ping absolute inline-flex h-full w-full rounded-full bg-gray-400 opacity-75"></span>
-                            <span id="header-ano-dot" class="relative inline-flex rounded-full h-3 w-3 bg-gray-500 shadow-sm"></span>
-                        </span>
-                        
-                        <div class="flex items-center text-sm font-bold text-gray-700">
-                            <span class="hidden sm:inline mr-1">Período:</span>
-                            <span id="header-ano-activo">Cargando...</span>
+                    <div id="header-ano-container"
+                        class="flex items-center gap-3 bg-gray-50 border border-gray-200 px-4 py-4 rounded-xl shadow-sm transition-all duration-300">
+                        <i id="header-ano-icon" class="ph-bold ph-calendar text-2xl opacity-70"></i>
+                        <div class="flex flex-col justify-center">
+                            <span
+                                class="text-[10px] font-extrabold uppercase tracking-widest leading-none mb-1 opacity-70">Año
+                                Escolar</span>
+                            <span id="header-ano-activo" class="text-sm font-black leading-none">Cargando...</span>
                         </div>
                     </div>
 
@@ -1273,6 +1272,7 @@
         // ============================================
         function actualizarBadgePeriodo(nombre, estado) {
             const container = document.getElementById('header-ano-container');
+            const icon = document.getElementById('header-ano-icon');
             const textValue = document.getElementById('header-ano-activo');
             const dot = document.getElementById('header-ano-dot');
             const ping = document.getElementById('header-ano-ping');
@@ -1281,29 +1281,31 @@
 
             // 1. Limpiar colores previos
             if (container) {
-                container.classList.remove('bg-yellow-50', 'border-yellow-200', 'border-l-yellow-500', 'text-yellow-800',
-                    'bg-green-50', 'border-green-200', 'border-l-green-500', 'text-green-800',
-                    'bg-gray-50', 'border-gray-200', 'border-l-gray-400', 'text-gray-800');
+                container.classList.remove('bg-yellow-50', 'border-yellow-200', 'text-yellow-800',
+                    'bg-green-50', 'border-green-200', 'text-green-800',
+                    'bg-gray-50', 'border-gray-200', 'text-gray-800');
             }
-            if (dot) {
-                dot.classList.remove('bg-yellow-500', 'bg-green-500', 'bg-gray-400');
-                ping.classList.remove('bg-yellow-400', 'bg-green-400', 'bg-gray-300');
+            if (icon) {
+                icon.classList.remove('text-yellow-600', 'text-green-600', 'text-gray-400');
             }
 
             const est = (estado || 'planificacion').toLowerCase();
             let estadoTexto = '';
 
-            // 2. Aplicar colores de forma inteligente
+            // 2. Aplicar colores según el estado
             if (est === 'planificacion' || est === 'planificación') {
-                if (container) container.classList.add('bg-yellow-50', 'border-yellow-200', 'border-l-yellow-500', 'text-yellow-800');
+                if (container) container.classList.add('bg-yellow-50', 'border-yellow-200', 'text-yellow-800');
+                if (icon) icon.classList.add('text-yellow-600');
                 if (dot) { dot.classList.add('bg-yellow-500'); ping.classList.add('bg-yellow-400'); }
                 estadoTexto = 'Planificación';
             } else if (est === 'finalizado') {
-                if (container) container.classList.add('bg-gray-50', 'border-gray-200', 'border-l-gray-400', 'text-gray-800');
+                if (container) container.classList.add('bg-gray-50', 'border-gray-200', 'text-gray-800');
+                if (icon) icon.classList.add('text-gray-400');
                 if (dot) { dot.classList.add('bg-gray-400'); ping.classList.add('bg-gray-300'); }
                 estadoTexto = 'Finalizado';
             } else {
-                if (container) container.classList.add('bg-green-50', 'border-green-200', 'border-l-green-500', 'text-green-800');
+                if (container) container.classList.add('bg-green-50', 'border-green-200', 'text-green-800');
+                if (icon) icon.classList.add('text-green-600');
                 if (dot) { dot.classList.add('bg-green-500'); ping.classList.add('bg-green-400'); }
                 estadoTexto = 'Activo';
             }
@@ -1995,7 +1997,8 @@
 
                     <h4
                         class="text-sm font-bold text-pink-500 uppercase tracking-widest mb-3 border-b border-pink-100 pb-2">
-                        <i class="ph-fill ph-user mr-1"></i> Datos Personales</h4>
+                        <i class="ph-fill ph-user mr-1"></i> Datos Personales
+                    </h4>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                         <div><label class="block text-xs font-semibold text-gray-500 mb-1">Nombres</label><input
                                 type="text" id="f-nombres"
@@ -2026,7 +2029,8 @@
 
                     <h4
                         class="text-sm font-bold text-pink-500 uppercase tracking-widest mb-3 border-b border-pink-100 pb-2 mt-6">
-                        <i class="ph-fill ph-users mr-1"></i> Contactos de Emergencia</h4>
+                        <i class="ph-fill ph-users mr-1"></i> Contactos de Emergencia
+                    </h4>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                         <div class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
                             <p class="font-bold text-sm text-gray-800 mb-3">Datos de la Madre</p>
@@ -2064,7 +2068,8 @@
 
                     <h4
                         class="text-sm font-bold text-red-500 uppercase tracking-widest mb-3 border-b border-red-100 pb-2 mt-6">
-                        <i class="ph-fill ph-heartbeat mr-1"></i> Información Médica</h4>
+                        <i class="ph-fill ph-heartbeat mr-1"></i> Información Médica
+                    </h4>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-2">
                         <div class="flex items-center gap-2 bg-white p-3 rounded-lg border border-gray-100">
                             <input type="checkbox" id="f-alergico"
