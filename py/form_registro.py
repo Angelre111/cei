@@ -1412,7 +1412,12 @@ def obtener_mi_clase():
         res_seccion = supabase.table("secciones").select("nivel, letra, periodo_id").eq("id", seccion_id).execute()
         seccion_info = res_seccion.data[0] if res_seccion.data else {'nivel': 'Desconocido', 'letra': '', 'periodo_id': None}
         
-        # Buscar los datos reales del período académico
+        res_user = supabase.table("usuarios").select("nombres, apellidos").eq("id", docente_id).single().execute()
+        nombre_docente = "¡Bienvenida!"
+        if res_user.data:
+            nombre_docente = f"¡Bienvenida, {res_user.data['nombres']}!"
+
+        # Buscar los datos reales del período académico asociado a esta sección
         periodo_nombre = "Sin asignar"
         periodo_estado = "desconocido"
         
@@ -1421,11 +1426,6 @@ def obtener_mi_clase():
             if res_periodo.data:
                 periodo_nombre = res_periodo.data[0].get('nombre', 'Sin asignar')
                 periodo_estado = res_periodo.data[0].get('estado', 'desconocido')
-
-        res_user = supabase.table("usuarios").select("nombres, apellidos").eq("id", docente_id).single().execute()
-        nombre_docente = "¡Bienvenida!"
-        if res_user.data:
-            nombre_docente = f"¡Bienvenida, {res_user.data['nombres']}!"
 
         # 3. Buscar los IDs de los estudiantes inscritos ('cursando') en esta sección
         res_asignaciones = supabase.table("asignaciones_estudiantes").select("hijo_id").eq("seccion_id", seccion_id).eq("estado", "cursando").execute()
