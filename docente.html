@@ -122,87 +122,63 @@
         <!-- ============================================ -->
         <!-- SIDEBAR DE NAVEGACIÓN -->
         <!-- ============================================ -->
-        <nav id="sidebar"
-            class="w-64 bg-white shadow-lg overflow-y-auto flex-shrink-0 fixed inset-y-0 left-0 z-40 transform -translate-x-full transition-transform duration-300 md:translate-x-0 md:static border-r border-gray-100">
-            <div class="p-6">
-                <!-- Logo -->
-                <a href="#" class="flex items-center space-x-3">
-                    <div class="flex items-center justify-center w-20 h-20 bg-pink-100 rounded-full">
-                        <img src="img/cei.png" width="100" height="100" viewBox="0 0 24 24" fill="none">
+        <nav id="sidebar" class="w-72 flex flex-col h-screen bg-white shadow-[4px_0_24px_rgba(0,0,0,0.02)] flex-shrink-0 fixed inset-y-0 left-0 z-40 transform -translate-x-full transition-transform duration-300 md:translate-x-0 md:static border-r border-gray-100">
+            
+            <div class="p-8 flex flex-col items-center justify-center border-b border-gray-50 flex-shrink-0">
+                <a href="#" class="flex flex-col items-center gap-3">
+                    <div class="flex items-center justify-center w-24 h-24 bg-pink-50 rounded-full shadow-inner border-4 border-white">
+                        <img src="img/cei.png" onerror="this.src='https://placehold.co/100x100/FCE7F3/EC4899?text=CEI'" class="w-full h-full rounded-full object-cover p-1" alt="Logo CEI La Paragua">
                     </div>
-                    <span class="text-xl font-bold text-gray-800">CEI La Paragua</span>
+                    <div class="text-center">
+                        <h2 class="text-[19px] font-black text-slate-800 tracking-tight">CEI La Paragua</h2>
+                        <p class="text-[10px] font-black text-pink-400 uppercase tracking-[0.15em] mt-0.5">Portal Docente</p>
+                    </div>
                 </a>
             </div>
 
-            <!-- Links de Navegación -->
-            <ul class="space-y-2 p-4">
+            <ul class="space-y-1.5 p-5 flex-1 overflow-y-auto">
                 <li>
-                    <a href="#" data-section="section-dashboard"
-                        class="nav-link flex items-center space-x-3 p-3 rounded-xl transition-all duration-200 nav-link-active">
-                        <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                            stroke-width="1.5" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" />
-                        </svg>
-                        <span>Inicio</span>
+                    <a href="#" data-section="section-dashboard" class="nav-link flex items-center space-x-3.5 px-4 py-3.5 rounded-2xl transition-all duration-200 nav-link-active text-gray-500 hover:bg-gray-50">
+                        <i class="ph-fill ph-squares-four text-xl"></i>
+                        <span class="font-semibold text-sm">Inicio</span>
                     </a>
                 </li>
                 <li>
-                    <a href="#" data-section="section-listados"
-                        class="nav-link flex items-center space-x-3 p-3 rounded-xl hover:bg-blue-50 transition-all duration-200">
-                        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" />
-                        </svg>
-                        <span>Listado de Alumnos</span>
+                    <a href="#" data-section="section-listados" class="nav-link flex items-center space-x-3.5 px-4 py-3.5 rounded-2xl transition-all duration-200 text-gray-500 hover:bg-gray-50">
+                        <i class="ph-fill ph-users-three text-xl"></i>
+                        <span class="font-semibold text-sm">Listado de Alumnos</span>
                     </a>
                 </li>
                 <li>
-                    <a href="#" data-section="section-asistencia"
-                        class="nav-link flex items-center space-x-3 p-3 rounded-xl hover:bg-blue-50 transition-all duration-200">
-                        <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                            stroke-width="1.5" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M10.125 2.25h-4.5c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125v-9M10.125 2.25h.375a9 9 0 019 9v.375M10.125 2.25A3.375 3.375 0 0113.5 5.625v1.5c0 .621.504 1.125 1.125 1.125h1.5a3.375 3.375 0 013.375 3.375M9 15l2.25 2.25L15 12" />
-                        </svg>
-                        <span>Asistencia</span>
+                    <a href="#" data-section="section-asistencia" class="nav-link flex items-center space-x-3.5 px-4 py-3.5 rounded-2xl transition-all duration-200 text-gray-500 hover:bg-gray-50">
+                        <i class="ph-fill ph-calendar-check text-xl"></i>
+                        <span class="font-semibold text-sm">Asistencia</span>
                     </a>
                 </li>
                 <li>
-                    <a href="#" data-section="section-evaluaciones"
-                        class="nav-link flex items-center space-x-3 p-3 rounded-xl hover:bg-blue-50 transition-all duration-200">
-                        <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                            stroke-width="1.5" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125" />
-                        </svg>
-                        <span>Evaluaciones</span>
+                    <a href="#" data-section="section-evaluaciones" class="nav-link flex items-center space-x-3.5 px-4 py-3.5 rounded-2xl transition-all duration-200 text-gray-500 hover:bg-gray-50">
+                        <i class="ph-fill ph-exam text-xl"></i>
+                        <span class="font-semibold text-sm">Evaluaciones</span>
                     </a>
                 </li>
                 <li>
-                    <a href="#" data-section="section-estadisticas"
-                        class="nav-link flex items-center space-x-3 p-3 rounded-xl hover:bg-blue-50 transition-all duration-200">
-                        <i class="ph-bold ph-chart-line-up text-xl text-gray-600"></i>
-                        <span>Estadísticas</span>
+                    <a href="#" data-section="section-estadisticas" class="nav-link flex items-center space-x-3.5 px-4 py-3.5 rounded-2xl transition-all duration-200 text-gray-500 hover:bg-gray-50">
+                        <i class="ph-fill ph-chart-pie-slice text-xl"></i>
+                        <span class="font-semibold text-sm">Estadísticas</span>
                     </a>
                 </li>
                 <li>
-                    <a href="#" data-section="section-perfil"
-                        class="nav-link flex items-center space-x-3 p-3 rounded-xl hover:bg-blue-50 transition-all duration-200">
-                        <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                            stroke-width="1.5" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A1.875 1.875 0 0118 22.5H6.001c-.966 0-1.83-.69-2.099-1.62a7.5 7.5 0 01-1.4-1.262z" />
-                        </svg>
-                        <span>Perfil</span>
+                    <a href="#" data-section="section-perfil" class="nav-link flex items-center space-x-3.5 px-4 py-3.5 rounded-2xl transition-all duration-200 text-gray-500 hover:bg-gray-50">
+                        <i class="ph-fill ph-user-circle text-xl"></i>
+                        <span class="font-semibold text-sm">Perfil</span>
                     </a>
                 </li>
             </ul>
-            <div class="fixed bottom-5 left-10 pt-6 border-t border-gray-100">
-                <button onclick="logout()"
-                    class="w-full text-center p-3 text-sm text-gray-500 hover:text-secondary-pink transition duration-150 rounded-lg flex items-center justify-center">
-                    <span data-lucide="log-out" class="w-4 h-4 mr-2 inline-block"></span>
-                    <span>Cerrar Sesión</span>
+
+            <div class="p-5 border-t border-gray-50 mt-auto flex-shrink-0 bg-gray-50/50">
+                <button onclick="logout()" class="w-full text-center px-4 py-3.5 text-sm font-bold text-gray-500 hover:text-red-500 hover:bg-red-50 transition-all duration-200 rounded-xl flex items-center justify-center gap-2 shadow-sm border border-transparent hover:border-red-100">
+                    <i class="ph-bold ph-sign-out text-lg"></i>
+                    Cerrar Sesión
                 </button>
             </div>
         </nav>
