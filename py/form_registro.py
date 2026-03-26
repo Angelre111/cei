@@ -9,7 +9,9 @@ from datetime import datetime
 from functools import wraps
 
 # --- LIBRERÍAS DE TERCEROS ---
-from flask import Flask, request, jsonify, send_from_directory, session
+import io
+from docxtpl import DocxTemplate
+from flask import Flask, request, jsonify, send_from_directory, session, send_file
 from flask_cors import CORS
 from pydantic import BaseModel, ValidationError
 from dotenv import load_dotenv
@@ -1529,6 +1531,90 @@ def obtener_ficha_estudiante(hijo_id):
     except Exception as e:
         print(f"❌ Error al cargar ficha: {e}")
         return jsonify({'success': False, 'message': 'Error al cargar la ficha del estudiante.'}), 500
+
+
+@app.route('/api/estudiantes/<int:hijo_id>/constancia/<tipo>', methods=['GET'])
+@require_auth
+def descargar_constancia_word(hijo_id, tipo):
+    """Genera un documento Word reemplazando las llaves {{}} de la plantilla."""
+    try:
+        # 1. Obtener datos del niño
+        res_hijo = supabase.table("hijos").select("*").eq("id", hijo_id).single().execute()
+        if not res_hijo.data:
+            return jsonify({'success': False, 'message': 'Estudiante no encontrado.'}), 404
+        hijo = res_hijo.data
+
+        # 2. Obtener datos académicos (Sección y Período)
+        nivel_academico, letra_seccion, periodo_nombre = "No asignado", "", "______________"
+        res_asig = supabase.table("asignaciones_estudiantes").select("seccion_id").eq("hijo_id", hijo_id).order("created_at", desc=True).limit(1).execute()
+        if res_asig.data and res_asig.data[0].get("seccion_id"):
+            res_sec = supabase.table("secciones").select("nivel, letra, periodo_id").eq("id", res_asig.data[0]["seccion_id"]).single().execute()
+            if res_sec.data:
+                nivel_academico = res_sec.data.get("nivel", "")
+                letra_seccion = res_sec.data.get("letra", "")
+                if res_sec.data.get("periodo_id"):
+                    res_per = supabase.table("periodos_academicos").select("nombre").eq("id", res_sec.data.get("periodo_id")).single().execute()
+                    if res_per.data:
+                        periodo_nombre = res_per.data.get("nombre", "")
+
+        # 3. Formatear Fechas
+        meses = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
+        hoy = datetime.now()
+        
+        fecha_nac_str = hijo.get("fecha_nacimiento")
+        if fecha_nac_str:
+            try:
+                f_obj = datetime.strptime(fecha_nac_str, "%Y-%m-%d")
+                fecha_nacimiento_formateada = f"{f_obj.day}/{f_obj.month}/{f_obj.year}"
+            except Exception:
+                fecha_nacimiento_formateada = str(fecha_nac_str)
+        else:
+            fecha_nacimiento_formateada = "______________"
+
+        # 4. Construir el Diccionario de Contexto (Las llaves que busca el Word)
+        context = {
+            "nombres_apellidos_estudiante": f"{hijo.get('nombre') or ''} {hijo.get('apellidos') or ''}".strip().upper(),
+            "cedula_escolar": hijo.get('cedula_escolar') or '______________',
+            "documento_identidad": hijo.get('cedula_escolar') or '______________',
+            "municipio_nacimiento": (hijo.get('municipio_nacimiento') or 'ANGOSTURA DEL ORINOCO').upper(),
+            "estado_nacimiento": (hijo.get('estado_nacimiento') or 'BOLÍVAR').upper(),
+            "fecha_nacimiento": fecha_nacimiento_formateada,
+            "grupo_seccion": f"{nivel_academico} {letra_seccion}".strip(),
+            "periodo_escolar": periodo_nombre,
+            "motivo_retiro": (hijo.get('motivo_retiro') or '_________________').upper(),
+            "dia_actual": str(hoy.day),
+            "mes_actual": meses[hoy.month - 1],
+            "anio_actual": str(hoy.year)
+        }
+
+        # 5. Seleccionar la plantilla correcta
+        # Ruta absoluta relativa al directorio donde está este archivo .py
+        SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+        plantilla_path = os.path.join(SCRIPT_DIR, "plantillas", f"constancia_{tipo}.docx")
+        if not os.path.exists(plantilla_path):
+            return jsonify({'success': False, 'message': f'La plantilla {tipo} no existe en el servidor como .docx'}), 404
+
+        # 6. Renderizar el Word
+        doc = DocxTemplate(plantilla_path)
+        doc.render(context)
+
+        # 7. Guardar en memoria y enviar al usuario
+        file_stream = io.BytesIO()
+        doc.save(file_stream)
+        file_stream.seek(0)
+
+        nombre_archivo = f"Constancia_{tipo.capitalize()}_{hijo.get('nombre', 'Estudiante')}.docx"
+        
+        return send_file(
+            file_stream, 
+            as_attachment=True, 
+            download_name=nombre_archivo,
+            mimetype='application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+        )
+
+    except Exception as e:
+        print(f"❌ Error al generar Word: {e}")
+        return jsonify({'success': False, 'message': 'Error interno al generar el documento.'}), 500
 
 
 @app.route('/api/estudiantes/<int:hijo_id>/ficha', methods=['PUT'])

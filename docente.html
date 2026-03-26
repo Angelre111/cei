@@ -939,6 +939,19 @@
                                 disabled></div>
                     </div>
 
+                    <div class="flex flex-wrap justify-start gap-3 mt-8 pt-6 border-t border-gray-100">
+                        <button type="button" onclick="generarConstancia('estudio', document.getElementById('ficha-hijo-id').value)" class="px-4 py-2.5 bg-blue-50 text-blue-600 rounded-xl hover:bg-blue-100 font-bold text-xs transition-colors flex items-center gap-2 border border-blue-100">
+                            <i class="ph-bold ph-read-cv-logo text-lg"></i> Constancia Estudio
+                        </button>
+                        
+                        <button type="button" onclick="generarConstancia('inscripcion', document.getElementById('ficha-hijo-id').value)" class="px-4 py-2.5 bg-purple-50 text-purple-600 rounded-xl hover:bg-purple-100 font-bold text-xs transition-colors flex items-center gap-2 border border-purple-100">
+                            <i class="ph-bold ph-user-plus text-lg"></i> Constancia Inscripción
+                        </button>
+                    
+                        <button type="button" onclick="generarConstancia('retiro', document.getElementById('ficha-hijo-id').value)" class="px-4 py-2.5 bg-red-50 text-red-600 rounded-xl hover:bg-red-100 font-bold text-xs transition-colors flex items-center gap-2 border border-red-100">
+                            <i class="ph-bold ph-user-minus text-lg"></i> Constancia Retiro
+                        </button>
+                    </div>
                 </form>
             </div>
 
@@ -985,6 +998,72 @@
         document.addEventListener('DOMContentLoaded', () => {
             initApp();
         });
+
+        // ============================================
+        // DESCARGAR CONSTANCIA WORD DESDE PYTHON
+        // ============================================
+        async function generarConstancia(tipoConstancia, hijoId) {
+            if (!hijoId) {
+                Swal.fire('Error', 'No se ha cargado un ID de estudiante válido', 'error');
+                return;
+            }
+
+            Swal.fire({
+                title: 'Generando Documento...',
+                text: 'Procesando plantilla oficial',
+                allowOutsideClick: false,
+                didOpen: () => { Swal.showLoading(); }
+            });
+
+            try {
+                const token = localStorage.getItem('auth_token');
+                const baseUrl = typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : 'http://127.0.0.1:5000';
+                
+                // Hacemos un fetch esperando un archivo (blob)
+                const res = await fetch(`${baseUrl}/api/estudiantes/${hijoId}/constancia/${tipoConstancia}`, {
+                    method: 'GET',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (res.ok) {
+                    // Extraer el nombre del archivo de los headers o poner uno por defecto
+                    let filename = `Constancia_${tipoConstancia}.docx`;
+                    const disposition = res.headers.get('Content-Disposition');
+                    if (disposition && disposition.indexOf('attachment') !== -1) {
+                        const filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
+                        const matches = filenameRegex.exec(disposition);
+                        if (matches != null && matches[1]) { 
+                            filename = matches[1].replace(/['"]/g, '');
+                        }
+                    }
+
+                    // Convertir la respuesta a un Blob y descargar
+                    const blob = await res.blob();
+                    const downloadUrl = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = downloadUrl;
+                    a.download = filename;
+                    document.body.appendChild(a);
+                    a.click();
+                    a.remove();
+                    window.URL.revokeObjectURL(downloadUrl);
+
+                    Swal.fire({
+                        title: '¡Descargado!',
+                        text: 'El documento Word está listo.',
+                        icon: 'success',
+                        confirmButtonColor: '#EC4899',
+                        customClass: { popup: 'rounded-3xl' }
+                    });
+                } else {
+                    const errData = await res.json();
+                    Swal.fire('Error', errData.message || 'No se pudo generar el documento.', 'error');
+                }
+            } catch(err) {
+                console.error(err);
+                Swal.fire('Error', 'Problema de conexión con el servidor', 'error');
+            }
+        }
 
         async function initApp() {
             setupNavigation();
