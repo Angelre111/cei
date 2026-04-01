@@ -108,7 +108,7 @@
                 </div>
 
                 <!-- CAMBIO: Enlace de contraseña en color Rosa -->
-                <a href="#" class="text-sm font-medium text-pink-600 hover:text-pink-800 transition duration-200">
+                <a href="#" onclick="iniciarRecuperacion(event)" class="text-sm font-medium text-pink-600 hover:text-pink-800 transition duration-200">
                     ¿Olvidaste tu contraseña?
                 </a>
             </div>
@@ -178,51 +178,83 @@
                     localStorage.setItem('user_rol', rol);
                     localStorage.setItem('user_email', json.user.email);
                     localStorage.setItem('user_id', json.user.id);
+                    localStorage.setItem('user_estado', json.estado || 'activo');
 
-                    Swal.fire({
-                        title: '¡Bienvenido!',
-                        text: `Inicio de sesión exitoso.`,
-                        icon: 'success',
-                        timer: 1500,
-                        timerProgressBar: true,
-                        showConfirmButton: false,
-                        allowOutsideClick: false,
-                        background: '#ffffff',
-                        color: '#374151',
-                        iconColor: '#10b981',
-                        backdrop: `rgba(236, 72, 153, 0.1) left top no-repeat`,
-                        customClass: {
-                            popup: 'rounded-2xl shadow-2xl',
-                        }
-                    }).then(() => {
-                        if (rol === 'administrador') {
-                            window.location.href = 'admin.html';
-                        } else if (rol === 'docente') {
-                            window.location.href = 'docente.html';
+                    // ENRUTAMIENTO POR ROL
+                    if (rol === 'administrador') {
+                        await Swal.fire({
+                            title: '¡Bienvenido!',
+                            text: 'Inicio de sesión exitoso.',
+                            icon: 'success',
+                            timer: 1500,
+                            timerProgressBar: true,
+                            showConfirmButton: false,
+                            allowOutsideClick: false,
+                            background: '#ffffff',
+                            color: '#374151',
+                            iconColor: '#10b981',
+                            customClass: { popup: 'rounded-2xl shadow-2xl' }
+                        });
+                        window.location.href = 'admin.html';
+
+                    } else if (rol === 'docente') {
+                        await Swal.fire({
+                            title: '¡Bienvenido!',
+                            text: 'Inicio de sesión exitoso.',
+                            icon: 'success',
+                            timer: 1500,
+                            timerProgressBar: true,
+                            showConfirmButton: false,
+                            allowOutsideClick: false,
+                            background: '#ffffff',
+                            color: '#374151',
+                            iconColor: '#10b981',
+                            customClass: { popup: 'rounded-2xl shadow-2xl' }
+                        });
+                        window.location.href = 'docente.html';
+
+                    } else {
+                        // REPRESENTANTE: verificar si ya completó la ficha del estudiante
+                        const fichaCompleta = json.ficha_completada; // true, false o null
+                        
+                        if (fichaCompleta === false) {
+                            // ❌ Ficha pendiente → mostrar alerta y llevar al formulario
+                            await Swal.fire({
+                                title: '¡Falta un paso!',
+                                html: `
+                                    <p class="text-gray-600 mt-2">Antes de continuar, necesitas completar la <strong>ficha de inscripción</strong> de tu representado.</p>
+                                    <p class="text-sm text-gray-400 mt-4">Este paso solo se realiza una vez.</p>
+                                `,
+                                icon: 'info',
+                                confirmButtonText: 'Completar ficha ahora',
+                                allowOutsideClick: false,
+                                customClass: {
+                                    popup: 'rounded-2xl shadow-xl',
+                                    confirmButton: 'w-full py-3 text-white font-bold rounded-xl mt-2',
+                                    title: 'text-xl font-black text-gray-800'
+                                },
+                                confirmButtonColor: '#EC4899'
+                            });
+                            window.location.href = 'form_registro_estudiante.html';
                         } else {
-                            // REPRESENTANTE: verificar si ya completó la ficha del estudiante
-                            if (json.ficha_completada === false) {
-                                // Ficha pendiente → llevar directo al formulario
-                                Swal.fire({
-                                    title: '¡Falta un paso!',
-                                    text: 'Por favor completa la ficha de inscripción de tu representado para continuar.',
-                                    icon: 'info',
-                                    confirmButtonText: 'Completar ficha',
-                                    confirmButtonColor: '#EC4899',
-                                    allowOutsideClick: false,
-                                    customClass: {
-                                        popup: 'rounded-2xl shadow-xl',
-                                        confirmButton: 'rounded-xl px-6 py-2 font-bold'
-                                    }
-                                }).then(() => {
-                                    window.location.href = 'form_registro_estudiante.html';
-                                });
-                            } else {
-                                // Ficha ya completada → ir al panel del representante
-                                window.location.href = 'representante.html';
-                            }
+                            // ✅ Ficha completada (true) o sin datos (null → dejar pasar)
+                            await Swal.fire({
+                                title: '¡Bienvenido!',
+                                text: 'Inicio de sesión exitoso.',
+                                icon: 'success',
+                                timer: 1500,
+                                timerProgressBar: true,
+                                showConfirmButton: false,
+                                allowOutsideClick: false,
+                                background: '#ffffff',
+                                color: '#374151',
+                                iconColor: '#10b981',
+                                customClass: { popup: 'rounded-2xl shadow-2xl' }
+                            });
+                            window.location.href = 'representante.html';
                         }
-                    });
+                    }
+
                 } else if (res.status === 403) {
                     Swal.fire({
                         title: 'Acceso Restringido',
@@ -269,6 +301,138 @@
                 submitBtn.innerHTML = '<i class="ph-sign-in mr-2 text-xl"></i> Iniciar Sesión';
             }
         });
+
+        // ============================================
+        // FLUJO DE RECUPERACIÓN DE CONTRASEÑA (Estilo Cashea)
+        // ============================================
+        async function iniciarRecuperacion(e) {
+            e.preventDefault();
+
+            // 1. Obtener desafío CAPTCHA del servidor
+            let captchaData = null;
+            try {
+                Swal.fire({ title: 'Cargando...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+                const capRes = await fetch(`${API_BASE_URL}/api/captcha`);
+                captchaData = await capRes.json();
+                Swal.close();
+            } catch(err) {
+                Swal.fire({ title: 'Error de conexión', text: 'No se pudo cargar el formulario. Intenta más tarde.', icon: 'error', confirmButtonColor: '#EC4899' });
+                return;
+            }
+
+            // 2. Modal combinado: Email + Puzzle CAPTCHA
+            const { value: formValues } = await Swal.fire({
+                title: 'Recuperar contraseña',
+                html: `
+                    <div class="text-left space-y-5 mt-2">
+                        <div>
+                            <label class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Correo electrónico</label>
+                            <input type="email" id="swal-email"
+                                class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-4 focus:ring-pink-100 focus:border-pink-400 outline-none transition-all text-base"
+                                placeholder="ejemplo@laparagua.edu.ve">
+                        </div>
+                        <div class="bg-gray-50 border border-gray-100 rounded-2xl p-4">
+                            <p class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">
+                                <i class="ph-bold ph-shield-check mr-1 text-pink-400"></i> Verificación de seguridad
+                            </p>
+                            <p class="text-xl font-black text-gray-800 mb-3">${captchaData.pregunta}</p>
+                            <input type="number" id="swal-captcha"
+                                class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-4 focus:ring-pink-100 focus:border-pink-400 outline-none transition-all text-base"
+                                placeholder="Tu respuesta...">
+                        </div>
+                    </div>
+                `,
+                showCancelButton: true,
+                confirmButtonText: 'Enviar enlace',
+                cancelButtonText: 'Cancelar',
+                focusConfirm: false,
+                customClass: {
+                    popup: 'rounded-[2rem] shadow-2xl p-6 sm:p-8',
+                    title: 'text-2xl font-black text-left w-full text-gray-800',
+                    actions: 'flex flex-col w-full gap-3 mt-6',
+                    confirmButton: 'w-full py-3.5 text-white font-bold rounded-xl m-0 color-paragua-primary hover:bg-pink-600 transition-colors',
+                    cancelButton: 'w-full py-3.5 bg-gray-100 hover:bg-gray-200 text-gray-600 font-bold rounded-xl m-0 transition-colors'
+                },
+                buttonsStyling: false,
+                preConfirm: () => {
+                    const email = document.getElementById('swal-email').value.trim();
+                    const respuesta = document.getElementById('swal-captcha').value.trim();
+                    if (!email || !email.includes('@')) {
+                        Swal.showValidationMessage('Por favor ingresa un correo válido.');
+                        return false;
+                    }
+                    if (!respuesta) {
+                        Swal.showValidationMessage('Por favor responde el desafío de seguridad.');
+                        return false;
+                    }
+                    return { email, respuesta };
+                }
+            });
+
+            if (!formValues) return; // Usuario canceló
+
+            // 3. Enviar al backend
+            Swal.fire({ title: 'Enviando enlace...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+
+            try {
+                const res = await fetch(`${API_BASE_URL}/api/recuperar-password`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: formValues.email,
+                        captcha_id: captchaData.id,
+                        captcha_respuesta: formValues.respuesta
+                    })
+                });
+
+                const json = await res.json();
+
+                if (res.ok && json.success) {
+                    // ✅ Éxito
+                    Swal.fire({
+                        title: '¡Revisa tu bandeja!',
+                        html: `
+                            <div class="text-left mt-4">
+                                <p class="text-gray-600 mb-4">Te enviamos a:</p>
+                                <div class="bg-pink-50 border border-pink-100 rounded-xl p-4 flex items-center gap-3 overflow-hidden">
+                                    <i class="ph-fill ph-envelope-simple text-2xl text-pink-500 shrink-0"></i>
+                                    <span class="font-bold text-gray-800 text-base sm:text-lg truncate block w-full">${formValues.email}</span>
+                                </div>
+                                <p class="text-sm text-gray-400 mt-6"><i class="ph-bold ph-info"></i> Recuerda revisar la carpeta de Spam si no lo ves en unos minutos.</p>
+                            </div>
+                        `,
+                        confirmButtonText: 'Entendido',
+                        customClass: {
+                            popup: 'rounded-[2rem] shadow-2xl p-6 sm:p-8',
+                            title: 'text-2xl font-black text-left w-full text-gray-800',
+                            confirmButton: 'w-full py-3.5 text-white font-bold rounded-xl mt-6 color-paragua-primary hover:bg-pink-600 transition-colors'
+                        },
+                        buttonsStyling: false
+                    });
+                } else {
+                    // ❌ Error (captcha incorrecto, correo no existe, etc.)
+                    Swal.fire({
+                        title: 'Atención',
+                        text: json.message || 'No se pudo procesar la solicitud.',
+                        icon: 'warning',
+                        confirmButtonText: 'Intentar de nuevo',
+                        customClass: {
+                            popup: 'rounded-[2rem] p-6',
+                            confirmButton: 'w-full py-3 text-white font-bold rounded-xl mt-4 color-paragua-primary'
+                        },
+                        buttonsStyling: false
+                    });
+                }
+            } catch(err) {
+                Swal.fire({
+                    title: 'Error de conexión',
+                    text: 'No pudimos contactar al servidor. Intenta más tarde.',
+                    icon: 'error',
+                    confirmButtonColor: '#EC4899',
+                    customClass: { popup: 'rounded-[2rem]' }
+                });
+            }
+        }
     </script>
 
 

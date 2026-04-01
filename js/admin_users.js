@@ -4,6 +4,7 @@
 
 const API_BASE = window.API_BASE_URL || '';
 let cachedUsuarios = []; // Cache para búsqueda local
+let tabActualUsuarios = 'personal'; // 'personal' (admin+docente) | 'representantes'
 
 // auth.js provee fetchWithAuth() y AUTH globalmente
 
@@ -29,7 +30,7 @@ async function cargarYRenderizarUsuarios() {
         </tr>`;
 
     try {
-        const response = await fetchWithAuth(`${API_BASE}/api/usuarios`);
+        const response = await fetchWithAuth(`${API_BASE}/api/usuarios?tipo=${tabActualUsuarios}`);
 
         const data = await response.json();
         if (!response.ok || !data.success) throw new Error(data.message);
@@ -60,7 +61,37 @@ async function cargarYRenderizarUsuarios() {
 }
 
 // ─────────────────────────────────────────────────────────────
-// RENDERIZAR FILAS EN LA TABLA
+// CAMBIAR TAB: Personal ↔ Representantes
+// ─────────────────────────────────────────────────────────────
+function cambiarTabUsuarios(tipo) {
+    tabActualUsuarios = tipo;
+
+    const btnPersonal = document.getElementById('btn-tab-personal');
+    const btnReps = document.getElementById('btn-tab-representantes');
+    const btnNuevo = document.getElementById('btn-nuevo-usuario');
+    const subtitulo = document.getElementById('user-section-subtitle');
+
+    const activa = 'flex-1 sm:flex-none px-5 py-2.5 text-sm font-bold rounded-xl bg-white shadow-sm text-purple-700 transition-all flex items-center gap-2 justify-center';
+    const inactiva = 'flex-1 sm:flex-none px-5 py-2.5 text-sm font-bold rounded-xl text-gray-500 hover:text-gray-700 hover:bg-gray-100/50 transition-all flex items-center gap-2 justify-center';
+
+    if (tipo === 'personal') {
+        if (btnPersonal) btnPersonal.className = activa;
+        if (btnReps) btnReps.className = inactiva;
+        if (btnNuevo) btnNuevo.classList.remove('hidden');
+        if (subtitulo) subtitulo.textContent = 'Gestiona los accesos de Administradores y Docentes.';
+    } else {
+        if (btnReps) btnReps.className = activa;
+        if (btnPersonal) btnPersonal.className = inactiva;
+        if (btnNuevo) btnNuevo.classList.add('hidden');
+        if (subtitulo) subtitulo.textContent = 'Consulta los representantes registrados en el sistema.';
+    }
+
+    // Limpiar buscador y recargar con el nuevo filtro del backend
+    const searchInput = document.getElementById('user-search-input');
+    if (searchInput) searchInput.value = '';
+    cargarYRenderizarUsuarios();
+}
+
 // ─────────────────────────────────────────────────────────────
 function renderizarTablaUsuarios(usuarios) {
     const tbody = document.getElementById('user-table-body');
@@ -93,10 +124,14 @@ function renderizarTablaUsuarios(usuarios) {
         const nombreCompleto = `${u.nombres || ''} ${u.apellidos || ''}`.trim();
         const inicial = nombreCompleto.charAt(0).toUpperCase();
 
-        const rolDisplay = u.rol === 'administrador' ? 'Administrador' : 'Docente';
+        const rolDisplayMap = { administrador: 'Administrador', docente: 'Docente', representante: 'Representante' };
+        const rolDisplay = rolDisplayMap[u.rol] || u.rol;
         const rolBadge = u.rol === 'administrador'
             ? 'bg-purple-50 text-purple-700 border-purple-100'
-            : 'bg-pink-50 text-pink-700 border-pink-100';
+            : u.rol === 'representante'
+                ? 'bg-rose-50 text-rose-700 border-rose-100'
+                : 'bg-pink-50 text-pink-700 border-pink-100';
+        const avatarGradient = u.rol === 'representante' ? 'from-rose-400 to-rose-600' : 'from-purple-500 to-purple-700';
 
         const estadoDisplay = u.estado
             ? u.estado.charAt(0).toUpperCase() + u.estado.slice(1)
@@ -116,7 +151,7 @@ function renderizarTablaUsuarios(usuarios) {
             <tr class="hover:bg-gray-50/80 border-b border-gray-100 transition-colors group">
                 <td class="px-6 py-4">
                     <div class="flex items-center gap-4">
-                        <div class="w-11 h-11 rounded-2xl bg-gradient-to-br from-purple-500 to-purple-700 text-white flex items-center justify-center font-bold text-lg shadow-sm transform group-hover:scale-110 transition-transform duration-300">
+                        <div class="w-11 h-11 rounded-2xl bg-gradient-to-br ${avatarGradient} text-white flex items-center justify-center font-bold text-lg shadow-sm transform group-hover:scale-110 transition-transform duration-300">
                             ${inicial}
                         </div>
                         <div>
@@ -152,6 +187,7 @@ function renderizarTablaUsuarios(usuarios) {
                             data-estado="${u.estado}"
                             data-rol="${u.rol}"
                             data-es-mismo-usuario="${esMismoUsuario}"
+                            data-es-representante="${u.rol === 'representante'}"
                             onclick="abrirModalEditarDesdeBtn(this)"
                             title="Editar usuario"
                             class="p-2.5 text-blue-500 hover:text-white hover:bg-blue-500 rounded-xl transition-all duration-300 shadow-sm hover:shadow-blue-200">
@@ -222,7 +258,8 @@ function abrirModalEditarDesdeBtn(btn) {
         btn.dataset.email,
         btn.dataset.estado,
         btn.dataset.rol,
-        btn.dataset.esMismoUsuario === 'true'
+        btn.dataset.esMismoUsuario === 'true',
+        btn.dataset.esRepresentante === 'true'
     );
 }
 function confirmarEliminarDesdeBtn(btn) {
@@ -232,7 +269,7 @@ function confirmarEliminarDesdeBtn(btn) {
 // ─────────────────────────────────────────────────────────────
 // ACCIÓN: EDITAR USUARIO — Modal SweetAlert2
 // ─────────────────────────────────────────────────────────────
-async function abrirModalEditar(userId, nombres, apellidos, email, estadoActual, rolActual, esMismoUsuario = false) {
+async function abrirModalEditar(userId, nombres, apellidos, email, estadoActual, rolActual, esMismoUsuario = false, esRepresentante = false) {
     // Rellenamos el formulario del modal
     document.getElementById('edit-user-id').value = userId;
     document.getElementById('edit-user-first-name').value = nombres;
@@ -254,6 +291,14 @@ async function abrirModalEditar(userId, nombres, apellidos, email, estadoActual,
         statusSelect.classList.add('bg-gray-100', 'text-gray-500', 'cursor-not-allowed');
         rolWarn.classList.remove('hidden');
         statusWarn.classList.remove('hidden');
+    } else if (esRepresentante) {
+        // Representantes: solo se puede cambiar su estado, no su rol
+        rolSelect.disabled = true;
+        statusSelect.disabled = false;
+        rolSelect.classList.add('bg-gray-100', 'text-gray-500', 'cursor-not-allowed');
+        statusSelect.classList.remove('bg-gray-100', 'text-gray-500', 'cursor-not-allowed');
+        rolWarn.classList.remove('hidden');
+        statusWarn.classList.add('hidden');
     } else {
         rolSelect.disabled = false;
         statusSelect.disabled = false;

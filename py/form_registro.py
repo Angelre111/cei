@@ -4,8 +4,15 @@
 import os
 import traceback
 import threading
+import tempfile
+import subprocess
+import calendar
+import uuid
+import hashlib
+import random
 from typing import Optional, List
-from datetime import datetime
+from datetime import datetime, date, timedelta
+from dateutil.relativedelta import relativedelta
 from functools import wraps
 
 # --- LIBRERÍAS DE TERCEROS ---
@@ -13,6 +20,8 @@ import io
 from docxtpl import DocxTemplate
 from flask import Flask, request, jsonify, send_from_directory, session, send_file
 from flask_cors import CORS
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 from pydantic import BaseModel, ValidationError
 from dotenv import load_dotenv
 from supabase import create_client, Client, ClientOptions
@@ -45,6 +54,71 @@ CORS(app,
      allow_headers=['Content-Type', 'Authorization', 'X-Requested-With'],
      methods=['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
      automatic_options=True)   # flask-cors responde OPTIONS sin pasar por @require_auth
+
+# =======================================================
+# RATE LIMITING
+# =======================================================
+limiter = Limiter(
+    app=app,
+    key_func=get_remote_address,
+    default_limits=[],          # Sin límite global; lo controlamos por ruta
+    storage_uri="memory://"     # En producción puedes cambiarlo a Redis
+)
+
+# =======================================================
+# CAPTCHA PROPIO (Auto-hospedado, sin dependencias externas)
+# =======================================================
+_captcha_store = {}          # { captcha_id: { 'answer_hash': str, 'expiry': datetime } }
+_captcha_lock = threading.Lock()
+
+def _hash_answer(respuesta: str) -> str:
+    return hashlib.sha256(respuesta.strip().encode()).hexdigest()
+
+def _limpiar_captchas_expirados():
+    """Elimina del store los captchas que ya expiraron."""
+    ahora = datetime.utcnow()
+    with _captcha_lock:
+        expirados = [k for k, v in _captcha_store.items() if v['expiry'] < ahora]
+        for k in expirados:
+            del _captcha_store[k]
+
+@app.route('/api/captcha', methods=['GET'])
+@limiter.limit("20 per minute")  # Evitar flooding de generación
+def generar_captcha():
+    """Genera un desafío matemático simple. La respuesta vive solo en el servidor."""
+    _limpiar_captchas_expirados()
+
+    operadores = [
+        ('+', lambda a, b: a + b),
+        ('-', lambda a, b: a - b),
+        ('×', lambda a, b: a * b),
+    ]
+    # Números pequeños para que sea trivial para humanos
+    a = random.randint(2, 9)
+    b = random.randint(2, 9)
+    simbolo, fn = random.choice(operadores)
+
+    # Para restas, aseguramos resultado positivo
+    if simbolo == '-' and b > a:
+        a, b = b, a
+    # Para multiplicación, limitamos el resultado a un número cómodo
+    if simbolo == '×':
+        a = random.randint(2, 5)
+        b = random.randint(2, 5)
+
+    respuesta_correcta = str(fn(a, b))
+    pregunta = f"¿Cuánto es {a} {simbolo} {b}?"
+
+    captcha_id = str(uuid.uuid4())
+    expiry = datetime.utcnow() + timedelta(minutes=5)
+
+    with _captcha_lock:
+        _captcha_store[captcha_id] = {
+            'answer_hash': _hash_answer(respuesta_correcta),
+            'expiry': expiry
+        }
+
+    return jsonify({'id': captcha_id, 'pregunta': pregunta}), 200
 
 
 
@@ -247,6 +321,7 @@ def registrar_usuario():
 
 
 @app.route('/api/login', methods=['POST'])
+@limiter.limit("10 per minute")  # Máx 10 intentos de login por minuto por IP
 def login_usuario():
     """Inicia sesión, verifica el rol/estado estrictamente y no asigna roles por defecto."""
     data = request.get_json(silent=True)
@@ -289,12 +364,26 @@ def login_usuario():
         rol_usuario = user_data.data[0].get('rol')
         estado_usuario = user_data.data[0].get('estado')
 
-        # Bloquear si la cuenta está inactiva o pendiente
-        if estado_usuario in ['inactivo', 'pendiente']:
+        # Bloquear a cualquier usuario inactivo (Ej. suspendidos por la directiva)
+        if estado_usuario == 'inactivo':
              return jsonify({
                  'success': False, 
-                 'message': 'Tu cuenta está pendiente de verificación o inactiva. Revisa tu correo electrónico para verificarla.'
+                 'message': 'Tu cuenta está inactiva. Contacta a la dirección del plantel.'
              }), 403
+
+        # Lógica inteligente para cuentas "pendientes"
+        if estado_usuario == 'pendiente':
+            if rol_usuario == 'representante':
+                # Lo dejamos continuar con su estado "pendiente".
+                # El frontend detectará que no tiene ficha y lo atrapará en la pantalla de inscripción.
+                print(f"⚠️ Representante {email} ingresa como pendiente para llenar ficha obligatoria.")
+                pass 
+            else:
+                # Si es docente o admin, mantenemos el bloqueo estricto
+                return jsonify({
+                    'success': False, 
+                    'message': 'Tu cuenta está pendiente de verificación o inactiva. Revisa tu correo electrónico para verificarla.'
+                }), 403
 
         # Guardar sesión en Flask
         session['user_id'] = user_id
@@ -323,6 +412,7 @@ def login_usuario():
             'token': response.session.access_token,
             'refresh_token': response.session.refresh_token,
             'rol': rol_usuario,
+            'estado': estado_usuario,
             'ficha_completada': ficha_completada,  # None para admin/docentes, True/False para representantes
             'user': {
                 'id': user_id,
@@ -355,6 +445,58 @@ def login_usuario():
         }), 500
 
 
+@app.route('/api/recuperar-password', methods=['POST'])
+@limiter.limit("5 per minute")  # Máx 5 intentos por minuto por IP
+def recuperar_password():
+    """Envía un enlace mágico al correo del usuario para restablecer la contraseña."""
+    data = request.json
+    email = data.get('email', '').strip()
+    captcha_id = data.get('captcha_id', '').strip()
+    captcha_respuesta = data.get('captcha_respuesta', '').strip()
+
+    if not email:
+        return jsonify({'success': False, 'message': 'El correo es obligatorio.'}), 400
+
+    # --- Verificar CAPTCHA propio ---
+    ahora = datetime.utcnow()
+    with _captcha_lock:
+        registro = _captcha_store.get(captcha_id)
+        if not registro:
+            return jsonify({'success': False, 'message': 'El desafío de seguridad no es válido o ya fue usado. Recarga e intenta de nuevo.'}), 400
+        if registro['expiry'] < ahora:
+            del _captcha_store[captcha_id]
+            return jsonify({'success': False, 'message': 'El desafío de seguridad expiró. Intenta de nuevo.'}), 400
+        if _hash_answer(captcha_respuesta) != registro['answer_hash']:
+            # No eliminamos el registro para no dar pistas de cuántos intentos quedan
+            return jsonify({'success': False, 'message': 'Respuesta incorrecta. Inténtalo de nuevo.'}), 400
+        # ✅ Correcto: eliminar para que no se reutilice
+        del _captcha_store[captcha_id]
+
+    try:
+        # 1. Verificar si el usuario existe en nuestra tabla pública
+        res_user = supabase.table("usuarios").select("id").eq("email", email).execute()
+        
+        if not res_user.data:
+            # CAMBIO: Ahora informamos explícitamente al frontend si el correo NO existe
+            return jsonify({
+                'success': False, 
+                'message': 'El correo ingresado no existe en nuestro sistema. Verifica que esté bien escrito o contacta a la institución.'
+            }), 404
+
+        # 2. Configurar a dónde irá el usuario cuando haga clic en el correo
+        redirect_url = os.getenv('RESET_PASSWORD_URL', 'http://127.0.0.1:5000/restablecer.html')
+        
+        # 3. Disparar el correo usando el SMTP de Supabase
+        supabase_auth.auth.reset_password_email(
+            email, 
+            options={"redirect_to": redirect_url}
+        )
+
+        return jsonify({'success': True, 'message': 'Enlace de recuperación enviado.'}), 200
+
+    except Exception as e:
+        print(f"❌ Error al recuperar password: {e}")
+        return jsonify({'success': False, 'message': 'Error interno al procesar la solicitud.'}), 500
 
 
 @app.route('/api/crear_personal', methods=['POST'])
@@ -451,11 +593,14 @@ def crear_personal():
 @app.route('/api/usuarios', methods=['GET'])
 @require_auth
 def listar_usuarios():
-    """Devuelve la lista de administradores y docentes para el panel admin."""
+    """Devuelve la lista de usuarios según tipo: personal (admin+docente) o representante."""
+    tipo = request.args.get('tipo', 'personal')
+    roles_filtro = ['representante'] if tipo in ('representante', 'representantes') else ['administrador', 'docente']
+
     try:
         response = supabase.table("usuarios") \
             .select("id, nombres, apellidos, email, rol, estado") \
-            .in_("rol", ["administrador", "docente"]) \
+            .in_("rol", roles_filtro) \
             .order("created_at", desc=True) \
             .execute()
 
@@ -481,8 +626,8 @@ def editar_usuario(user_id):
     datos_update = {k: v for k, v in data.items() if k in campos_permitidos and v is not None}
 
     # Validación estricta del rol si viene en la petición
-    if 'rol' in datos_update and datos_update['rol'] not in ['administrador', 'docente']:
-        return jsonify({'success': False, 'message': 'Rol inválido. Solo se permite "administrador" o "docente".'}), 400
+    if 'rol' in datos_update and datos_update['rol'] not in ['administrador', 'docente', 'representante']:
+        return jsonify({'success': False, 'message': 'Rol inválido.'}), 400
 
     # Seguridad: Un admin no puede cambiar su propio rol ni estado (se quedaría sin acceso)
     if solicitante_id == user_id and ('rol' in datos_update or 'estado' in datos_update):
@@ -782,13 +927,26 @@ def obtener_historial():
 @app.route('/api/matricula/<asignacion_id>/retirar', methods=['PUT'])
 @require_auth
 def retirar_estudiante(asignacion_id):
-    """Marca a un estudiante como 'retirado' en la tabla asignaciones_estudiantes."""
+    """Marca a un estudiante como 'retirado' y le asigna la fecha de retiro de hoy."""
     try:
-        data = supabase.table("asignaciones_estudiantes").update({"estado": "retirado"}).eq("id", asignacion_id).execute()
-        
-        if not data.data:
+        # 1. Obtener a qué niño pertenece esta asignación
+        res_asig = supabase.table("asignaciones_estudiantes").select("hijo_id").eq("id", asignacion_id).single().execute()
+        if not res_asig.data:
             return jsonify({'success': False, 'message': 'Asignación no encontrada.'}), 404
             
+        hijo_id = res_asig.data['hijo_id']
+        fecha_hoy = datetime.now().strftime('%Y-%m-%d') # Fecha exacta de hoy
+
+        # 2. Actualizar estado en la tabla asignaciones
+        supabase.table("asignaciones_estudiantes").update({"estado": "retirado"}).eq("id", asignacion_id).execute()
+        
+        # 3. ACTUALIZACIÓN CLAVE: Guardar la fecha de retiro y estado en la tabla hijos
+        supabase.table("hijos").update({
+            "estado_alumno": "Retirado",
+            "fecha_retiro": fecha_hoy,
+            "motivo_retiro": "Retiro procesado por la directiva" # Motivo por defecto
+        }).eq("id", hijo_id).execute()
+        
         return jsonify({'success': True, 'message': 'Estudiante retirado de la sección exitosamente.'}), 200
 
     except Exception as e:
@@ -825,6 +983,12 @@ def inscribir_estudiante():
         # Usamos SIEMPRE el ID del usuario autenticado
         user_id_real = request.current_user.id
         print("🚀 [BACKEND] Buscando si el usuario ya llenó la ficha...")
+
+        # Verificar que docentes no puedan inscribir directamente (solo representantes y admins)
+        perfil_check = supabase.table("usuarios").select("rol").eq("id", user_id_real).single().execute()
+        rol_actual = perfil_check.data.get("rol") if perfil_check.data else None
+        if rol_actual == 'docente':
+            return jsonify({'success': False, 'message': 'Acción no permitida para docentes.'}), 403
 
         # 2. Verificar si este usuario ya llenó una ficha
         verif = supabase.table("inscripciones").select("id").eq("user_id", user_id_real).execute()
@@ -944,6 +1108,11 @@ def inscribir_estudiante():
 
         response = supabase.table("inscripciones").insert(datos_inscripcion).execute()
         nuevo_id_inscripcion = response.data[0]['id']
+        
+        # ---> NUEVO: Activar al representante oficialmente en el sistema <---
+        # Solo cuando llega a este punto sabemos que completó todo exitosamente
+        supabase.table("usuarios").update({"estado": "activo"}).eq("id", user_id_real).execute()
+        print(f"✅ Representante {user_id_real} activado oficialmente tras completar ficha.")
         
         return jsonify({"mensaje": "Inscripción exitosa", "id": nuevo_id_inscripcion}), 201
 
@@ -1302,7 +1471,7 @@ def eliminar_seccion(seccion_id):
 @app.route('/api/asistencias/<seccion_id>/<fecha>', methods=['GET'])
 @require_auth
 def obtener_asistencia_dia(seccion_id, fecha):
-    """Obtiene los registros de asistencia de una sección en una fecha específica."""
+    """Obtiene el listado exacto de alumnos activos en esa fecha y sus asistencias."""
     solicitante_id = request.current_user.id
     perfil = supabase.table("usuarios").select("rol").eq("id", solicitante_id).single().execute()
     
@@ -1310,13 +1479,53 @@ def obtener_asistencia_dia(seccion_id, fecha):
         return jsonify({'success': False, 'message': 'Acción denegada.'}), 403
 
     try:
-        # Buscar todos los registros de esa sección en esa fecha específica
-        res = supabase.table("asistencias").select("*").eq("seccion_id", seccion_id).eq("fecha", fecha).execute()
+        # 1. Buscar registros de asistencia YA guardados ese día
+        res_asist = supabase.table("asistencias").select("*").eq("seccion_id", seccion_id).eq("fecha", fecha).execute()
+        asistencias_guardadas = {a['hijo_id']: a for a in res_asist.data}
+        
+        # 2. EL VIAJE EN EL TIEMPO: Buscar todos los asignados históricamente a la sección
+        res_asig = supabase.table("asignaciones_estudiantes").select("created_at, estado, hijo_id, hijos(id, nombre, apellidos, cedula_escolar, fecha_retiro)").eq("seccion_id", seccion_id).execute()
+        
+        fecha_consulta = datetime.strptime(fecha, "%Y-%m-%d").date()
+        estudiantes_del_dia = []
+        
+        for asig in res_asig.data:
+            h = asig.get('hijos')
+            if not h: continue
+            
+            estado_asignacion = asig.get('estado', 'cursando')
+            fecha_ingreso = datetime.strptime(asig['created_at'][:10], "%Y-%m-%d").date()
+            fecha_retiro = None
+            
+            if h.get('fecha_retiro'):
+                fecha_retiro = datetime.strptime(h['fecha_retiro'], "%Y-%m-%d").date()
+            elif estado_asignacion == 'retirado':
+                # EL SEGURO: Si el alumno figura como retirado pero alguien olvidó 
+                # ponerle la fecha exacta en la BD, usamos la fecha actual como tope.
+                # De esta forma ya no seguirá apareciendo como un "fantasma" de hoy en adelante.
+                fecha_retiro = datetime.now().date()
+                
+            # REGLA ESTRICTA DE TIEMPO:
+            # - Ingresó a la escuela ANTES o el MISMO DÍA de la fecha consultada.
+            # - No se ha retirado, o se retiró DESPUÉS o el MISMO DÍA consultado.
+            if fecha_ingreso <= fecha_consulta and (not fecha_retiro or fecha_retiro >= fecha_consulta):
+                reg = asistencias_guardadas.get(h['id'], {})
+                
+                estudiantes_del_dia.append({
+                    "id": h['id'],
+                    "nombre_completo": f"{h['nombre']} {h['apellidos']}".strip(),
+                    "cedula": h.get('cedula_escolar', 'S/N'),
+                    "estado_asistencia": reg.get('estado_asistencia', 'ausente'), # por defecto ausente
+                    "observacion": reg.get('observacion', '')
+                })
+        
+        # Ordenar alfabéticamente para facilitar la lectura
+        estudiantes_del_dia = sorted(estudiantes_del_dia, key=lambda x: x['nombre_completo'])
         
         return jsonify({
             'success': True, 
-            'asistencias': res.data,
-            'ya_registrada': len(res.data) > 0
+            'estudiantes': estudiantes_del_dia,
+            'ya_registrada': len(res_asist.data) > 0
         }), 200
 
     except Exception as e:
@@ -1669,6 +1878,269 @@ def actualizar_ficha_estudiante(hijo_id):
         return jsonify({'success': False, 'message': 'Error al guardar los cambios en la ficha.'}), 500
 
 
+@app.route('/api/estadistica/mensual', methods=['POST'])
+@require_auth
+def generar_estadistica_mensual():
+    try:
+        data = request.json
+        seccion_id = data.get('seccion_id')
+        mes = int(data.get('mes'))
+        anio = int(data.get('anio'))
+        dias_habiles = int(data.get('dias_habiles'))
+        
+        # 1. Definir Fechas del Mes
+        fecha_inicio = date(anio, mes, 1)
+        # Obtener el último día del mes
+        ultimo_dia = calendar.monthrange(anio, mes)[1]
+        fecha_fin = date(anio, mes, ultimo_dia)
+        
+        meses_nombres = ['', 'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
+
+        # 2. Consultar Datos de la Sección y Docentes
+        res_sec = supabase.table("secciones").select("nivel, letra, periodo_id, periodos_academicos(nombre)").eq("id", seccion_id).single().execute()
+        seccion_info = res_sec.data
+        
+        res_doc = supabase.table("docentes_secciones").select("usuarios(nombres, apellidos)").eq("seccion_id", seccion_id).execute()
+        nombres_docentes = [f"{d['usuarios']['nombres'].split(' ')[0]} {d['usuarios']['apellidos'].split(' ')[0]}" for d in res_doc.data if d.get('usuarios')]
+        docentes_str = " y ".join(nombres_docentes)
+
+        # 3. Consultar Matrícula (Alumnos Asignados) — se hace ANTES que asistencia para
+        #    construir el mapa de sexo por hijo_id (evita depender del join hijos(sexo) en asistencias)
+        res_mat = supabase.table("asignaciones_estudiantes").select("created_at, estado, hijo_id, hijos(id, nombre, apellidos, fecha_nacimiento, sexo, fecha_retiro)").eq("seccion_id", seccion_id).execute()
+
+        # Mapa de sexo: { hijo_id: 'M' o 'F' }  — usado para clasificar asistencia
+        sexo_map = {}
+        for asig in res_mat.data:
+            h = asig.get('hijos')
+            if h and asig.get('hijo_id'):
+                sexo_map[asig['hijo_id']] = h.get('sexo', '')
+
+        # 3. Consultar Asistencias del mes — sin join a hijos (usa sexo_map)
+        res_asist = supabase.table("asistencias").select("fecha, estado_asistencia, hijo_id").eq("seccion_id", seccion_id).gte("fecha", fecha_inicio.isoformat()).lte("fecha", fecha_fin.isoformat()).execute()
+        
+        asistencia_diaria = {}
+        for a in res_asist.data:
+            f_str = a['fecha']
+            if f_str not in asistencia_diaria:
+                dia_nombre = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"][datetime.strptime(f_str, "%Y-%m-%d").weekday()]
+                asistencia_diaria[f_str] = {'fecha': f_str[-2:], 'nombre': dia_nombre, 'v': 0, 'h': 0, 't': 0}
+            
+            if a['estado_asistencia'] == 'presente':
+                sexo = sexo_map.get(a.get('hijo_id'), '')
+                if sexo == 'M':
+                    asistencia_diaria[f_str]['v'] += 1
+                elif sexo == 'F':
+                    asistencia_diaria[f_str]['h'] += 1
+                asistencia_diaria[f_str]['t'] += 1
+
+        dias_asistencia_lista = sorted(list(asistencia_diaria.values()), key=lambda x: x['fecha'])
+        dias_trabajados = len(dias_asistencia_lista)
+
+        # Totales y Promedios de Asistencia
+        tot_asist_v = sum(d['v'] for d in dias_asistencia_lista)
+        tot_asist_h = sum(d['h'] for d in dias_asistencia_lista)
+        tot_asist_t = tot_asist_v + tot_asist_h
+
+        # Regla del MPPE: Promedio mensual con redondeo hacia arriba si decimal >= 0.5
+        def redondear_mppe(valor):
+            return int(valor + 0.5) if valor > 0 else 0
+
+        prom_v = redondear_mppe(tot_asist_v / dias_habiles) if dias_habiles > 0 else 0
+        prom_h = redondear_mppe(tot_asist_h / dias_habiles) if dias_habiles > 0 else 0
+        prom_t = prom_v + prom_h
+
+        print(f"📊 DEBUG — dias_habiles={dias_habiles} | tot_v={tot_asist_v} tot_h={tot_asist_h} | prom_v={prom_v} prom_h={prom_h} | dias_trabajados={dias_trabajados} | sexo_map={sexo_map}")
+
+        # 4. Procesar Matrícula — variables para Ingresos, Egresos y Cuadre
+        ingresos_lista, egresos_lista = [], []
+        mat_ini_v, mat_ini_h, mat_fin_v, mat_fin_h = 0, 0, 0, 0
+        ing_v, ing_h, egr_v, egr_h = 0, 0, 0, 0
+        
+        # Diccionarios para Edades (Maternal, 3, 4, 5, 6)
+        edades_v = { 'mat':0, '3':0, '4':0, '5':0, '6':0 }
+        edades_h = { 'mat':0, '3':0, '4':0, '5':0, '6':0 }
+
+        def calcular_edad(fecha_nac_str):
+            if not fecha_nac_str: return 0
+            fn = datetime.strptime(fecha_nac_str, "%Y-%m-%d").date()
+            return fecha_fin.year - fn.year - ((fecha_fin.month, fecha_fin.day) < (fn.month, fn.day))
+
+        for asig in res_mat.data:
+            h = asig['hijos']
+            if not h: continue
+            
+            sexo = h.get('sexo')
+            estado_asig = asig.get('estado', 'cursando')  # 'cursando' o 'retirado'
+            fecha_ingreso = datetime.strptime(asig['created_at'][:10], "%Y-%m-%d").date()
+            
+            # Fecha de retiro: priorizar hijos.fecha_retiro; si no, usar estado de asignación
+            # Si estado='retirado' pero no hay fecha_retiro, usamos fecha_fin como aproximación
+            fecha_retiro = None
+            if h.get('fecha_retiro'):
+                fecha_retiro = datetime.strptime(h['fecha_retiro'], "%Y-%m-%d").date()
+            elif estado_asig == 'retirado':
+                # No sabemos cuándo se retiró exactamente — lo tratamos como retirado en el mes actual
+                # Usamos fecha_fin del mes para que NO cuente en matrícula final
+                fecha_retiro = fecha_fin
+
+            edad = calcular_edad(h['fecha_nacimiento'])
+            edad_label = "Maternal" if edad < 3 else f"{edad} años"
+            
+            # Estaba inscrito AL INICIO del mes
+            if fecha_ingreso < fecha_inicio and (not fecha_retiro or fecha_retiro >= fecha_inicio):
+                if sexo == 'M': mat_ini_v += 1
+                elif sexo == 'F': mat_ini_h += 1
+            
+            # Ingresó DURANTE este mes
+            if fecha_inicio <= fecha_ingreso <= fecha_fin:
+                if sexo == 'M': ing_v += 1
+                elif sexo == 'F': ing_h += 1
+                ingresos_lista.append({'nombre': f"{h['apellidos']} {h['nombre']}", 'edad': edad_label, 'sexo': sexo})
+
+            # Se retiró DURANTE este mes
+            if fecha_retiro and fecha_inicio <= fecha_retiro <= fecha_fin:
+                if sexo == 'M': egr_v += 1
+                elif sexo == 'F': egr_h += 1
+                egresos_lista.append({'nombre': f"{h['apellidos']} {h['nombre']}", 'edad': edad_label, 'sexo': sexo})
+
+            # Activo AL FINAL del mes (Matrícula Final): ingresó antes del fin Y no se retiró antes del fin
+            es_activo_al_final = fecha_ingreso <= fecha_fin and (not fecha_retiro or fecha_retiro > fecha_fin)
+            if es_activo_al_final:
+                if sexo == 'M': 
+                    mat_fin_v += 1
+                    clave = 'mat' if edad < 3 else (str(edad) if edad <= 6 else '6')
+                    edades_v[clave] += 1
+                elif sexo == 'F': 
+                    mat_fin_h += 1
+                    clave = 'mat' if edad < 3 else (str(edad) if edad <= 6 else '6')
+                    edades_h[clave] += 1
+
+        # 5. Construir Diccionario para el Word (Contexto)
+        context = {
+            # Encabezado
+            "mes": meses_nombres[mes].upper(),
+            "periodo_escolar": seccion_info.get("periodos_academicos", {}).get("nombre", ""),
+            "dias_habiles": dias_habiles,
+            "seccion": f"{seccion_info.get('nivel', '')} {seccion_info.get('letra', '')}",
+            "dias_trabajados": dias_trabajados,
+            "docentes": docentes_str.upper(),
+            
+            # Tablas Dinámicas
+            "dias_asistencia": dias_asistencia_lista,
+            "ingresos": ingresos_lista,
+            "egresos": egresos_lista,
+            
+            # Totales Asistencia
+            "total_v": tot_asist_v, "total_h": tot_asist_h, "total_t": tot_asist_t,
+            "prom_v": prom_v, "prom_h": prom_h, "prom_t": prom_t,
+            
+            # Cuadro de Matrícula
+            "mat_ini_v": mat_ini_v, "mat_ini_h": mat_ini_h, "mat_ini_t": mat_ini_v + mat_ini_h,
+            "ing_v": ing_v, "ing_h": ing_h, "ing_t": ing_v + ing_h,
+            "sum_v": mat_ini_v + ing_v, "sum_h": mat_ini_h + ing_h, "sum_t": (mat_ini_v + ing_v) + (mat_ini_h + ing_h),
+            "egr_v": egr_v, "egr_h": egr_h, "egr_t": egr_v + egr_h,
+            "mat_fin_v": mat_fin_v, "mat_fin_h": mat_fin_h, "mat_fin_t": mat_fin_v + mat_fin_h,
+            
+            # Edades (Maternal, 3, 4, 5, 6, Total)
+            "ed_mat_v": edades_v['mat'], "ed_mat_h": edades_h['mat'], "ed_mat_t": edades_v['mat'] + edades_h['mat'],
+            "ed_3_v": edades_v['3'], "ed_3_h": edades_h['3'], "ed_3_t": edades_v['3'] + edades_h['3'],
+            "ed_4_v": edades_v['4'], "ed_4_h": edades_h['4'], "ed_4_t": edades_v['4'] + edades_h['4'],
+            "ed_5_v": edades_v['5'], "ed_5_h": edades_h['5'], "ed_5_t": edades_v['5'] + edades_h['5'],
+            "ed_6_v": edades_v['6'], "ed_6_h": edades_h['6'], "ed_6_t": edades_v['6'] + edades_h['6'],
+            "ed_tot_v": sum(edades_v.values()), "ed_tot_h": sum(edades_h.values()), "ed_tot_t": sum(edades_v.values()) + sum(edades_h.values())
+        }
+
+        # 6. Renderizar Plantilla y Devolver .docx en memoria
+        # (Compatible con Windows local y Render/Linux sin dependencias externas)
+        SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+        plantilla_path = os.path.join(SCRIPT_DIR, "plantillas", "estadistica_mensual.docx")
+        if not os.path.exists(plantilla_path):
+            return jsonify({'success': False, 'message': 'Plantilla de estadística no encontrada.'}), 404
+
+        doc = DocxTemplate(plantilla_path)
+        doc.render(context)
+
+        # Guardar en memoria (sin tocar el disco ni usar subprocess)
+        file_stream = io.BytesIO()
+        doc.save(file_stream)
+        file_stream.seek(0)
+
+        nombre_archivo = f"Estadistica_{meses_nombres[mes]}_{anio}.docx"
+        return send_file(
+            file_stream,
+            as_attachment=True,
+            download_name=nombre_archivo,
+            mimetype='application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+        )
+
+    except Exception as e:
+        print(f"❌ Error en estadística: {e}")
+        return jsonify({'success': False, 'message': 'Error al generar la estadística.'}), 500
+
+
+@app.route('/api/estadistica/rango', methods=['POST'])
+@require_auth
+def estadistica_por_rango():
+    """Genera la data de asistencia agrupada por días para pintar gráficos."""
+    try:
+        data = request.json
+        seccion_id = data.get('seccion_id')
+        fecha_inicio = data.get('fecha_inicio')
+        fecha_fin = data.get('fecha_fin')
+
+        if not all([seccion_id, fecha_inicio, fecha_fin]):
+            return jsonify({'success': False, 'message': 'Faltan datos obligatorios.'}), 400
+
+        # Consultar la asistencia en ese rango de fechas
+        res = supabase.table("asistencias").select("fecha, estado_asistencia").eq("seccion_id", seccion_id).gte("fecha", fecha_inicio).lte("fecha", fecha_fin).execute()
+        
+        total_presentes = 0
+        total_ausentes = 0
+        asistencia_diaria = {}
+
+        for a in res.data:
+            fecha = a['fecha']
+            estado = a['estado_asistencia']
+            
+            if fecha not in asistencia_diaria:
+                asistencia_diaria[fecha] = {'presentes': 0, 'ausentes': 0}
+            
+            if estado == 'presente':
+                total_presentes += 1
+                asistencia_diaria[fecha]['presentes'] += 1
+            else:
+                total_ausentes += 1
+                asistencia_diaria[fecha]['ausentes'] += 1
+        
+        # Ordenar las fechas cronológicamente para el gráfico de línea
+        fechas_ordenadas = sorted(asistencia_diaria.keys())
+        tendencia = []
+        for f in fechas_ordenadas:
+            # Convertir fecha YYYY-MM-DD a formato corto (ej: 15/03)
+            f_obj = datetime.strptime(f, "%Y-%m-%d")
+            fecha_corta = f"{f_obj.day:02d}/{f_obj.month:02d}"
+            
+            tendencia.append({
+                'fecha_corta': fecha_corta,
+                'presentes': asistencia_diaria[f]['presentes'],
+                'ausentes': asistencia_diaria[f]['ausentes']
+            })
+
+        return jsonify({
+            'success': True,
+            'resumen': {
+                'total_presentes': total_presentes,
+                'total_ausentes': total_ausentes,
+                'total_registros': total_presentes + total_ausentes
+            },
+            'tendencia': tendencia
+        }), 200
+
+    except Exception as e:
+        print(f"❌ Error estadística rango: {e}")
+        return jsonify({'success': False, 'message': 'Error al procesar las estadísticas.'}), 500
+
+
 @app.route('/')
 def home():
 
@@ -1677,6 +2149,32 @@ def home():
         "status": "online", 
         "mensaje": "API del Sistema de Gestión Escolar funcionando correctamente."
     }), 200
+@app.route('/api/usuarios/actualizar-password', methods=['PUT'])
+@require_auth
+def actualizar_password_propia():
+    """Permite al usuario autenticado (vía token de recuperación) cambiar su propia clave."""
+    data = request.json
+    nueva_password = data.get('password')
+
+    if not nueva_password or len(nueva_password) < 6:
+        return jsonify({'success': False, 'message': 'La contraseña debe tener al menos 6 caracteres.'}), 400
+
+    try:
+        # El decorador @require_auth ya validó el token y puso al usuario en request.current_user
+        user_id = request.current_user.id
+        
+        # Actualizamos la clave en Supabase Auth usando el cliente admin
+        supabase.auth.admin.update_user_by_id(
+            user_id, 
+            {"password": nueva_password}
+        )
+
+        return jsonify({'success': True, 'message': 'Contraseña actualizada con éxito.'}), 200
+
+    except Exception as e:
+        print(f"❌ Error al actualizar password: {e}")
+        return jsonify({'success': False, 'message': 'Error interno al procesar el cambio de clave.'}), 500
+
 # =======================================================
 # PUNTO DE ENTRADA
 # =======================================================

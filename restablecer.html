@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nueva Contraseña - Centro La Paragua</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-image: url(img/descarga\ \(1\)_upscayl_3x_digital-art-4x.png);
+            background-size: cover;
+            background-repeat: no-repeat;
+        }
+    </style>
+    <script src="https://unpkg.com/phosphor-icons"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+<body class="antialiased min-h-screen flex items-center justify-center p-4">
+
+    <div class="max-w-md w-full bg-white rounded-[2.5rem] p-8 sm:p-10 shadow-2xl">
+        <div class="text-left mb-8">
+            <h1 class="text-3xl font-black text-gray-900">Crea tu nueva clave</h1>
+            <p class="text-gray-500 mt-2 text-sm font-medium">Por seguridad, elige una contraseña que no hayas usado antes en este portal.</p>
+        </div>
+
+        <form id="reset-form" class="space-y-6">
+            <div>
+                <label class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Nueva Contraseña</label>
+                <div class="relative">
+                    <i class="ph-lock-key text-gray-400 absolute left-4 top-1/2 -translate-y-1/2 text-xl"></i>
+                    <input type="password" id="password" required minlength="6"
+                        class="w-full pl-12 pr-4 py-4 border border-gray-200 rounded-2xl focus:ring-4 focus:ring-pink-100 focus:border-pink-500 outline-none transition-all text-lg"
+                        placeholder="••••••••">
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Confirmar Contraseña</label>
+                <div class="relative">
+                    <i class="ph-shield-check text-gray-400 absolute left-4 top-1/2 -translate-y-1/2 text-xl"></i>
+                    <input type="password" id="confirm-password" required minlength="6"
+                        class="w-full pl-12 pr-4 py-4 border border-gray-200 rounded-2xl focus:ring-4 focus:ring-pink-100 focus:border-pink-500 outline-none transition-all text-lg"
+                        placeholder="••••••••">
+                </div>
+            </div>
+
+            <button type="submit" id="btn-submit"
+                class="w-full py-4 bg-gray-900 text-white rounded-2xl font-black text-lg shadow-xl hover:bg-black transition-all transform hover:-translate-y-1 flex justify-center items-center gap-2">
+                Actualizar Contraseña
+            </button>
+        </form>
+    </div>
+
+    <script src="js/config.js"></script>
+    <script>
+        // LÓGICA DE RECUPERACIÓN
+        document.getElementById('reset-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const password = document.getElementById('password').value;
+            const confirm = document.getElementById('confirm-password').value;
+            const btn = document.getElementById('btn-submit');
+
+            if (password !== confirm) {
+                Swal.fire('¡Oops!', 'Las contraseñas no coinciden.', 'warning');
+                return;
+            }
+
+            // 1. Extraer el token de la URL (Supabase lo manda después del #)
+            // Ejemplo: /restablecer.html#access_token=xyz...
+            const hash = window.location.hash;
+            const params = new URLSearchParams(hash.replace('#', '?'));
+            const accessToken = params.get('access_token');
+
+            if (!accessToken) {
+                Swal.fire({
+                    title: 'Enlace expirado',
+                    text: 'El enlace de recuperación ya no es válido o ha expirado. Por favor, solicita uno nuevo.',
+                    icon: 'error',
+                    confirmButtonText: 'Ir al Login',
+                    confirmButtonColor: '#EC4899'
+                }).then(() => window.location.href = 'login.html');
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerHTML = '<i class="ph-spinner animate-spin"></i> Guardando...';
+
+            try {
+                // 2. Llamar a nuestra API para actualizar la clave
+                const res = await fetch(`${API_BASE_URL}/api/usuarios/actualizar-password`, {
+                    method: 'PUT',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${accessToken}` // Mandamos el token del correo
+                    },
+                    body: JSON.stringify({ password: password })
+                });
+
+                if (res.ok) {
+                    Swal.fire({
+                        title: '¡Clave actualizada!',
+                        text: 'Ya puedes iniciar sesión con tu nueva contraseña.',
+                        icon: 'success',
+                        confirmButtonColor: '#10b981'
+                    }).then(() => window.location.href = 'login.html');
+                } else {
+                    const data = await res.json();
+                    Swal.fire('Error', data.message || 'No se pudo actualizar la clave.', 'error');
+                }
+            } catch (err) {
+                Swal.fire('Error de Red', 'No se pudo conectar con el servidor.', 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = 'Actualizar Contraseña';
+            }
+        });
+    </script>
+</body>
+</html>

@@ -442,16 +442,30 @@
                                 <div>
                                     <h2 class="text-3xl font-black text-gray-800 tracking-tight">Usuarios del Sistema
                                     </h2>
-                                    <p class="text-gray-500 font-medium mt-1">Gestiona los accesos de Administradores y
+                                    <p class="text-gray-500 font-medium mt-1" id="user-section-subtitle">Gestiona los accesos de Administradores y
                                         Docentes.</p>
                                 </div>
                             </div>
 
-                            <button onclick="abrirModalCrearUsuario()"
-                                class="w-full md:w-auto px-6 py-3.5 bg-purple-500 text-white rounded-xl font-bold shadow-lg shadow-purple-200 hover:bg-purple-600 hover:shadow-purple-300 transform hover:-translate-y-1 transition-all flex items-center justify-center gap-2 text-base">
-                                <i class="ph-bold ph-user-plus text-xl"></i>
-                                <span>Nuevo Usuario</span>
-                            </button>
+                            <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full md:w-auto">
+                                <!-- Tab Toggle: Personal vs Representantes -->
+                                <div class="flex bg-gray-50/80 p-1.5 rounded-2xl border border-gray-100 shadow-inner">
+                                    <button onclick="cambiarTabUsuarios('personal')" id="btn-tab-personal"
+                                        class="flex-1 sm:flex-none px-5 py-2.5 text-sm font-bold rounded-xl bg-white shadow-sm text-purple-700 transition-all flex items-center gap-2 justify-center">
+                                        <i class="ph-fill ph-shield-check text-base"></i> Personal
+                                    </button>
+                                    <button onclick="cambiarTabUsuarios('representantes')" id="btn-tab-representantes"
+                                        class="flex-1 sm:flex-none px-5 py-2.5 text-sm font-bold rounded-xl text-gray-500 hover:text-gray-700 hover:bg-gray-100/50 transition-all flex items-center gap-2 justify-center">
+                                        <i class="ph-fill ph-users text-base"></i> Representantes
+                                    </button>
+                                </div>
+                                <!-- Nuevo Usuario button (se oculta en tab de Representantes) -->
+                                <button id="btn-nuevo-usuario" onclick="abrirModalCrearUsuario()"
+                                    class="w-full sm:w-auto px-6 py-3.5 bg-purple-500 text-white rounded-xl font-bold shadow-lg shadow-purple-200 hover:bg-purple-600 hover:shadow-purple-300 transform hover:-translate-y-1 transition-all flex items-center justify-center gap-2 text-base">
+                                    <i class="ph-bold ph-user-plus text-xl"></i>
+                                    <span>Nuevo Usuario</span>
+                                </button>
+                            </div>
                         </div>
 
                         <div
@@ -616,6 +630,7 @@
                                                 class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-400 outline-none transition-all bg-white focus:shadow-md text-sm">
                                                 <option value="administrador">Administrador</option>
                                                 <option value="docente">Docente</option>
+                                                <option value="representante" style="display:none">Representante</option>
                                             </select>
                                             <p id="edit-user-role-warn"
                                                 class="hidden text-[10px] font-bold text-red-400 mt-2 uppercase tracking-wider">
