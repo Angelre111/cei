@@ -1676,7 +1676,7 @@
                                 <td class="px-6 py-4">
                                     <div class="flex items-center gap-3">
                                         <div class="w-9 h-9 rounded-full bg-pink-100 text-pink-700 flex items-center justify-center font-bold text-sm flex-shrink-0">${inicial}</div>
-                                        <p class="font-medium text-gray-800">${student.nombre_completo}</p>
+                                        <p class="font-medium text-gray-800">${nombreCompleto}</p>
                                     </div>
                                 </td>
 
@@ -1720,55 +1720,23 @@
         // ============================================
 
         function populateStudentDropdowns() {
-            const select = document.getElementById('eval-student-select');
-            select.innerHTML = '<option value="">Seleccione un estudiante...</option>';
-            listaEstudiantes.forEach(student => {
-                select.innerHTML += `<option value="${student.id}">${student.nombre_completo}</option>`;
-            });
+            // Selector del nuevo panel de evaluaciones (eval-estudiante-select)
+            const selectNuevo = document.getElementById('eval-estudiante-select');
+            if (selectNuevo) {
+                selectNuevo.innerHTML = '<option value="">Seleccione a un estudiante...</option>';
+                listaEstudiantes.forEach(student => {
+                    const nombreCompleto = `${student.nombre || ''} ${student.apellido || ''}`.trim();
+                    selectNuevo.innerHTML += `<option value="${student.id}">${nombreCompleto}</option>`;
+                });
+            }
         }
 
         function loadEvaluation() {
-            const studentId = document.getElementById('eval-student-select').value;
-            const period = document.getElementById('eval-period-select').value;
-            const textarea = document.getElementById('eval-textarea');
-
-            if (appData.evaluaciones[period] && appData.evaluaciones[period][studentId]) {
-                textarea.value = appData.evaluaciones[period][studentId];
-            } else {
-                textarea.value = '';
-            }
+            // Funciones legacy mantenidas como stub (panel de evaluaciones rediseñado)
         }
 
         function saveEvaluation() {
-            const studentId = document.getElementById('eval-student-select').value;
-            const period = document.getElementById('eval-period-select').value;
-            const text = document.getElementById('eval-textarea').value;
-
-            if (!studentId || !period) {
-                Swal.fire({
-                    title: 'Campos Incompletos',
-                    text: 'Por favor, seleccione un estudiante y un período.',
-                    icon: 'warning',
-                    confirmButtonColor: '#ec4899',
-                    customClass: { popup: 'rounded-3xl' }
-                });
-                return;
-            }
-
-            if (!appData.evaluaciones[period]) {
-                appData.evaluaciones[period] = {};
-            }
-
-            appData.evaluaciones[period][studentId] = text;
-            Swal.fire({
-                title: '¡Guardado!',
-                text: 'Evaluación guardada exitosamente.',
-                icon: 'success',
-                confirmButtonColor: '#ec4899',
-                customClass: { popup: 'rounded-3xl' }
-            });
-
-            console.log("Datos de Evaluaciones:", appData.evaluaciones);
+            // Funciones legacy mantenidas como stub (panel de evaluaciones rediseñado)
         }
 
         // ============================================
@@ -1806,7 +1774,8 @@
             const tbody = document.getElementById('preview-table-body');
             tbody.innerHTML = '';
             listaEstudiantes.forEach(student => {
-                const inicial = student.nombre_completo.charAt(0).toUpperCase();
+                const nombreCompleto = `${student.nombre || ''} ${student.apellido || ''}`.trim();
+                const inicial = nombreCompleto.charAt(0).toUpperCase();
                 tbody.innerHTML += `
                     <tr class="hover:bg-gray-50 border-b border-gray-50 transition-colors">
                         <td class="px-6 py-4 text-gray-500 text-sm font-mono">${student.cedula}</td>
@@ -1821,7 +1790,7 @@
                         <td class="px-6 py-4 text-center">
                             <button onclick="abrirModalFicha(${student.id})" 
                                 class="inline-flex items-center justify-center p-2 bg-white border-2 border-pink-100 text-pink-600 rounded-xl hover:bg-pink-500 hover:text-white hover:border-pink-500 transition-all duration-300 shadow-sm group" 
-                                title="Ver Ficha de ${student.nombre_completo}">
+                                title="Ver Ficha de ${nombreCompleto}">
                                 <svg class="w-5 h-5 text-pink-400 group-hover:text-white transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
@@ -1843,7 +1812,8 @@
             doc.text(`Fecha: ${new Date().toLocaleDateString()}`, 14, 30);
 
             const tableData = listaEstudiantes.map(student => {
-                return [student.cedula, student.nombre_completo, student.seccion, student.representante];
+                const nc = `${student.nombre || ''} ${student.apellido || ''}`.trim();
+                return [student.cedula, nc, student.seccion, student.representante];
             });
 
             doc.autoTable({
@@ -1923,10 +1893,11 @@
                 populateAttendanceList();
             });
 
-            // Evaluaciones
-            document.getElementById('eval-student-select').addEventListener('change', loadEvaluation);
-            document.getElementById('eval-period-select').addEventListener('change', loadEvaluation);
-            document.getElementById('btn-save-evaluation').addEventListener('click', saveEvaluation);
+            // Evaluaciones (nuevo panel — los listeners se gestionan en el propio panel)
+            const evalEstudiante = document.getElementById('eval-estudiante-select');
+            if (evalEstudiante) evalEstudiante.addEventListener('change', loadEvaluation);
+            const btnGuardarEval = document.getElementById('btn-guardar-evaluacion');
+            if (btnGuardarEval) btnGuardarEval.addEventListener('click', saveEvaluation);
 
             // Listados (PDF)
             document.getElementById('btn-download-pdf').addEventListener('click', generatePDF);
