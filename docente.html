@@ -9,6 +9,8 @@
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
 
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
     <!-- jsPDF CDN -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
@@ -69,6 +71,21 @@
         ::-webkit-scrollbar-thumb:hover {
             background: #64748b;
             /* cool-gray-500 */
+        }
+
+        /* Custom Scrollbar para columnas internas */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        .custom-scrollbar:hover::-webkit-scrollbar-thumb {
+            background: #94a3b8;
         }
 
         /* Clase activa personalizada para el sidebar */
@@ -160,6 +177,13 @@
                         class="nav-link flex items-center space-x-3.5 px-4 py-3.5 rounded-2xl transition-all duration-200 text-gray-500 hover:bg-gray-50">
                         <i class="ph-fill ph-calendar-check text-xl"></i>
                         <span class="font-semibold text-sm">Asistencia</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" data-section="section-proyectos"
+                        class="nav-link flex items-center space-x-3.5 px-4 py-3.5 rounded-2xl transition-all duration-200 text-gray-500 hover:bg-gray-50">
+                        <i class="ph-fill ph-books text-xl"></i>
+                        <span class="font-semibold text-sm">Proyectos</span>
                     </a>
                 </li>
                 <li>
@@ -523,49 +547,214 @@
                     </div>
                 </section>
 
-                <!-- ============================================ -->
-                <!-- SECCIÓN 3: EVALUACIONES DESCRIPTIVAS -->
-                <!-- ============================================ -->
-                <section id="section-evaluaciones" class="page-section hidden">
-                    <div class="bg-white p-6 rounded-2xl shadow-md">
-                        <h2 class="text-2xl font-bold text-gray-800 mb-4">Registro de Evaluaciones Descriptivas</h2>
+                <section id="section-proyectos" class="page-section hidden fade-in h-[calc(100vh-8rem)]">
+                    <div class="bg-white/95 backdrop-blur-xl p-6 md:p-8 rounded-[2.5rem] shadow-xl border border-white h-full flex flex-col">
+                        
+                        <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-6 flex-shrink-0">
+                            <div class="flex items-center gap-4">
+                                <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-purple-400 to-purple-600 flex items-center justify-center shadow-lg shadow-purple-200 transform -rotate-6">
+                                    <i class="ph-bold ph-books text-3xl text-white"></i>
+                                </div>
+                                <div>
+                                    <h2 class="text-2xl font-black text-gray-800 tracking-tight">Proyectos de Aprendizaje</h2>
+                                    <p class="text-gray-500 font-medium mt-1 text-sm">Planifica y define los indicadores a evaluar.</p>
+                                </div>
+                            </div>
+                            <button onclick="abrirModalNuevoProyecto()" class="w-full md:w-auto px-6 py-3.5 bg-purple-500 text-white rounded-xl font-bold shadow-lg shadow-purple-200 hover:bg-purple-600 hover:shadow-purple-300 transform hover:-translate-y-1 transition-all flex items-center justify-center gap-2">
+                                <i class="ph-bold ph-plus-circle text-xl"></i>
+                                <span>Nuevo Proyecto</span>
+                            </button>
+                        </div>
 
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                            <div>
-                                <label for="eval-student-select"
-                                    class="block text-sm font-medium text-gray-700 mb-1">Seleccionar Estudiante</label>
-                                <select id="eval-student-select"
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300">
-                                    <!-- Opciones de estudiantes cargadas por JS -->
-                                </select>
+                        <div class="flex flex-col lg:flex-row gap-6 flex-1 min-h-0">
+                            
+                            <div class="w-full lg:w-1/3 flex flex-col gap-4">
+                                <div class="flex p-1 bg-gray-100 rounded-xl flex-shrink-0">
+                                    <button onclick="filtrarProyectos('activos')" id="tab-proyectos-activos" class="flex-1 py-2 text-sm font-bold rounded-lg shadow-sm bg-white text-purple-600 transition-all">Activos</button>
+                                    <button onclick="filtrarProyectos('cerrados')" id="tab-proyectos-cerrados" class="flex-1 py-2 text-sm font-bold rounded-lg text-gray-500 hover:text-gray-700 transition-all">Historial</button>
+                                </div>
+
+                                <div class="flex-1 overflow-y-auto bg-gray-50/50 rounded-2xl border border-gray-100 p-3 space-y-3" id="lista-proyectos-container">
+                                    <div class="text-center py-10 px-4">
+                                        <i class="ph-duotone ph-folder-open text-4xl text-gray-300 mb-2"></i>
+                                        <p class="text-sm font-bold text-gray-400">Cargando proyectos...</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="w-full lg:w-2/3 bg-gray-50/50 rounded-2xl border border-gray-100 p-6 flex flex-col h-full relative overflow-hidden" id="detalle-proyecto-container">
+                                
+                                <div id="proyecto-empty-state" class="absolute inset-0 flex flex-col items-center justify-center bg-gray-50/80 z-10">
+                                    <div class="w-20 h-20 bg-white rounded-full flex items-center justify-center shadow-sm border border-gray-100 mb-4">
+                                        <i class="ph-duotone ph-cursor-click text-4xl text-purple-300"></i>
+                                    </div>
+                                    <h3 class="text-lg font-bold text-gray-700">Selecciona un proyecto</h3>
+                                    <p class="text-sm text-gray-500 mt-1 text-center max-w-sm">Haz clic en un proyecto de la lista para ver o agregar sus indicadores de evaluación.</p>
+                                </div>
+
+                                <div id="proyecto-content" class="hidden flex-col h-full fade-in">
+                                    <div class="flex justify-between items-start mb-6 flex-shrink-0">
+                                        <div>
+                                            <span id="detalle-momento-badge" class="inline-block px-3 py-1 bg-purple-100 text-purple-700 text-[10px] font-black uppercase tracking-widest rounded-lg mb-2">Momento 1</span>
+                                            <h3 id="detalle-proyecto-nombre" class="text-2xl font-black text-gray-800 leading-tight">Nombre del Proyecto</h3>
+                                        </div>
+                                        <button id="btn-cerrar-proyecto" class="px-4 py-2 bg-white border border-gray-200 text-gray-600 hover:text-red-600 hover:bg-red-50 hover:border-red-200 rounded-xl text-xs font-bold transition-colors shadow-sm flex items-center gap-2">
+                                            <i class="ph-bold ph-lock-key"></i> Cerrar Proyecto
+                                        </button>
+                                    </div>
+
+                                    <div class="bg-white p-4 rounded-2xl border border-purple-100 shadow-sm mb-6 flex-shrink-0" id="form-agregar-indicador">
+                                        <h4 class="text-xs font-bold text-purple-500 uppercase tracking-widest mb-3"><i class="ph-fill ph-plus-circle"></i> Nuevo Indicador</h4>
+                                        <div class="flex flex-col sm:flex-row gap-3">
+                                            <select id="nuevo-indicador-area" class="sm:w-1/3 px-3 py-2.5 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-purple-300 bg-gray-50">
+                                                <option value="" disabled selected>Selecciona el Área...</option>
+                                                <option value="Formación Personal y Social">Formación Personal y Social</option>
+                                                <option value="Relación entre los Componentes del Ambiente">Relación con el Ambiente</option>
+                                                <option value="Comunicación y Representación">Comunicación y Repres.</option>
+                                            </select>
+                                            <input type="text" id="nuevo-indicador-texto" placeholder="Ej: Reconoce sus pertenencias..." class="flex-1 px-4 py-2.5 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-purple-300">
+                                            <button id="btn-guardar-indicador" class="px-6 py-2.5 bg-purple-500 text-white rounded-xl font-bold hover:bg-purple-600 transition-colors shadow-sm whitespace-nowrap">
+                                                Añadir
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <div class="flex-1 overflow-y-auto pr-2 space-y-6" id="lista-indicadores-areas">
+                                        </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="section-evaluaciones" class="page-section hidden fade-in h-[calc(100vh-8rem)]">
+                    <div class="bg-white/95 backdrop-blur-xl p-6 md:p-8 rounded-[2.5rem] shadow-xl border border-white h-full flex flex-col">
+                        
+                        <div class="flex items-center gap-4 mb-6 flex-shrink-0">
+                            <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-indigo-400 to-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-200 transform -rotate-6">
+                                <i class="ph-bold ph-exam text-3xl text-white"></i>
                             </div>
                             <div>
-                                <label for="eval-period-select"
-                                    class="block text-sm font-medium text-gray-700 mb-1">Seleccionar Período
-                                    Académico</label>
-                                <select id="eval-period-select"
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300">
-                                    <option value="p1">Período 1</option>
-                                    <option value="p2" selected>Período 2</option>
-                                    <option value="p3">Período 3</option>
-                                </select>
+                                <h2 class="text-2xl font-black text-gray-800 tracking-tight">Evaluación y Boletines</h2>
+                                <p class="text-gray-500 font-medium mt-1 text-sm">Evalúa indicadores y genera el boletín cualitativo.</p>
                             </div>
                         </div>
 
-                        <div>
-                            <label for="eval-textarea" class="block text-sm font-medium text-gray-700 mb-1">Evaluación
-                                Descriptiva</label>
-                            <textarea id="eval-textarea" rows="10"
-                                class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300"
-                                placeholder="Escriba aquí el informe descriptivo del estudiante..."></textarea>
+                        <div class="bg-gray-50 p-4 rounded-2xl border border-gray-100 flex flex-col xl:flex-row gap-4 mb-6 flex-shrink-0">
+                            <div class="w-full xl:w-1/4">
+                                <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5 ml-1">Momento Pedagógico</label>
+                                <div class="relative">
+                                    <i class="ph-bold ph-calendar-star absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                                    <select id="eval-momento-select" class="w-full pl-9 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-bold text-gray-700 outline-none focus:ring-2 focus:ring-indigo-300 focus:border-indigo-400 shadow-sm appearance-none cursor-pointer">
+                                        <option value="" disabled selected>Seleccione...</option>
+                                        <option value="1">Primer Momento (1er Lapso)</option>
+                                        <option value="2">Segundo Momento (2do Lapso)</option>
+                                        <option value="3">Tercer Momento (3er Lapso)</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="w-full xl:w-2/4">
+                                <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5 ml-1">Estudiante a Evaluar</label>
+                                <div class="relative">
+                                    <i class="ph-bold ph-student absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                                    <select id="eval-estudiante-select" class="w-full pl-9 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-bold text-gray-700 outline-none focus:ring-2 focus:ring-indigo-300 focus:border-indigo-400 shadow-sm appearance-none cursor-pointer disabled:bg-gray-100 disabled:text-gray-400" disabled>
+                                        <option value="">Primero seleccione un momento...</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="w-full xl:w-1/4 flex items-end">
+                                <div class="relative w-full group">
+                                    <button id="btn-clonar-indicadores" class="w-full py-2.5 px-4 bg-yellow-50 border-2 border-dashed border-yellow-300 text-yellow-700 rounded-xl font-bold text-sm flex items-center justify-center gap-2 hover:bg-yellow-100 hover:border-yellow-400 transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                                        <i class="ph-fill ph-magic-wand text-lg"></i>
+                                        <span>Clonar de...</span>
+                                        <i class="ph-bold ph-caret-down text-xs ml-auto"></i>
+                                    </button>
+                                    
+                                    <div id="dropdown-clonar" class="absolute top-full left-0 w-full mt-2 bg-white rounded-xl shadow-xl border border-gray-100 p-2 hidden z-10 max-h-48 overflow-y-auto">
+                                        <div class="text-[10px] font-bold text-gray-400 uppercase tracking-widest px-2 pb-2 mb-2 border-b border-gray-50">Alumnos ya evaluados</div>
+                                        <div id="lista-clonar-alumnos" class="space-y-1">
+                                            </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
-                        <div class="mt-6 text-right">
-                            <button id="btn-save-evaluation"
-                                class="px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-all">
+                        <div class="flex-1 min-h-0 overflow-hidden flex flex-col mb-6 relative">
+                            <div id="eval-empty-state" class="absolute inset-0 bg-white/80 backdrop-blur-sm z-10 flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-gray-200">
+                                <div class="w-16 h-16 bg-indigo-50 rounded-full flex items-center justify-center mb-3">
+                                    <i class="ph-duotone ph-list-checks text-3xl text-indigo-400"></i>
+                                </div>
+                                <h3 class="text-lg font-bold text-gray-700">Listo para evaluar</h3>
+                                <p class="text-sm text-gray-500 mt-1">Selecciona el Momento y al Estudiante arriba.</p>
+                            </div>
+
+                            <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 h-full">
+                                <div class="bg-pink-50/50 border border-pink-100 rounded-2xl p-4 flex flex-col h-full overflow-hidden">
+                                    <h4 class="text-[11px] font-black text-pink-600 uppercase tracking-widest mb-3 flex items-center gap-1.5 flex-shrink-0">
+                                        <i class="ph-fill ph-user-circle"></i> Formación Personal y Social
+                                    </h4>
+                                    <div class="flex-1 overflow-y-auto space-y-2 pr-1 custom-scrollbar" id="eval-col-formacion">
+                                        </div>
+                                </div>
+
+                                <div class="bg-green-50/50 border border-green-100 rounded-2xl p-4 flex flex-col h-full overflow-hidden">
+                                    <h4 class="text-[11px] font-black text-green-600 uppercase tracking-widest mb-3 flex items-center gap-1.5 flex-shrink-0">
+                                        <i class="ph-fill ph-plant"></i> Relación con el Ambiente
+                                    </h4>
+                                    <div class="flex-1 overflow-y-auto space-y-2 pr-1 custom-scrollbar" id="eval-col-ambiente">
+                                        </div>
+                                </div>
+
+                                <div class="bg-blue-50/50 border border-blue-100 rounded-2xl p-4 flex flex-col h-full overflow-hidden">
+                                    <h4 class="text-[11px] font-black text-blue-600 uppercase tracking-widest mb-3 flex items-center gap-1.5 flex-shrink-0">
+                                        <i class="ph-fill ph-chats-circle"></i> Comunicación y Representación
+                                    </h4>
+                                    <div class="flex-1 overflow-y-auto space-y-2 pr-1 custom-scrollbar" id="eval-col-comunicacion">
+                                        </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-white rounded-2xl border border-gray-200 p-4 shadow-sm flex-shrink-0">
+                            <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-2">
+                                <label class="block text-xs font-bold text-gray-700 uppercase tracking-widest">
+                                    Recomendación de la Docente
+                                </label>
+                                
+                                <div class="flex flex-wrap gap-2" id="eval-chips-container">
+                                    <button type="button" onclick="insertarRecomendacion('¡Felicidades por tus logros este lapso! Sigue así.')" class="px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-100 rounded-lg text-[11px] font-bold transition-colors">
+                                        <i class="ph-bold ph-star mr-1"></i> Felicitación
+                                    </button>
+                                    <button type="button" onclick="insertarRecomendacion('Se recomienda reforzar el repaso en el hogar.')" class="px-3 py-1.5 bg-orange-50 hover:bg-orange-100 text-orange-700 border border-orange-100 rounded-lg text-[11px] font-bold transition-colors">
+                                        <i class="ph-bold ph-house mr-1"></i> Repaso en Hogar
+                                    </button>
+                                    <button type="button" onclick="abrirModalBancoRecomendaciones()" class="px-3 py-1.5 bg-gray-50 hover:bg-gray-100 text-gray-500 border border-gray-200 rounded-lg text-[11px] font-bold transition-colors border-dashed">
+                                        <i class="ph-bold ph-plus"></i> Gestionar Banco
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <textarea id="eval-recomendacion" rows="2" class="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-300 focus:bg-white transition-all text-sm resize-none" placeholder="Escribe aquí la recomendación final que aparecerá al pie del boletín..."></textarea>
+                        </div>
+
+                        <div class="flex flex-wrap items-center justify-end gap-3 mt-6 flex-shrink-0">
+                            <div id="eval-download-buttons" class="hidden flex gap-2 mr-auto md:mr-4">
+                                <button type="button" class="px-4 py-2.5 bg-blue-50 text-blue-700 border border-blue-200 rounded-xl font-bold text-sm hover:bg-blue-100 transition-colors shadow-sm flex items-center gap-2">
+                                    <i class="ph-fill ph-file-doc text-lg"></i> Word
+                                </button>
+                                <button type="button" class="px-4 py-2.5 bg-red-50 text-red-700 border border-red-200 rounded-xl font-bold text-sm hover:bg-red-100 transition-colors shadow-sm flex items-center gap-2">
+                                    <i class="ph-fill ph-file-pdf text-lg"></i> PDF
+                                </button>
+                            </div>
+
+                            <button type="button" id="btn-guardar-evaluacion" class="px-8 py-3.5 bg-indigo-600 text-white rounded-xl font-black shadow-lg shadow-indigo-200 hover:bg-indigo-700 hover:shadow-indigo-300 transform hover:-translate-y-1 transition-all flex items-center gap-2" disabled>
+                                <i class="ph-bold ph-floppy-disk text-xl"></i>
                                 Guardar Evaluación
                             </button>
                         </div>
+
                     </div>
                 </section>
 
@@ -747,23 +936,10 @@
                                         </div>
                                     </div>
 
-                                    <div class="grid grid-cols-2 gap-4">
-                                        <div>
-                                            <label
-                                                class="block text-[11px] font-bold text-pink-600 uppercase tracking-widest mb-2">Días
-                                                Hábiles <span class="text-red-500">*</span></label>
-                                            <input type="number" id="stat-dias-habiles" placeholder="Ej: 18" min="1"
-                                                max="31"
-                                                class="w-full px-4 py-3 border-2 border-pink-200 rounded-xl focus:border-pink-400 focus:ring-2 focus:ring-pink-100 outline-none text-sm text-gray-800 bg-white shadow-inner transition-all font-bold"
-                                                required>
-                                        </div>
-                                        <div>
-                                            <label
-                                                class="block text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-2">Auxiliar
-                                                (Opcional)</label>
-                                            <input type="text" id="stat-auxiliar" placeholder="Nombre..."
-                                                class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-pink-400 outline-none text-sm text-gray-700 bg-white focus:shadow-md transition-all">
-                                        </div>
+                                    <div>
+                                        <label class="block text-[11px] font-bold text-pink-600 uppercase tracking-widest mb-2">Días Hábiles del Mes <span class="text-red-500">*</span></label>
+                                        <input type="number" id="stat-dias-habiles" placeholder="Ej: 20" min="1" max="31" class="w-full px-4 py-3 border-2 border-pink-200 rounded-xl focus:border-pink-400 focus:ring-2 focus:ring-pink-100 outline-none text-sm text-gray-800 bg-white shadow-inner transition-all font-bold" required>
+                                        <p class="text-[10px] text-gray-400 mt-1.5 font-medium"><i class="ph-fill ph-info"></i> Los nombres de las docentes se agregarán automáticamente al reporte.</p>
                                     </div>
                                 </div>
 
@@ -776,8 +952,7 @@
                             </div>
                         </div>
 
-                        <div id="stat-resultados-container" class="mt-10 hidden fade-in">
-                        </div>
+                        <!-- El contenedor viejo de resultados se cambió por un modal -->
                     </div>
                 </section>
 
@@ -793,6 +968,94 @@
 
             </div>
         </main>
+    </div>
+
+    <div id="modal-crear-proyecto" class="fixed inset-0 bg-black/60 z-50 hidden flex items-center justify-center backdrop-blur-sm opacity-0 transition-opacity duration-300">
+        <div id="modal-proyecto-content" class="bg-white rounded-3xl shadow-2xl w-full max-w-md mx-4 transform scale-95 transition-transform duration-300 overflow-hidden">
+            <div class="px-6 py-5 border-b border-gray-100 flex justify-between items-center bg-purple-50/50">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full bg-purple-200 text-purple-700 flex items-center justify-center shadow-inner">
+                        <i class="ph-bold ph-books text-xl"></i>
+                    </div>
+                    <h3 class="font-black text-gray-800 text-lg">Nuevo Proyecto</h3>
+                </div>
+                <button onclick="cerrarModalProyecto()" class="text-gray-400 hover:text-red-500 transition-colors p-2 hover:bg-white rounded-lg">
+                    <i class="ph-bold ph-x text-lg"></i>
+                </button>
+            </div>
+
+            <div class="p-6 space-y-5 bg-white">
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Nombre del Proyecto <span class="text-red-500">*</span></label>
+                    <input type="text" id="form-proyecto-nombre" placeholder="Ej: Conociendo los animales de mi país" class="w-full px-4 py-3 border-2 border-purple-100 rounded-xl focus:border-purple-400 focus:ring-2 focus:ring-purple-100 outline-none text-sm text-gray-800 bg-gray-50 transition-all font-bold">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Momento Pedagógico <span class="text-red-500">*</span></label>
+                    <div class="grid grid-cols-3 gap-3">
+                        <label class="cursor-pointer">
+                            <input type="radio" name="form-proyecto-momento" value="1" class="peer sr-only" checked>
+                            <div class="text-center py-3 border border-gray-200 rounded-xl peer-checked:bg-purple-50 peer-checked:border-purple-500 peer-checked:text-purple-700 font-bold text-sm text-gray-500 transition-all">1er Momento</div>
+                        </label>
+                        <label class="cursor-pointer">
+                            <input type="radio" name="form-proyecto-momento" value="2" class="peer sr-only">
+                            <div class="text-center py-3 border border-gray-200 rounded-xl peer-checked:bg-purple-50 peer-checked:border-purple-500 peer-checked:text-purple-700 font-bold text-sm text-gray-500 transition-all">2do Momento</div>
+                        </label>
+                        <label class="cursor-pointer">
+                            <input type="radio" name="form-proyecto-momento" value="3" class="peer sr-only">
+                            <div class="text-center py-3 border border-gray-200 rounded-xl peer-checked:bg-purple-50 peer-checked:border-purple-500 peer-checked:text-purple-700 font-bold text-sm text-gray-500 transition-all">3er Momento</div>
+                        </label>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="px-6 py-4 border-t border-gray-100 bg-gray-50 flex justify-end gap-3">
+                <button onclick="cerrarModalProyecto()" class="px-5 py-2.5 text-gray-600 font-semibold hover:bg-gray-200 rounded-xl transition-colors text-sm">Cancelar</button>
+                <button id="btn-guardar-nuevo-proyecto" class="px-6 py-2.5 bg-purple-500 text-white rounded-xl font-bold shadow-md shadow-purple-200 hover:bg-purple-600 transition-all text-sm flex items-center gap-2">
+                    Crear Proyecto
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- MODAL GRÁFICOS ASISTENCIA -->
+    <!-- ============================================ -->
+    <div id="modal-graficos-asistencia"
+        class="fixed inset-0 bg-black/60 z-50 hidden flex items-center justify-center backdrop-blur-sm opacity-0 transition-opacity duration-300">
+        <div id="modal-graficos-content"
+            class="bg-white rounded-3xl shadow-2xl w-full max-w-5xl mx-4 max-h-[95vh] flex flex-col transform scale-95 transition-transform duration-300 overflow-hidden relative">
+            
+            <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50 rounded-t-3xl flex-shrink-0">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center shadow-inner">
+                        <i class="ph-bold ph-chart-line-up text-xl"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-black text-gray-800 text-lg leading-tight">Resultados de Asistencia</h3>
+                        <p class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">Período: <span id="modal-graficos-periodo" class="text-blue-500"></span></p>
+                    </div>
+                </div>
+                <button onclick="cerrarModalGraficos()"
+                    class="w-8 h-8 flex items-center justify-center bg-white border border-gray-200 text-gray-400 rounded-full hover:bg-red-50 hover:text-red-500 hover:border-red-200 transition-all shadow-sm">
+                    <i class="ph-bold ph-x text-sm"></i>
+                </button>
+            </div>
+
+            <div class="p-6 overflow-y-auto flex-1 bg-white relative">
+                <div id="modal-graficos-body" class="fade-in">
+                    <!-- Los gráficos se inyectarán aquí -->
+                </div>
+            </div>
+            
+            <div class="px-6 py-4 border-t border-gray-100 bg-gray-50 flex justify-end flex-shrink-0">
+                <button onclick="cerrarModalGraficos()"
+                    class="px-6 py-2.5 bg-white text-gray-700 border border-gray-200 hover:bg-gray-100 rounded-xl font-bold shadow-sm transition-all focus:outline-none focus:ring-2 focus:gray-200 text-sm flex items-center gap-2">
+                    <i class="ph-bold ph-check text-lg"></i>
+                    Cerrar y Aceptar
+                </button>
+            </div>
+        </div>
     </div>
 
     <div id="modal-ficha-estudiante"
@@ -969,6 +1232,104 @@
         </div>
     </div>
 
+    <div id="modal-banco-recomendaciones" class="fixed inset-0 bg-black/60 z-50 hidden flex items-center justify-center backdrop-blur-sm opacity-0 transition-opacity duration-300">
+        <div id="modal-recomendaciones-content" class="bg-white rounded-3xl shadow-2xl w-full max-w-2xl mx-4 max-h-[90vh] flex flex-col transform scale-95 transition-transform duration-300 overflow-hidden">
+            <div class="px-6 py-5 border-b border-gray-100 flex justify-between items-center bg-indigo-50/50 flex-shrink-0">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full bg-indigo-200 text-indigo-700 flex items-center justify-center shadow-inner">
+                        <i class="ph-bold ph-chat-centered-text text-xl"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-black text-gray-800 text-lg leading-tight">Banco de Recomendaciones</h3>
+                        <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Respuestas Rápidas</p>
+                    </div>
+                </div>
+                <button onclick="cerrarModalBancoRecomendaciones()" class="text-gray-400 hover:text-red-500 transition-colors p-2 hover:bg-white rounded-lg">
+                    <i class="ph-bold ph-x text-lg"></i>
+                </button>
+            </div>
+
+            <div class="p-6 flex-1 overflow-y-auto bg-gray-50/30 flex flex-col gap-6">
+                
+                <div class="bg-white p-5 rounded-2xl border border-indigo-100 shadow-sm">
+                    <h4 class="text-xs font-bold text-indigo-500 uppercase tracking-widest mb-3 flex items-center gap-1.5"><i class="ph-bold ph-plus-circle"></i> Crear Nueva Respuesta</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                        <div class="md:col-span-1">
+                            <input type="text" id="nuevo-chip-titulo" placeholder="Título (Ej: Felicitación)" class="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-indigo-300 bg-gray-50">
+                        </div>
+                        <div class="md:col-span-2 flex gap-2">
+                            <input type="text" id="nuevo-chip-texto" placeholder="Texto completo (Ej: Excelente participación durante...)" class="flex-1 px-3 py-2 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-indigo-300 bg-gray-50">
+                            <button id="btn-guardar-chip" class="px-4 py-2 bg-indigo-500 text-white rounded-xl font-bold hover:bg-indigo-600 transition-colors shadow-sm whitespace-nowrap">
+                                Guardar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <h4 class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-3">Tus Recomendaciones Guardadas</h4>
+                    <div id="lista-banco-recomendaciones" class="space-y-3">
+                        <div class="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-xl shadow-sm hover:border-indigo-300 transition-colors group">
+                            <div>
+                                <span class="inline-block px-2 py-1 bg-indigo-50 text-indigo-700 text-[10px] font-black uppercase tracking-wider rounded mb-1">Felicitación</span>
+                                <p class="text-sm text-gray-600 font-medium">¡Felicidades por tus logros este lapso! Sigue así.</p>
+                            </div>
+                            <div class="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <button class="p-1.5 text-gray-400 hover:text-blue-500 bg-gray-50 hover:bg-blue-50 rounded-lg transition-colors"><i class="ph-bold ph-pencil-simple text-sm"></i></button>
+                                <button class="p-1.5 text-gray-400 hover:text-red-500 bg-gray-50 hover:bg-red-50 rounded-lg transition-colors"><i class="ph-bold ph-trash text-sm"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="px-6 py-4 border-t border-gray-100 bg-white flex justify-end flex-shrink-0">
+                <button onclick="cerrarModalBancoRecomendaciones()" class="px-6 py-2.5 bg-gray-100 text-gray-700 hover:bg-gray-200 rounded-xl font-bold shadow-sm transition-all text-sm">Cerrar Banco</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-editar-indicador" class="fixed inset-0 bg-black/60 z-50 hidden flex items-center justify-center backdrop-blur-sm opacity-0 transition-opacity duration-300">
+        <div id="modal-editar-indicador-content" class="bg-white rounded-3xl shadow-2xl w-full max-w-md mx-4 transform scale-95 transition-transform duration-300 overflow-hidden">
+            <div class="px-6 py-5 border-b border-gray-100 flex justify-between items-center bg-yellow-50/50">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full bg-yellow-200 text-yellow-700 flex items-center justify-center shadow-inner">
+                        <i class="ph-bold ph-pencil-simple text-xl"></i>
+                    </div>
+                    <h3 class="font-black text-gray-800 text-lg">Editar Indicador</h3>
+                </div>
+                <button onclick="cerrarModalEditarIndicador()" class="text-gray-400 hover:text-red-500 transition-colors p-2 hover:bg-white rounded-lg">
+                    <i class="ph-bold ph-x text-lg"></i>
+                </button>
+            </div>
+
+            <div class="p-6 space-y-5 bg-white">
+                <input type="hidden" id="edit-indicador-id">
+                
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Área de Aprendizaje</label>
+                    <select id="edit-indicador-area" class="w-full px-4 py-3 border-2 border-gray-100 rounded-xl focus:border-yellow-400 focus:ring-2 focus:ring-yellow-100 outline-none text-sm text-gray-700 bg-gray-50 transition-all font-bold">
+                        <option value="Formación Personal y Social">Formación Personal y Social</option>
+                        <option value="Relación entre los Componentes del Ambiente">Relación con el Ambiente</option>
+                        <option value="Comunicación y Representación">Comunicación y Repres.</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Descripción del Indicador</label>
+                    <textarea id="edit-indicador-texto" rows="3" class="w-full px-4 py-3 border-2 border-yellow-100 rounded-xl focus:border-yellow-400 focus:ring-2 focus:ring-yellow-100 outline-none text-sm text-gray-800 bg-white transition-all font-medium resize-none"></textarea>
+                </div>
+            </div>
+            
+            <div class="px-6 py-4 border-t border-gray-100 bg-gray-50 flex justify-end gap-3">
+                <button onclick="cerrarModalEditarIndicador()" class="px-5 py-2.5 text-gray-600 font-semibold hover:bg-gray-200 rounded-xl transition-colors text-sm">Cancelar</button>
+                <button id="btn-actualizar-indicador" class="px-6 py-2.5 bg-yellow-500 text-white rounded-xl font-bold shadow-md shadow-yellow-200 hover:bg-yellow-600 transition-all text-sm flex items-center gap-2">
+                    Actualizar
+                </button>
+            </div>
+        </div>
+    </div>
+
 
 
 
@@ -978,6 +1339,9 @@
     <script>
         // Importar jsPDF (ya está en el scope global por el CDN)
         const { jsPDF } = window.jspdf;
+
+        let doughnutChartInstance = null;
+        let lineChartInstance = null;
 
         // Almacén de datos en memoria para estados locales
         const appData = {
@@ -1276,7 +1640,6 @@
                 </tr>`;
 
             try {
-                // 2. Consultar al backend si ya hay asistencia para este día
                 const token = localStorage.getItem('auth_token');
                 const baseUrl = typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : 'http://127.0.0.1:5000';
 
@@ -1286,74 +1649,66 @@
                 });
                 const result = await response.json();
 
-                // Convertir el array de BD a un mapa { hijo_id: {estado, obs} } para lectura rápida
-                const registrosPrevios = {};
-                asistenciaYaRegistrada = false;
+                if (response.ok && result.success) {
+                    asistenciaYaRegistrada = result.ya_registrada; 
+                    
+                    tbody.innerHTML = '';
+                    
+                    // ¡EL VIAJE EN EL TIEMPO! Usamos la lista que nos mandó el servidor para ESE DÍA
+                    const estudiantesDelDia = result.estudiantes || [];
 
-                if (response.ok && result.success && result.ya_registrada) {
-                    asistenciaYaRegistrada = true; // ¡Alerta activada para el botón Guardar!
-                    result.asistencias.forEach(reg => {
-                        registrosPrevios[reg.hijo_id] = {
-                            estado: reg.estado_asistencia,
-                            observacion: reg.observacion || ''
-                        };
-                    });
-                }
+                    if (estudiantesDelDia.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="4" class="px-6 py-10 text-center text-gray-400">No había alumnos activos en la sección para esta fecha.</td></tr>';
+                        actualizarContadoresAsistencia();
+                        return;
+                    }
 
-                // 3. Renderizar la lista
-                tbody.innerHTML = '';
-                if (listaEstudiantes.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="4" class="px-6 py-10 text-center text-gray-400">No hay alumnos asignados a esta sección.</td></tr>';
-                    return;
-                }
+                    // Renderizar la tabla con la lista histórica
+                    estudiantesDelDia.forEach(student => {
+                        const isPresent = (student.estado_asistencia === 'presente');
+                        const inicial = student.nombre_completo.charAt(0).toUpperCase();
+                        const tieneObs = student.observacion && student.observacion.trim().length > 0;
 
-                listaEstudiantes.forEach(student => {
-                    // Tomamos el estado de la BD, o "ausente" por defecto
-                    const regBD = registrosPrevios[student.id] || { estado: 'ausente', observacion: '' };
-                    const isPresent = (regBD.estado === 'presente');
-                    const inicial = student.nombre_completo.charAt(0).toUpperCase();
-
-                    // ¿Tiene observación guardada?
-                    const tieneObs = regBD.observacion.trim().length > 0;
-
-                    tbody.innerHTML += `
-                        <tr class="student-attendance-row hover:bg-gray-50 border-b border-gray-50 transition-colors">
-                            <td class="px-6 py-4 text-gray-500 text-sm font-mono whitespace-nowrap">${student.cedula}</td>
-                            
-                            <td class="px-6 py-4">
-                                <div class="flex items-center gap-3">
-                                    <div class="w-9 h-9 rounded-full bg-pink-100 text-pink-700 flex items-center justify-center font-bold text-sm flex-shrink-0">${inicial}</div>
-                                    <p class="font-medium text-gray-800">${student.nombre_completo}</p>
-                                </div>
-                            </td>
-
-                            <td class="px-6 py-4 text-center">
-                                <label class="relative inline-flex items-center cursor-pointer">
-                                    <input type="checkbox" class="sr-only peer asistencia-checkbox" data-hijo-id="${student.id}" onchange="cambiarTextoSwitch(this, ${student.id})" ${isPresent ? 'checked' : ''}> 
-                                    <div class="w-11 h-6 bg-gray-200 rounded-full peer peer-focus:ring-4 peer-focus:ring-pink-300 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-500 shadow-sm"></div>
-                                    <span id="label-estado-${student.id}" class="ml-3 text-xs font-bold uppercase tracking-widest ${isPresent ? 'text-green-600' : 'text-gray-400'} w-16 text-left select-none">
-                                        ${isPresent ? 'Presente' : 'Ausente'}
-                                    </span>
-                                </label>
-                            </td>
-
-                            <td class="px-6 py-4">
-                                <div id="justificativo-wrapper-${student.id}" class="${isPresent ? 'hidden' : 'flex'} items-center gap-2 w-full transition-all duration-300">
-                                    <button type="button" onclick="toggleObservacion(${student.id})" class="p-2 text-yellow-600 bg-yellow-50 rounded-lg border border-yellow-100 hover:bg-yellow-100 transition shadow-sm" title="Agregar Justificativo">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
-                                    </button>
-                                    <div id="obs-container-${student.id}" class="${tieneObs ? 'block' : 'hidden'} flex-1 animate-fade-in">
-                                        <input type="text" id="observacion-${student.id}" value="${regBD.observacion}" class="observacion-input w-full text-xs px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-300 focus:bg-white transition-all" placeholder="Ej: Reposo médico, Permiso...">
+                        tbody.innerHTML += `
+                            <tr class="student-attendance-row hover:bg-gray-50 border-b border-gray-50 transition-colors">
+                                <td class="px-6 py-4 text-gray-500 text-sm font-mono whitespace-nowrap">${student.cedula}</td>
+                                
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-9 h-9 rounded-full bg-pink-100 text-pink-700 flex items-center justify-center font-bold text-sm flex-shrink-0">${inicial}</div>
+                                        <p class="font-medium text-gray-800">${student.nombre_completo}</p>
                                     </div>
-                                </div>
-                            </td>
-                        </tr>
-                    `;
-                });
+                                </td>
 
-                // Actualizar contadores iniciales al renderizar
-                actualizarContadoresAsistencia();
+                                <td class="px-6 py-4 text-center">
+                                    <label class="relative inline-flex items-center cursor-pointer">
+                                        <input type="checkbox" class="sr-only peer asistencia-checkbox" data-hijo-id="${student.id}" onchange="cambiarTextoSwitch(this, ${student.id})" ${isPresent ? 'checked' : ''}> 
+                                        <div class="w-11 h-6 bg-gray-200 rounded-full peer peer-focus:ring-4 peer-focus:ring-pink-300 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-500 shadow-sm"></div>
+                                        <span id="label-estado-${student.id}" class="ml-3 text-xs font-bold uppercase tracking-widest ${isPresent ? 'text-green-600' : 'text-gray-400'} w-16 text-left select-none">
+                                            ${isPresent ? 'Presente' : 'Ausente'}
+                                        </span>
+                                    </label>
+                                </td>
 
+                                <td class="px-6 py-4">
+                                    <div id="justificativo-wrapper-${student.id}" class="${isPresent ? 'hidden' : 'flex'} items-center gap-2 w-full transition-all duration-300">
+                                        <button type="button" onclick="toggleObservacion(${student.id})" class="p-2 text-yellow-600 bg-yellow-50 rounded-lg border border-yellow-100 hover:bg-yellow-100 transition shadow-sm" title="Agregar Justificativo">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                                        </button>
+                                        <div id="obs-container-${student.id}" class="${tieneObs ? 'block' : 'hidden'} flex-1 animate-fade-in">
+                                            <input type="text" id="observacion-${student.id}" value="${student.observacion}" class="observacion-input w-full text-xs px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-300 focus:bg-white transition-all" placeholder="Ej: Reposo médico, Permiso...">
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        `;
+                    });
+
+                    actualizarContadoresAsistencia();
+
+                } else {
+                    Swal.fire('Error', result.message || 'No se pudo cargar la asistencia.', 'error');
+                }
             } catch (error) {
                 console.error("Error al cargar la asistencia:", error);
                 tbody.innerHTML = '<tr><td colspan="4" class="px-6 py-10 text-center text-red-500">Error al cargar el registro del día.</td></tr>';
@@ -1626,22 +1981,68 @@
             }
 
             // --- BOTONES DE ESTADÍSTICAS ---
+            // --- BOTÓN: CONSULTAR PERÍODO (GRÁFICOS) ---
             const btnGenerarRango = document.getElementById('btn-generar-rango');
             if (btnGenerarRango) {
-                btnGenerarRango.addEventListener('click', () => {
+                btnGenerarRango.addEventListener('click', async () => {
                     const desde = document.getElementById('stat-fecha-inicio').value;
                     const hasta = document.getElementById('stat-fecha-fin').value;
+                    
                     if (!desde || !hasta) {
                         Swal.fire('Faltan datos', 'Selecciona la fecha de inicio y fin.', 'warning');
                         return;
                     }
-                    Swal.fire('Construyendo...', `Aquí consultaremos la API desde ${desde} hasta ${hasta}`, 'info');
+                    if (new Date(desde) > new Date(hasta)) {
+                        Swal.fire('Error de Fechas', 'La fecha de inicio no puede ser mayor que la de fin.', 'error');
+                        return;
+                    }
+                    if (!seccionActivaId) {
+                        Swal.fire('Error', 'No se ha detectado tu sección actual.', 'error');
+                        return;
+                    }
+
+                    Swal.fire({
+                        title: 'Analizando Datos...',
+                        text: 'Generando gráficos de asistencia',
+                        allowOutsideClick: false,
+                        didOpen: () => { Swal.showLoading(); }
+                    });
+
+                    try {
+                        const token = localStorage.getItem('auth_token');
+                        const baseUrl = typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : 'http://127.0.0.1:5000';
+                        
+                        const res = await fetch(`${baseUrl}/api/estadistica/rango`, {
+                            method: 'POST',
+                            headers: { 
+                                'Authorization': `Bearer ${token}`,
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                seccion_id: seccionActivaId,
+                                fecha_inicio: desde,
+                                fecha_fin: hasta
+                            })
+                        });
+
+                        const data = await res.json();
+
+                        if (res.ok && data.success) {
+                            Swal.close();
+                            renderizarGraficos(data, desde, hasta);
+                        } else {
+                            Swal.fire('Error', data.message || 'No se pudo generar la estadística.', 'error');
+                        }
+                    } catch(err) {
+                        console.error(err);
+                        Swal.fire('Error', 'Problema de conexión con el servidor', 'error');
+                    }
                 });
             }
 
             const btnGenerarMensual = document.getElementById('btn-generar-mensual');
             if (btnGenerarMensual) {
-                btnGenerarMensual.addEventListener('click', () => {
+                btnGenerarMensual.addEventListener('click', async () => {
                     const mes = document.getElementById('stat-mes').value;
                     const anio = document.getElementById('stat-anio').value;
                     const diasHabiles = document.getElementById('stat-dias-habiles').value;
@@ -1651,7 +2052,62 @@
                         return;
                     }
 
-                    Swal.fire('Procesando...', `Aquí enviaremos al Backend: Mes ${mes}, Año ${anio}, Días Hábiles: ${diasHabiles}`, 'success');
+                    if (!seccionActivaId) {
+                        Swal.fire('Error', 'No se ha detectado tu sección actual.', 'error');
+                        return;
+                    }
+
+                    Swal.fire({
+                        title: 'Procesando Matemáticas...',
+                        text: 'Calculando cuadros y generando PDF oficial',
+                        allowOutsideClick: false,
+                        didOpen: () => { Swal.showLoading(); }
+                    });
+
+                    try {
+                        const token = localStorage.getItem('auth_token');
+                        const baseUrl = typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : 'http://127.0.0.1:5000';
+                        
+                        const res = await fetch(`${baseUrl}/api/estadistica/mensual`, {
+                            method: 'POST',
+                            headers: { 
+                                'Authorization': `Bearer ${token}`,
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                seccion_id: seccionActivaId,
+                                mes: mes,
+                                anio: anio,
+                                dias_habiles: diasHabiles
+                            })
+                        });
+
+                        if (res.ok) {
+                            const blob = await res.blob();
+                            const downloadUrl = window.URL.createObjectURL(blob);
+                            const a = document.createElement('a');
+                            a.href = downloadUrl;
+                            a.download = `Estadistica_MPPE_Mes_${mes}.docx`;
+                            document.body.appendChild(a);
+                            a.click();
+                            a.remove();
+                            window.URL.revokeObjectURL(downloadUrl);
+
+                            Swal.fire({
+                                title: '¡Estadística Cuadrada!',
+                                text: 'El formato PDF ha sido generado y descargado con éxito.',
+                                icon: 'success',
+                                confirmButtonColor: '#EC4899',
+                                customClass: { popup: 'rounded-3xl' }
+                            });
+                        } else {
+                            const errData = await res.json();
+                            Swal.fire('Error', errData.message || 'No se pudo generar la estadística.', 'error');
+                        }
+                    } catch(err) {
+                        console.error(err);
+                        Swal.fire('Error', 'Problema de conexión con el servidor', 'error');
+                    }
                 });
             }
 
@@ -1950,6 +2406,10 @@
                 if (modalFicha && !modalFicha.classList.contains('hidden')) {
                     cerrarModalFicha();
                 }
+                const modalGraficos = document.getElementById('modal-graficos-asistencia');
+                if (modalGraficos && !modalGraficos.classList.contains('hidden')) {
+                    cerrarModalGraficos();
+                }
             }
         });
         // ============================================
@@ -2084,6 +2544,350 @@
             if (dashboardPeriodo) {
                 dashboardPeriodo.innerText = textoFinal;
             }
+        }
+
+        // ============================================
+        // MODAL GRÁFICOS DE ASISTENCIA
+        // ============================================
+        function abrirModalGraficos() {
+            const modal = document.getElementById('modal-graficos-asistencia');
+            const content = document.getElementById('modal-graficos-content');
+            
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                content.classList.remove('scale-95');
+            }, 10);
+        }
+
+        function cerrarModalGraficos() {
+            const modal = document.getElementById('modal-graficos-asistencia');
+            const content = document.getElementById('modal-graficos-content');
+            
+            modal.classList.add('opacity-0');
+            content.classList.add('scale-95');
+            setTimeout(() => modal.classList.add('hidden'), 300);
+        }
+
+        // ============================================
+        // LÓGICA: PROYECTOS DE APRENDIZAJE (UI)
+        // ============================================
+        
+        // Modales
+        function abrirModalNuevoProyecto() {
+            const modal = document.getElementById('modal-crear-proyecto');
+            const content = document.getElementById('modal-proyecto-content');
+            
+            // Limpiar formulario
+            document.getElementById('form-proyecto-nombre').value = '';
+            
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                content.classList.remove('scale-95');
+            }, 10);
+        }
+
+        function cerrarModalProyecto() {
+            const modal = document.getElementById('modal-crear-proyecto');
+            const content = document.getElementById('modal-proyecto-content');
+            
+            modal.classList.add('opacity-0');
+            content.classList.add('scale-95');
+            setTimeout(() => modal.classList.add('hidden'), 300);
+        }
+
+        // Filtro visual de pestañas (Activos / Cerrados)
+        function filtrarProyectos(estado) {
+            const tabActivos = document.getElementById('tab-proyectos-activos');
+            const tabCerrados = document.getElementById('tab-proyectos-cerrados');
+            
+            if (estado === 'activos') {
+                tabActivos.classList.replace('bg-transparent', 'bg-white');
+                tabActivos.classList.replace('text-gray-500', 'text-purple-600');
+                tabActivos.classList.add('shadow-sm');
+                
+                tabCerrados.classList.replace('bg-white', 'bg-transparent');
+                tabCerrados.classList.replace('text-purple-600', 'text-gray-500');
+                tabCerrados.classList.remove('shadow-sm');
+            } else {
+                tabCerrados.classList.replace('bg-transparent', 'bg-white');
+                tabCerrados.classList.replace('text-gray-500', 'text-purple-600');
+                tabCerrados.classList.add('shadow-sm');
+                
+                tabActivos.classList.replace('bg-white', 'bg-transparent');
+                tabActivos.classList.replace('text-purple-600', 'text-gray-500');
+                tabActivos.classList.remove('shadow-sm');
+            }
+            
+            // Aquí luego llamaremos a la función que pinta la lista basada en el estado
+            // renderizarListaProyectos(estado);
+        }
+
+        // ============================================
+        // LÓGICA: EVALUACIONES Y BOLETINES (UI)
+        // ============================================
+
+        // 1. Insertar texto desde un Chip a la Recomendación
+        function insertarRecomendacion(texto) {
+            const textarea = document.getElementById('eval-recomendacion');
+            if (textarea.disabled) return;
+            
+            // Si ya hay texto, agregamos un espacio antes. Si no, lo pegamos directo.
+            const valorActual = textarea.value.trim();
+            if (valorActual.length > 0) {
+                textarea.value = valorActual + " " + texto;
+            } else {
+                textarea.value = texto;
+            }
+            
+            // Dar un efecto visual de que se insertó
+            textarea.classList.add('bg-indigo-50', 'ring-2', 'ring-indigo-300');
+            setTimeout(() => {
+                textarea.classList.remove('bg-indigo-50', 'ring-2', 'ring-indigo-300');
+            }, 300);
+            
+            textarea.focus();
+        }
+
+        // 2. Lógica del Dropdown del "Botón Mágico" (Clonar)
+        const btnClonar = document.getElementById('btn-clonar-indicadores');
+        const dropdownClonar = document.getElementById('dropdown-clonar');
+
+        if (btnClonar && dropdownClonar) {
+            // Mostrar/Ocultar menú
+            btnClonar.addEventListener('click', (e) => {
+                e.stopPropagation();
+                dropdownClonar.classList.toggle('hidden');
+            });
+
+            // Cerrar menú al hacer clic afuera
+            document.addEventListener('click', (e) => {
+                if (!btnClonar.contains(e.target) && !dropdownClonar.contains(e.target)) {
+                    dropdownClonar.classList.add('hidden');
+                }
+            });
+        }
+
+        // 3. Simulador visual de un Checkbox de Indicador (Se inyectará luego con Python)
+        function crearTemplateCheckbox(id, texto, area) {
+            // area puede ser 'pink', 'green' o 'blue' dependiendo de la columna
+            return `
+            <label class="flex items-start gap-3 p-3 bg-white border border-gray-100 rounded-xl cursor-pointer hover:border-${area}-300 transition-colors group shadow-sm">
+                <div class="relative flex items-center justify-center mt-0.5 flex-shrink-0">
+                    <input type="checkbox" value="${id}" class="peer appearance-none w-5 h-5 border-2 border-gray-300 rounded focus:ring-2 focus:ring-${area}-200 checked:bg-${area}-500 checked:border-${area}-500 transition-all cursor-pointer">
+                    <i class="ph-bold ph-check absolute text-white opacity-0 peer-checked:opacity-100 pointer-events-none text-xs"></i>
+                </div>
+                <span class="text-xs text-gray-600 font-medium group-hover:text-gray-800 leading-snug select-none">${texto}</span>
+            </label>
+            `;
+        }
+
+        // ============================================
+        // LÓGICA: MODALES DE APOYO (BANCO Y EDICIÓN)
+        // ============================================
+
+        // 1. Modal: Banco de Recomendaciones
+        function abrirModalBancoRecomendaciones() {
+            const modal = document.getElementById('modal-banco-recomendaciones');
+            const content = document.getElementById('modal-recomendaciones-content');
+            
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                content.classList.remove('scale-95');
+            }, 10);
+
+            // Aquí luego llamaremos a Python para cargar la lista real
+            // cargarBancoRecomendaciones();
+        }
+
+        function cerrarModalBancoRecomendaciones() {
+            const modal = document.getElementById('modal-banco-recomendaciones');
+            const content = document.getElementById('modal-recomendaciones-content');
+            
+            modal.classList.add('opacity-0');
+            content.classList.add('scale-95');
+            setTimeout(() => modal.classList.add('hidden'), 300);
+        }
+
+        // 2. Modal: Edición Rápida de Indicador
+        // Esta función se llamará cuando la maestra presione el botón (lápiz) al lado de un indicador
+        function abrirModalEditarIndicador(id, area, texto) {
+            const modal = document.getElementById('modal-editar-indicador');
+            const content = document.getElementById('modal-editar-indicador-content');
+            
+            // Poblar los datos en el formulario
+            document.getElementById('edit-indicador-id').value = id;
+            document.getElementById('edit-indicador-area').value = area;
+            document.getElementById('edit-indicador-texto').value = texto;
+            
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                content.classList.remove('scale-95');
+            }, 10);
+        }
+
+        function cerrarModalEditarIndicador() {
+            const modal = document.getElementById('modal-editar-indicador');
+            const content = document.getElementById('modal-editar-indicador-content');
+            
+            modal.classList.add('opacity-0');
+            content.classList.add('scale-95');
+            setTimeout(() => modal.classList.add('hidden'), 300);
+        }
+
+        // Para cerrar los nuevos modales también presionando "Escape"
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                const modalBanco = document.getElementById('modal-banco-recomendaciones');
+                if (modalBanco && !modalBanco.classList.contains('hidden')) cerrarModalBancoRecomendaciones();
+                
+                const modalEdit = document.getElementById('modal-editar-indicador');
+                if (modalEdit && !modalEdit.classList.contains('hidden')) cerrarModalEditarIndicador();
+            }
+        });
+
+        // ============================================
+        // RENDERIZADO DE GRÁFICOS (CHART.JS)
+        // ============================================
+        function renderizarGraficos(data, desde, hasta) {
+            const container = document.getElementById('modal-graficos-body');
+            const periodoText = document.getElementById('modal-graficos-periodo');
+            
+            periodoText.innerText = `${desde.split('-').reverse().join('/')} al ${hasta.split('-').reverse().join('/')}`;
+
+            // Inyectar la estructura HTML para las gráficas dentro del modal
+            container.innerHTML = `
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <div class="lg:col-span-1 bg-gray-50/50 rounded-2xl p-6 border border-gray-100 flex flex-col items-center">
+                        <h4 class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-6">Proporción Global</h4>
+                        <div class="relative w-full max-w-[200px] aspect-square flex-1 flex items-center justify-center">
+                            ${data.resumen.total_registros === 0 
+                                ? '<p class="text-gray-400 text-sm font-medium text-center">No hay registros en este rango.</p>' 
+                                : '<canvas id="chartDoughnut"></canvas>'}
+                        </div>
+                        
+                        <div class="w-full mt-6 space-y-2">
+                            <div class="flex justify-between items-center bg-white p-3 rounded-xl border border-gray-100 shadow-sm">
+                                <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-green-500 shadow-sm"></span><span class="text-xs font-bold text-gray-600">Asistencias</span></div>
+                                <span class="font-black text-green-600">${data.resumen.total_presentes}</span>
+                            </div>
+                            <div class="flex justify-between items-center bg-white p-3 rounded-xl border border-gray-100 shadow-sm">
+                                <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-gray-400 shadow-sm"></span><span class="text-xs font-bold text-gray-600">Inasistencias</span></div>
+                                <span class="font-black text-gray-500">${data.resumen.total_ausentes}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="lg:col-span-2 bg-gray-50/50 rounded-2xl p-6 border border-gray-100 flex flex-col">
+                        <h4 class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-6">Evolución Diaria</h4>
+                        <div class="relative w-full h-64 flex-1">
+                            ${data.tendencia.length === 0 
+                                ? '<div class="h-full flex items-center justify-center"><p class="text-gray-400 text-sm font-medium">Sin datos para graficar evolución.</p></div>' 
+                                : '<canvas id="chartLine"></canvas>'}
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            abrirModalGraficos();
+
+            if (data.resumen.total_registros === 0) return; // Si no hay data, nos detenemos aquí
+
+            // Destruir gráficos anteriores si existen para evitar sobreposición
+            if (doughnutChartInstance) doughnutChartInstance.destroy();
+            if (lineChartInstance) lineChartInstance.destroy();
+
+            // 2. Gráfico de Donut (Proporción Global)
+            const ctxDoughnut = document.getElementById('chartDoughnut').getContext('2d');
+            doughnutChartInstance = new Chart(ctxDoughnut, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Asistencias', 'Inasistencias'],
+                    datasets: [{
+                        data: [data.resumen.total_presentes, data.resumen.total_ausentes],
+                        backgroundColor: ['#22c55e', '#e5e7eb'], // green-500, gray-200
+                        hoverBackgroundColor: ['#16a34a', '#d1d5db'],
+                        borderWidth: 3,
+                        borderColor: '#ffffff',
+                        borderRadius: 5
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '75%', // Grosor del anillo
+                    plugins: {
+                        legend: { display: false }, // Ocultamos la leyenda porque la pusimos personalizada en HTML
+                        tooltip: {
+                            backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                            titleColor: '#1f2937',
+                            bodyColor: '#1f2937',
+                            borderColor: '#f3f4f6',
+                            borderWidth: 1,
+                            padding: 10,
+                            displayColors: true,
+                            boxPadding: 4
+                        }
+                    }
+                }
+            });
+
+            // 3. Gráfico de Líneas/Área (Tendencia Diaria)
+            const ctxLine = document.getElementById('chartLine').getContext('2d');
+            const labels = data.tendencia.map(item => item.fecha_corta);
+            const dataPresentes = data.tendencia.map(item => item.presentes);
+            
+            lineChartInstance = new Chart(ctxLine, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Presentes',
+                        data: dataPresentes,
+                        borderColor: '#3b82f6', // blue-500
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)', // Fondo semi-transparente
+                        borderWidth: 3,
+                        pointBackgroundColor: '#ffffff',
+                        pointBorderColor: '#3b82f6',
+                        pointBorderWidth: 2,
+                        pointRadius: 4,
+                        pointHoverRadius: 6,
+                        fill: true,
+                        tension: 0.4 // Hace que la línea sea curva (suave)
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                            titleColor: '#1f2937',
+                            bodyColor: '#1f2937',
+                            borderColor: '#e5e7eb',
+                            borderWidth: 1,
+                            padding: 10,
+                            titleFont: { size: 13, weight: 'bold' },
+                            bodyFont: { size: 14, weight: 'bold' }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: { color: '#f3f4f6', drawBorder: false }, // gray-100
+                            ticks: { color: '#9ca3af', font: { weight: 'bold' }, stepSize: 1 } // Solo números enteros
+                        },
+                        x: {
+                            grid: { display: false, drawBorder: false },
+                            ticks: { color: '#9ca3af', font: { weight: 'bold' } }
+                        }
+                    }
+                }
+            });
         }
     </script>
     <script src="js/config.js"></script>
