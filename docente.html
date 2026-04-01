@@ -1666,7 +1666,8 @@
                     // Renderizar la tabla con la lista histórica
                     estudiantesDelDia.forEach(student => {
                         const isPresent = (student.estado_asistencia === 'presente');
-                        const inicial = student.nombre_completo.charAt(0).toUpperCase();
+                        const nombreCompleto = student.nombre_completo || `${student.nombre || ''} ${student.apellido || ''}`.trim();
+                        const inicial = nombreCompleto.charAt(0).toUpperCase();
                         const tieneObs = student.observacion && student.observacion.trim().length > 0;
 
                         tbody.innerHTML += `
