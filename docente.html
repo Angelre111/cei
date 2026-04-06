@@ -681,7 +681,7 @@
                             </div>
                         </div>
 
-                        <div class="flex-1 min-h-0 overflow-hidden flex flex-col mb-6 relative">
+                        <div class="flex-1 min-h-[400px] overflow-hidden flex flex-col mb-6 relative">
                             <div id="eval-empty-state" class="absolute inset-0 bg-white/80 backdrop-blur-sm z-10 flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-gray-200">
                                 <div class="w-16 h-16 bg-indigo-50 rounded-full flex items-center justify-center mb-3">
                                     <i class="ph-duotone ph-list-checks text-3xl text-indigo-400"></i>
@@ -1551,6 +1551,16 @@
                     // Si ya hay una fecha, cargar la lista de asistencia
                     if (document.getElementById('attendance-date').value) {
                         populateAttendanceList();
+                    }
+
+                    // Cargar proyectos de la sección
+                    if (typeof window.cargarProyectosAPI === 'function') {
+                        window.cargarProyectosAPI();
+                    }
+
+                    // Cargar banco de recomendaciones inicial
+                    if (typeof window.cargarRecomendacionesAPI === 'function') {
+                        window.cargarRecomendacionesAPI();
                     }
 
                 } else {
@@ -2569,33 +2579,6 @@
             setTimeout(() => modal.classList.add('hidden'), 300);
         }
 
-        // Filtro visual de pestañas (Activos / Cerrados)
-        function filtrarProyectos(estado) {
-            const tabActivos = document.getElementById('tab-proyectos-activos');
-            const tabCerrados = document.getElementById('tab-proyectos-cerrados');
-            
-            if (estado === 'activos') {
-                tabActivos.classList.replace('bg-transparent', 'bg-white');
-                tabActivos.classList.replace('text-gray-500', 'text-purple-600');
-                tabActivos.classList.add('shadow-sm');
-                
-                tabCerrados.classList.replace('bg-white', 'bg-transparent');
-                tabCerrados.classList.replace('text-purple-600', 'text-gray-500');
-                tabCerrados.classList.remove('shadow-sm');
-            } else {
-                tabCerrados.classList.replace('bg-transparent', 'bg-white');
-                tabCerrados.classList.replace('text-gray-500', 'text-purple-600');
-                tabCerrados.classList.add('shadow-sm');
-                
-                tabActivos.classList.replace('bg-white', 'bg-transparent');
-                tabActivos.classList.replace('text-purple-600', 'text-gray-500');
-                tabActivos.classList.remove('shadow-sm');
-            }
-            
-            // Aquí luego llamaremos a la función que pinta la lista basada en el estado
-            // renderizarListaProyectos(estado);
-        }
-
         // ============================================
         // LÓGICA: EVALUACIONES Y BOLETINES (UI)
         // ============================================
@@ -2870,6 +2853,10 @@
     <script src="js/auth.js"></script>
     <script src="js/admin_periodos.js"></script>
     <script src="js/docente_asistencia.js"></script>
+    <script src="js/docente_proyectos.js"></script>
+    <script src="js/docente_indicadores.js"></script>
+    <script src="js/docente_recomendaciones.js"></script>
+    <script src="js/docente_evaluacion.js"></script>
 </body>
 
 </html>

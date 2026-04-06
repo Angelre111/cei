@@ -135,6 +135,10 @@ def require_auth(f):
     def decorated_function(*args, **kwargs):
         # 1. Leer el header 'Authorization' de la petición
         auth_header = request.headers.get('Authorization')
+        
+        # Permitir token por query parameter (útil para window.open en descargas)
+        if not auth_header and request.args.get('token'):
+            auth_header = f"Bearer {request.args.get('token')}"
 
         # 2. Si no existe el header o no tiene el formato correcto, rechazar
         if not auth_header or not auth_header.startswith('Bearer '):
@@ -2174,6 +2178,665 @@ def actualizar_password_propia():
     except Exception as e:
         print(f"❌ Error al actualizar password: {e}")
         return jsonify({'success': False, 'message': 'Error interno al procesar el cambio de clave.'}), 500
+
+# =======================================================
+# MÓDULO: PROYECTOS DE APRENDIZAJE
+# =======================================================
+
+@app.route('/api/proyectos', methods=['POST'])
+@require_auth
+def crear_proyecto():
+    """Crea un nuevo proyecto de aprendizaje para una sección."""
+    data = request.get_json(silent=True) or {}
+
+    seccion_id        = data.get('seccion_id', '').strip()
+    nombre            = data.get('nombre', '').strip()
+    momento_pedagogico = data.get('momento_pedagogico', '').strip()
+
+    if not all([seccion_id, nombre, momento_pedagogico]):
+        return jsonify({
+            'success': False,
+            'message': 'Faltan datos obligatorios: seccion_id, nombre y momento_pedagogico son requeridos.'
+        }), 400
+
+    try:
+        nuevo_proyecto = {
+            'seccion_id':         seccion_id,
+            'nombre':             nombre,
+            'momento_pedagogico': momento_pedagogico,
+            'estado':             'activo'
+        }
+        res = supabase.table('proyectos_aprendizaje').insert(nuevo_proyecto).execute()
+
+        return jsonify({
+            'success': True,
+            'message': 'Proyecto de aprendizaje creado exitosamente.',
+            'data':    res.data[0] if res.data else None
+        }), 201
+
+    except Exception as e:
+        print(f"❌ Error al crear proyecto: {e}")
+        return jsonify({'success': False, 'message': 'Error interno al crear el proyecto.'}), 500
+
+
+@app.route('/api/proyectos/<seccion_id>', methods=['GET'])
+@require_auth
+def obtener_proyectos(seccion_id):
+    """Devuelve los proyectos de una sección, con filtro opcional por ?estado=activos|cerrados."""
+    estado_param = request.args.get('estado', '').lower()
+
+    try:
+        query = supabase.table('proyectos_aprendizaje') \
+            .select('*') \
+            .eq('seccion_id', seccion_id) \
+            .order('created_at', desc=True)
+
+        # Mapear el parámetro de URL al valor real almacenado en BD
+        if estado_param == 'activos':
+            query = query.eq('estado', 'activo')
+        elif estado_param == 'cerrados':
+            query = query.eq('estado', 'cerrado')
+
+        res = query.execute()
+
+        return jsonify({
+            'success': True,
+            'message': 'Proyectos obtenidos correctamente.',
+            'data':    res.data
+        }), 200
+
+    except Exception as e:
+        print(f"❌ Error al obtener proyectos: {e}")
+        return jsonify({'success': False, 'message': 'Error interno al obtener los proyectos.'}), 500
+
+
+@app.route('/api/proyectos/<proyecto_id>/cerrar', methods=['PUT'])
+@require_auth
+def cerrar_proyecto(proyecto_id):
+    """Cambia el estado de un proyecto de aprendizaje a 'cerrado'."""
+    try:
+        res = supabase.table('proyectos_aprendizaje') \
+            .update({'estado': 'cerrado'}) \
+            .eq('id', proyecto_id) \
+            .execute()
+
+        if not res.data:
+            return jsonify({
+                'success': False,
+                'message': 'No se encontró el proyecto o ya estaba cerrado.'
+            }), 404
+
+        return jsonify({
+            'success': True,
+            'message': 'Proyecto cerrado exitosamente.',
+            'data':    res.data[0]
+        }), 200
+
+    except Exception as e:
+        print(f"❌ Error al cerrar proyecto: {e}")
+        return jsonify({'success': False, 'message': 'Error interno al cerrar el proyecto.'}), 500
+
+
+# =======================================================
+# MÓDULO: INDICADORES DEL PROYECTO
+# =======================================================
+
+@app.route('/api/indicadores', methods=['POST'])
+@require_auth
+def crear_indicador():
+    """Crea un nuevo indicador asociado a un proyecto de aprendizaje."""
+    data = request.get_json(silent=True) or {}
+
+    proyecto_id      = data.get('proyecto_id', '').strip()
+    area_aprendizaje = data.get('area_aprendizaje', '').strip()
+    descripcion      = data.get('descripcion', '').strip()
+
+    if not all([proyecto_id, area_aprendizaje, descripcion]):
+        return jsonify({
+            'success': False,
+            'message': 'Faltan datos obligatorios: proyecto_id, area_aprendizaje y descripcion son requeridos.'
+        }), 400
+
+    try:
+        nuevo_indicador = {
+            'proyecto_id':      proyecto_id,
+            'area_aprendizaje': area_aprendizaje,
+            'descripcion':      descripcion
+        }
+        res = supabase.table('indicadores').insert(nuevo_indicador).execute()
+
+        return jsonify({
+            'success': True,
+            'message': 'Indicador creado exitosamente.',
+            'data':    res.data[0] if res.data else None
+        }), 201
+
+    except Exception as e:
+        print(f"❌ Error al crear indicador: {e}")
+        return jsonify({'success': False, 'message': 'Error interno al crear el indicador.'}), 500
+
+
+@app.route('/api/indicadores/<proyecto_id>', methods=['GET'])
+@require_auth
+def obtener_indicadores(proyecto_id):
+    """Devuelve todos los indicadores asociados a un proyecto."""
+    try:
+        res = supabase.table('indicadores') \
+            .select('*') \
+            .eq('proyecto_id', proyecto_id) \
+            .order('created_at', desc=False) \
+            .execute()
+
+        return jsonify({
+            'success': True,
+            'message': 'Indicadores obtenidos correctamente.',
+            'data':    res.data
+        }), 200
+
+    except Exception as e:
+        print(f"❌ Error al obtener indicadores: {e}")
+        return jsonify({'success': False, 'message': 'Error interno al obtener los indicadores.'}), 500
+
+
+@app.route('/api/indicadores/<indicador_id>', methods=['PUT'])
+@require_auth
+def actualizar_indicador(indicador_id):
+    """Actualiza el área de aprendizaje y/o descripción de un indicador."""
+    data = request.get_json(silent=True) or {}
+
+    area_aprendizaje = data.get('area_aprendizaje', '').strip()
+    descripcion      = data.get('descripcion', '').strip()
+
+    if not area_aprendizaje and not descripcion:
+        return jsonify({
+            'success': False,
+            'message': 'Se debe proporcionar al menos area_aprendizaje o descripcion para actualizar.'
+        }), 400
+
+    datos_update = {}
+    if area_aprendizaje:
+        datos_update['area_aprendizaje'] = area_aprendizaje
+    if descripcion:
+        datos_update['descripcion'] = descripcion
+
+    try:
+        res = supabase.table('indicadores') \
+            .update(datos_update) \
+            .eq('id', indicador_id) \
+            .execute()
+
+        if not res.data:
+            return jsonify({
+                'success': False,
+                'message': 'No se encontró el indicador especificado.'
+            }), 404
+
+        return jsonify({
+            'success': True,
+            'message': 'Indicador actualizado exitosamente.',
+            'data':    res.data[0]
+        }), 200
+
+    except Exception as e:
+        print(f"❌ Error al actualizar indicador: {e}")
+        return jsonify({'success': False, 'message': 'Error interno al actualizar el indicador.'}), 500
+
+
+@app.route('/api/indicadores/<indicador_id>', methods=['DELETE'])
+@require_auth
+def eliminar_indicador(indicador_id):
+    """Elimina un indicador de la base de datos."""
+    try:
+        res = supabase.table('indicadores') \
+            .delete() \
+            .eq('id', indicador_id) \
+            .execute()
+
+        if not res.data:
+            return jsonify({
+                'success': False,
+                'message': 'No se encontró el indicador especificado o ya fue eliminado.'
+            }), 404
+
+        return jsonify({
+            'success': True,
+            'message': 'Indicador eliminado exitosamente.',
+            'data':    None
+        }), 200
+
+    except Exception as e:
+        print(f"❌ Error al eliminar indicador: {e}")
+        return jsonify({'success': False, 'message': 'Error interno al eliminar el indicador.'}), 500
+
+
+# =======================================================
+# MÓDULO: EVALUACIÓN — RUTA MAESTRA DE INDICADORES
+# =======================================================
+
+@app.route('/api/evaluacion/indicadores/<seccion_id>/<momento>', methods=['GET'])
+@require_auth
+def obtener_indicadores_por_momento(seccion_id, momento):
+    """
+    Ruta maestra de evaluación.
+    1. Busca todos los proyectos de la sección para el momento pedagógico dado.
+    2. Recoge todos los indicadores de esos proyectos.
+    3. Los devuelve agrupados por area_aprendizaje.
+    """
+    try:
+        # ── Paso 1: obtener proyectos de esta sección y momento ──────────────
+        res_proyectos = supabase.table('proyectos_aprendizaje') \
+            .select('id, nombre') \
+            .eq('seccion_id', seccion_id) \
+            .eq('momento_pedagogico', str(momento)) \
+            .execute()
+
+        if not res_proyectos.data:
+            return jsonify({
+                'success': True,
+                'message': 'No hay proyectos registrados para este momento pedagógico.',
+                'data':    {}
+            }), 200
+
+        proyectos_ids = [p['id'] for p in res_proyectos.data]
+
+        # Mapa id → nombre para enriquecer la respuesta si se necesita
+        mapa_proyectos = {p['id']: p['nombre'] for p in res_proyectos.data}
+
+        # ── Paso 2: obtener todos los indicadores de esos proyectos ──────────
+        res_indicadores = supabase.table('indicadores') \
+            .select('id, proyecto_id, area_aprendizaje, descripcion') \
+            .in_('proyecto_id', proyectos_ids) \
+            .order('area_aprendizaje') \
+            .execute()
+
+        # ── Paso 3: agrupar por area_aprendizaje ─────────────────────────────
+        agrupados = {}
+        for ind in (res_indicadores.data or []):
+            area = ind['area_aprendizaje']
+            if area not in agrupados:
+                agrupados[area] = []
+            agrupados[area].append({
+                'id':              ind['id'],
+                'proyecto_id':     ind['proyecto_id'],
+                'proyecto_nombre': mapa_proyectos.get(ind['proyecto_id'], ''),
+                'descripcion':     ind['descripcion']
+            })
+
+        return jsonify({
+            'success': True,
+            'message': 'Indicadores obtenidos y agrupados correctamente.',
+            'data':    agrupados           # { "Lenguaje": [...], "Matemática": [...], ... }
+        }), 200
+
+    except Exception as e:
+        print(f"❌ Error en ruta maestra de evaluación: {e}")
+        return jsonify({'success': False, 'message': 'Error interno al obtener los indicadores de evaluación.'}), 500
+
+@app.route('/api/evaluacion/<hijo_id>/<momento>', methods=['GET'])
+@require_auth
+def obtener_evaluacion(hijo_id, momento):
+    """Obtiene la evaluación existente de un estudiante para un momento."""
+    try:
+        # 1. Buscar si hay boletin
+        res_boletin = supabase.table('boletines') \
+            .select('*') \
+            .eq('hijo_id', hijo_id) \
+            .eq('momento_pedagogico', str(momento)) \
+            .execute()
+            
+        if not res_boletin.data:
+            return jsonify({
+                'success': True,
+                'message': 'Sin evaluación previa.',
+                'data': { 'boleta_id': None, 'recomendacion_docente': '', 'logrados': [] }
+            }), 200
+            
+        boletin = res_boletin.data[0]
+        boletin_id = boletin['id']
+        
+        # 2. Buscar indicadores logrados
+        res_ind = supabase.table('boletines_indicadores') \
+            .select('indicador_id') \
+            .eq('boletin_id', boletin_id) \
+            .execute()
+            
+        logrados = [i['indicador_id'] for i in (res_ind.data or [])]
+        
+        return jsonify({
+            'success': True,
+            'message': 'Evaluación obtenida.',
+            'data': {
+                'boletin_id': boletin_id,
+                'recomendacion_docente': boletin.get('recomendaciones_docente', ''), # kept as _docente for the frontend JS to map properly
+                'logrados': logrados
+            }
+        }), 200
+
+    except Exception as e:
+        print(f"❌ Error al obtener evaluacion: {e}")
+        return jsonify({'success': False, 'message': 'Error interno.'}), 500
+
+
+@app.route('/api/evaluacion', methods=['POST'])
+@require_auth
+def guardar_evaluacion():
+    """Guarda (crea o actualiza) la evaluación de un estudiante."""
+    data = request.get_json(silent=True) or {}
+    
+    hijo_id = data.get('hijo_id')
+    momento = data.get('momento')
+    recomendacion = data.get('recomendacion', '').strip()
+    logrados = data.get('logrados', [])  # lista de IDs
+    
+    if not hijo_id or not momento:
+        return jsonify({'success': False, 'message': 'hijo_id y momento son requeridos.'}), 400
+        
+    try:
+        # 1. Buscar si ya existe el boletin
+        res_boletin = supabase.table('boletines').select('id').eq('hijo_id', hijo_id).eq('momento_pedagogico', str(momento)).execute()
+        boletin_id = None
+        
+        if res_boletin.data:
+            boletin_id = res_boletin.data[0]['id']
+            # Actualizar recomendación
+            supabase.table('boletines').update({'recomendaciones_docente': recomendacion}).eq('id', boletin_id).execute()
+        else:
+            # Buscar seccion_id del hijo
+            res_asig = supabase.table('asignaciones_estudiantes').select('seccion_id').eq('hijo_id', hijo_id).eq('estado', 'cursando').execute()
+            if not res_asig.data:
+                return jsonify({'success': False, 'message': 'El estudiante no tiene una sección activa asignada.'}), 400
+            seccion_id = res_asig.data[0]['seccion_id']
+
+            # Crear nuevo boletin
+            nuevo_boletin = {
+                'hijo_id': hijo_id,
+                'seccion_id': seccion_id,
+                'momento_pedagogico': str(momento),
+                'recomendaciones_docente': recomendacion
+            }
+            res_nueva = supabase.table('boletines').insert(nuevo_boletin).execute()
+            if res_nueva.data:
+                boletin_id = res_nueva.data[0]['id']
+        
+        if not boletin_id:
+            return jsonify({'success': False, 'message': 'Fallo al procesar boletín maestro.'}), 500
+            
+        # 2. Reemplazar indicadores logrados
+        supabase.table('boletines_indicadores').delete().eq('boletin_id', boletin_id).execute()
+        
+        if logrados:
+            insert_data = [{'boletin_id': boletin_id, 'indicador_id': i_id} for i_id in logrados]
+            supabase.table('boletines_indicadores').insert(insert_data).execute()
+            
+        return jsonify({
+            'success': True,
+            'message': 'Evaluación guardada exitosamente.',
+            'data': {'boleta_id': boletin_id}
+        }), 200
+
+    except Exception as e:
+        print(f"❌ Error al guardar evaluacion: {e}")
+        return jsonify({'success': False, 'message': 'Error interno al guardar.'}), 500
+
+
+# =======================================================
+# MÓDULO: BANCO DE RECOMENDACIONES
+# =======================================================
+
+@app.route('/api/recomendaciones', methods=['POST'])
+@require_auth
+def crear_recomendacion():
+    """Crea una nueva recomendación predefinida para una sección."""
+    data = request.get_json(silent=True) or {}
+
+    seccion_id = data.get('seccion_id', '').strip()
+    titulo     = data.get('titulo', '').strip()
+    texto      = data.get('texto', '').strip()
+
+    if not all([seccion_id, titulo, texto]):
+        return jsonify({
+            'success': False,
+            'message': 'Faltan datos obligatorios: seccion_id, titulo y texto son requeridos.'
+        }), 400
+
+    try:
+        nueva_recomendacion = {
+            'seccion_id': seccion_id,
+            'titulo':     titulo,
+            'texto':      texto
+        }
+        res = supabase.table('banco_recomendaciones').insert(nueva_recomendacion).execute()
+
+        return jsonify({
+            'success': True,
+            'message': 'Recomendación creada exitosamente.',
+            'data':    res.data[0] if res.data else None
+        }), 201
+
+    except Exception as e:
+        print(f"❌ Error al crear recomendación: {e}")
+        return jsonify({'success': False, 'message': 'Error interno al crear la recomendación.'}), 500
+
+
+@app.route('/api/recomendaciones/<seccion_id>', methods=['GET'])
+@require_auth
+def obtener_recomendaciones(seccion_id):
+    """Devuelve todas las recomendaciones predefinidas de una sección."""
+    try:
+        res = supabase.table('banco_recomendaciones') \
+            .select('*') \
+            .eq('seccion_id', seccion_id) \
+            .order('created_at', desc=False) \
+            .execute()
+
+        return jsonify({
+            'success': True,
+            'message': 'Recomendaciones obtenidas correctamente.',
+            'data':    res.data
+        }), 200
+
+    except Exception as e:
+        print(f"❌ Error al obtener recomendaciones: {e}")
+        return jsonify({'success': False, 'message': 'Error interno al obtener las recomendaciones.'}), 500
+
+
+@app.route('/api/recomendaciones/<recomendacion_id>', methods=['PUT'])
+@require_auth
+def actualizar_recomendacion(recomendacion_id):
+    """Actualiza el título y/o texto de una recomendación existente."""
+    data = request.get_json(silent=True) or {}
+
+    titulo = data.get('titulo', '').strip()
+    texto  = data.get('texto', '').strip()
+
+    if not titulo and not texto:
+        return jsonify({
+            'success': False,
+            'message': 'Se debe proporcionar al menos titulo o texto para actualizar.'
+        }), 400
+
+    datos_update = {}
+    if titulo:
+        datos_update['titulo'] = titulo
+    if texto:
+        datos_update['texto'] = texto
+
+    try:
+        res = supabase.table('banco_recomendaciones') \
+            .update(datos_update) \
+            .eq('id', recomendacion_id) \
+            .execute()
+
+        if not res.data:
+            return jsonify({
+                'success': False,
+                'message': 'No se encontró la recomendación especificada.'
+            }), 404
+
+        return jsonify({
+            'success': True,
+            'message': 'Recomendación actualizada exitosamente.',
+            'data':    res.data[0]
+        }), 200
+
+    except Exception as e:
+        print(f"❌ Error al actualizar recomendación: {e}")
+        return jsonify({'success': False, 'message': 'Error interno al actualizar la recomendación.'}), 500
+
+
+@app.route('/api/recomendaciones/<recomendacion_id>', methods=['DELETE'])
+@require_auth
+def eliminar_recomendacion(recomendacion_id):
+    """Elimina una recomendación del banco de la sección."""
+    try:
+        res = supabase.table('banco_recomendaciones') \
+            .delete() \
+            .eq('id', recomendacion_id) \
+            .execute()
+
+        if not res.data:
+            return jsonify({
+                'success': False,
+                'message': 'No se encontró la recomendación especificada o ya fue eliminada.'
+            }), 404
+
+        return jsonify({
+            'success': True,
+            'message': 'Recomendación eliminada exitosamente.',
+            'data':    None
+        }), 200
+
+    except Exception as e:
+        print(f"❌ Error al eliminar recomendación: {e}")
+        return jsonify({'success': False, 'message': 'Error interno al eliminar la recomendación.'}), 500
+
+
+# =======================================================
+# MÓDULO: DESCARGA DE BOLETINES EN WORD
+# =======================================================
+
+@app.route('/api/boletines/descargar/<hijo_id>/<momento>', methods=['GET'])
+@require_auth
+def descargar_boletin(hijo_id, momento):
+    """Genera y descarga el boletín de evaluación en formato Word (.docx)."""
+    try:
+        # 1. Obtener datos del estudiante y el representante
+        res_hijo = supabase.table("hijos").select("nombre, apellidos, cedula_escolar, representante_id").eq("id", hijo_id).single().execute()
+        
+        if not res_hijo.data:
+            return jsonify({'success': False, 'message': 'Estudiante no encontrado'}), 404
+            
+        hijo = res_hijo.data
+        nombre_alumno = f"{hijo.get('nombre', '')} {hijo.get('apellidos', '')}".strip()
+        cedula = hijo.get('cedula_escolar', 'S/N')
+        
+        representante_nombre = "Desconocido"
+        if hijo.get('representante_id'):
+            res_rep = supabase.table("usuarios").select("nombres, apellidos").eq("id", hijo['representante_id']).single().execute()
+            if res_rep.data:
+                representante_nombre = f"{res_rep.data.get('nombres', '')} {res_rep.data.get('apellidos', '')}".strip()
+
+        # 2. Buscar la sección del estudiante
+        res_asig = supabase.table("asignaciones_estudiantes") \
+            .select("seccion_id, secciones(nivel, letra)") \
+            .eq("hijo_id", hijo_id).eq("estado", "cursando").execute()
+            
+        if not res_asig.data:
+            return jsonify({'success': False, 'message': 'El estudiante no está matriculado en ninguna sección activa'}), 404
+            
+        seccion_id = res_asig.data[0]['seccion_id']
+        secciones_data = res_asig.data[0].get('secciones', {})
+        seccion_nombre = f"{secciones_data.get('nivel', '')} - {secciones_data.get('letra', '')}".strip() if secciones_data else "Desconocida"
+
+        # Buscar las docentes asignadas a esta sección
+        docentes_nombres = []
+        res_doc_sec = supabase.table("docentes_secciones").select("usuarios(nombres, apellidos)").eq("seccion_id", seccion_id).execute()
+        if res_doc_sec.data:
+            for d in res_doc_sec.data:
+                u = d.get('usuarios')
+                if u:
+                    docentes_nombres.append(f"{u.get('nombres', '')} {u.get('apellidos', '')}".strip())
+        docentes_str = ", ".join(docentes_nombres) if docentes_nombres else "Sin asignar"
+
+        # 3. Obtener el boletín específico y su recomendación
+        res_boletin = supabase.table("boletines") \
+            .select("id, recomendaciones_docente") \
+            .eq("hijo_id", hijo_id).eq("momento_pedagogico", str(momento)).execute()
+            
+        recomendacion = ""
+        boletin_id = None
+        if res_boletin.data:
+            boletin_id = res_boletin.data[0]['id']
+            recomendacion = res_boletin.data[0].get('recomendaciones_docente', '')
+
+        # 4. Obtener indicadores logrados mediante JOIN
+        ind_formacion = []
+        ind_ambiente = []
+        ind_comunicacion = []
+        
+        if boletin_id:
+            res_ind = supabase.table("boletines_indicadores") \
+                .select("indicadores(area_aprendizaje, descripcion)") \
+                .eq("boletin_id", boletin_id).execute()
+                
+            if res_ind.data:
+                for item in res_ind.data:
+                    ind_data = item.get('indicadores')
+                    if ind_data:
+                        area = ind_data.get('area_aprendizaje', '').lower()
+                        desc = {"descripcion": ind_data.get('descripcion', '')}
+                        
+                        # Clasificación dinámica basada en palabras clave
+                        if 'personal' in area or 'social' in area or 'formación' in area:
+                            ind_formacion.append(desc)
+                        elif 'ambiente' in area or 'entorno' in area:
+                            ind_ambiente.append(desc)
+                        elif 'comunicación' in area or 'representación' in area or 'lenguaje' in area:
+                            ind_comunicacion.append(desc)
+
+        # 5. Cargar plantilla e inyectar contexto
+        # Usamos os.path.dirname(__file__) equivalente a tu SCRIPT_DIR
+        plantilla_path = os.path.join(os.path.dirname(__file__), "plantillas", "boletin_plantilla.docx")
+        
+        # Validación de seguridad por si no existe el archivo aún
+        if not os.path.exists(plantilla_path):
+            return jsonify({'success': False, 'message': 'Falta el archivo de plantilla (boletin_plantilla.docx) en el servidor.'}), 404
+
+        doc = DocxTemplate(plantilla_path)
+        
+        contexto = {
+            "nombre_alumno": nombre_alumno,
+            "cedula": cedula,
+            "representante": representante_nombre,
+            "seccion": seccion_nombre,
+            "docentes": docentes_str,
+            "momento": momento,
+            "recomendacion": recomendacion,
+            "ind_formacion": ind_formacion,
+            "ind_ambiente": ind_ambiente,
+            "ind_comunicacion": ind_comunicacion
+        }
+        
+        doc.render(contexto)
+        
+        # 6. Guardar en memoria y retornar
+        file_stream = io.BytesIO()
+        doc.save(file_stream)
+        file_stream.seek(0)
+        
+        nombre_descarga = f"Boletin_Momento{momento}_{nombre_alumno.replace(' ', '_')}.docx"
+        
+        return send_file(
+            file_stream,
+            as_attachment=True,
+            download_name=nombre_descarga,
+            mimetype="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+        )
+        
+    except Exception as e:
+        print(f"❌ Error al descargar boletín: {e}")
+        return jsonify({'success': False, 'message': 'Error interno al generar el boletín docx.'}), 500
+
 
 # =======================================================
 # PUNTO DE ENTRADA
