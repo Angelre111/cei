@@ -553,8 +553,12 @@
                                 <i class="ph-bold ph-user-plus text-xl"></i>
                                 <span>Registrar Alumno</span>
                             </button>
+                            <button onclick="abrirModalRegistrarNuevoEstudiante()"
+                                class="w-full md:w-auto px-6 py-3.5 bg-emerald-500 text-white rounded-xl font-bold shadow-lg shadow-emerald-200 hover:bg-emerald-600 hover:shadow-emerald-300 transform hover:-translate-y-1 transition-all flex items-center justify-center gap-2 text-base">
+                                <i class="ph-bold ph-user-plus text-xl"></i>
+                                <span>Registrar Nuevo Estudiante (Completo)</span>
+                            </button>
                         </div>
-
                         <div
                             class="p-5 bg-gray-50/50 rounded-3xl border border-gray-100 flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
                             <div class="relative w-full max-w-md group">
@@ -978,8 +982,11 @@
                                 <div class="flex-1 space-y-5 relative z-10">
                                     <!-- Selector de Aula para Estadística Mensual -->
                                     <div class="mb-4">
-                                        <label class="block text-[11px] font-bold text-pink-600 uppercase tracking-widest mb-2">Seleccionar Aula <span class="text-red-500">*</span></label>
-                                        <select id="stat-mensual-aula" class="w-full px-4 py-3 border-2 border-pink-200 rounded-xl focus:border-pink-400 focus:ring-2 focus:ring-pink-100 outline-none text-sm text-gray-800 bg-white shadow-inner transition-all font-bold appearance-none cursor-pointer">
+                                        <label
+                                            class="block text-[11px] font-bold text-pink-600 uppercase tracking-widest mb-2">Seleccionar
+                                            Aula <span class="text-red-500">*</span></label>
+                                        <select id="stat-mensual-aula"
+                                            class="w-full px-4 py-3 border-2 border-pink-200 rounded-xl focus:border-pink-400 focus:ring-2 focus:ring-pink-100 outline-none text-sm text-gray-800 bg-white shadow-inner transition-all font-bold appearance-none cursor-pointer">
                                             <option value="">Cargando aulas...</option>
                                         </select>
                                     </div>
@@ -2511,7 +2518,8 @@
                         <p
                             class="text-[12px] text-gray-500 flex items-center gap-2 bg-purple-50/50 p-4 rounded-xl border border-purple-100">
                             <i class="ph-fill ph-paper-plane-tilt text-purple-600 text-lg"></i>
-                            Se enviará una invitación por correo electrónico para que el usuario pueda establecer su propia contraseña y completar su perfil.
+                            Se enviará una invitación por correo electrónico para que el usuario pueda establecer su
+                            propia contraseña y completar su perfil.
                         </p>
                     </div>
                 </div>
@@ -3098,8 +3106,227 @@
             </div>
         </div>
     </div>
+    <!-- ===== MODAL COMPLETO PARA REGISTRO NUEVO ESTUDIANTE (al final del body) ===== -->
+    <div id="modal-registrar-nuevo-estudiante"
+        class="fixed inset-0 bg-slate-900/40 z-[110] hidden flex items-center justify-center backdrop-blur-sm transition-opacity opacity-0"
+        style="transition: opacity 0.3s ease;">
+        <div id="modal-registrar-nuevo-estudiante-content"
+            class="bg-white rounded-[2rem] shadow-xl w-full max-w-5xl mx-4 max-h-[90vh] flex flex-col transform scale-95 transition-transform duration-300 border border-white/50">
+            <div
+                class="px-8 py-6 border-b border-emerald-100 flex justify-between items-center bg-emerald-50 rounded-t-[2rem] flex-shrink-0">
+                <h3 class="font-extrabold text-gray-800 text-xl flex items-center gap-3">
+                    <i class="ph-bold ph-student text-emerald-600 text-3xl"></i>
+                    Registro Completo de Estudiante
+                </h3>
+                <button onclick="cerrarModalRegistrarNuevoEstudiante()"
+                    class="text-gray-400 hover:text-red-500 transition-colors p-2 hover:bg-white rounded-xl focus:outline-none">
+                    <i class="ph-bold ph-x text-2xl"></i>
+                </button>
+            </div>
+            <div class="p-8 overflow-y-auto flex-1">
+                <form id="form-nuevo-estudiante" class="space-y-10">
+                    <!-- ========== 1. DATOS DEL NIÑO ========== -->
+                    <div class="border-b border-gray-100 pb-6">
+                        <h4 class="text-base font-black text-emerald-700 mb-5 flex items-center gap-2">
+                            <i class="ph-fill ph-baby text-xl"></i> Identificación del Estudiante
+                        </h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label
+                                    class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Nombres
+                                    <span class="text-red-500">*</span></label>
+                                <input type="text" id="nuevo_nino_nombres" required
+                                    class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-200">
+                            </div>
+                            <div>
+                                <label
+                                    class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Apellidos
+                                    <span class="text-red-500">*</span></label>
+                                <input type="text" id="nuevo_nino_apellidos" required
+                                    class="w-full px-4 py-3 border border-gray-200 rounded-xl">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Fecha
+                                    de Nacimiento <span class="text-red-500">*</span></label>
+                                <input type="date" id="nuevo_nino_fecha_nacimiento" required
+                                    class="w-full px-4 py-3 border border-gray-200 rounded-xl">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Sexo
+                                    <span class="text-red-500">*</span></label>
+                                <select id="nuevo_nino_sexo" required
+                                    class="w-full px-4 py-3 border border-gray-200 rounded-xl">
+                                    <option value="">Seleccionar</option>
+                                    <option value="F">Femenino</option>
+                                    <option value="M">Masculino</option>
+                                </select>
+                            </div>
+                            <div class="md:col-span-2">
+                                <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Lugar
+                                    de Nacimiento</label>
+                                <input type="text" id="nuevo_nino_lugar_nac"
+                                    class="w-full px-4 py-3 border border-gray-200 rounded-xl">
+                            </div>
+                            <div class="md:col-span-2">
+                                <label
+                                    class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Dirección
+                                    de Habitación <span class="text-red-500">*</span></label>
+                                <textarea id="nuevo_nino_direccion" rows="2" required
+                                    class="w-full px-4 py-3 border border-gray-200 rounded-xl"></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ========== 2. DATOS DE LOS PADRES ========== -->
+                    <div class="border-b border-gray-100 pb-6">
+                        <h4 class="text-base font-black text-emerald-700 mb-5 flex items-center gap-2">
+                            <i class="ph-fill ph-users-three text-xl"></i> Datos de los Padres
+                        </h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="bg-pink-50/30 p-4 rounded-xl">
+                                <p class="font-bold text-pink-700 mb-3">Madre</p>
+                                <div class="space-y-3">
+                                    <input type="text" id="nuevo_madre_nombre" placeholder="Nombre completo" required
+                                        class="w-full px-4 py-2.5 border rounded-lg">
+                                    <input type="text" id="nuevo_madre_ci" placeholder="Cédula" required
+                                        class="w-full px-4 py-2.5 border rounded-lg">
+                                    <input type="tel" id="nuevo_madre_telefono" placeholder="Teléfono"
+                                        class="w-full px-4 py-2.5 border rounded-lg">
+                                    <input type="text" id="nuevo_madre_ocupacion" placeholder="Ocupación"
+                                        class="w-full px-4 py-2.5 border rounded-lg">
+                                </div>
+                            </div>
+                            <div class="bg-blue-50/30 p-4 rounded-xl">
+                                <p class="font-bold text-blue-700 mb-3">Padre</p>
+                                <div class="space-y-3">
+                                    <input type="text" id="nuevo_padre_nombre" placeholder="Nombre completo"
+                                        class="w-full px-4 py-2.5 border rounded-lg">
+                                    <input type="tel" id="nuevo_padre_telefono" placeholder="Teléfono"
+                                        class="w-full px-4 py-2.5 border rounded-lg">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+                            <div>
+                                <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Tipo
+                                    de Vivienda</label>
+                                <select id="nuevo_vivienda_tipo" class="w-full px-4 py-3 border rounded-xl">
+                                    <option value="Casa">Casa</option>
+                                    <option value="Apartamento">Apartamento</option>
+                                    <option value="Anexo">Anexo</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label
+                                    class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Tenencia</label>
+                                <select id="nuevo_vivienda_tenencia" class="w-full px-4 py-3 border rounded-xl">
+                                    <option value="Propia">Propia</option>
+                                    <option value="Alquilada">Alquilada</option>
+                                    <option value="Prestada">Cedida/Prestada</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ========== 3. SALUD ========== -->
+                    <div class="border-b border-gray-100 pb-6">
+                        <h4 class="text-base font-black text-emerald-700 mb-5 flex items-center gap-2">
+                            <i class="ph-fill ph-heartbeat text-xl"></i> Historia Médica
+                        </h4>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                            <label class="flex items-center gap-2"><input type="checkbox" id="nuevo_bio_cesarea">
+                                <span>Fue Cesárea</span></label>
+                            <label class="flex items-center gap-2"><input type="checkbox" id="nuevo_bio_prematuro">
+                                <span>Prematuro</span></label>
+                            <label class="flex items-center gap-2"><input type="checkbox" id="nuevo_bio_alergico">
+                                <span>Es Alérgico</span></label>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div><label class="block text-xs font-bold text-gray-500">Peso al Nacer (kg)</label><input
+                                    type="text" id="nuevo_bio_peso" class="w-full px-4 py-3 border rounded-xl"></div>
+                            <div><label class="block text-xs font-bold text-gray-500">Talla al Nacer (cm)</label><input
+                                    type="text" id="nuevo_bio_talla" class="w-full px-4 py-3 border rounded-xl"></div>
+                            <div class="md:col-span-2"><label class="block text-xs font-bold text-gray-500">Enfermedad
+                                    Crónica</label><input type="text" id="nuevo_salud_enfermedad"
+                                    class="w-full px-4 py-3 border rounded-xl"></div>
+                            <div class="md:col-span-2"><label class="block text-xs font-bold text-gray-500">Medicamento
+                                    para la fiebre</label><input type="text" id="nuevo_salud_fiebre"
+                                    class="w-full px-4 py-3 border rounded-xl"></div>
+                        </div>
+                    </div>
+
+                    <!-- ========== 4. HÁBITOS Y CONDUCTA ========== -->
+                    <div class="border-b border-gray-100 pb-6">
+                        <h4 class="text-base font-black text-emerald-700 mb-5 flex items-center gap-2">
+                            <i class="ph-fill ph-moon-stars text-xl"></i> Hábitos y Conducta
+                        </h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                            <div>
+                                <label class="block text-xs font-bold text-gray-500">¿Come solo?</label>
+                                <select id="nuevo_habito_come" class="w-full px-4 py-3 border rounded-xl">
+                                    <option value="Si">Sí, come solo</option>
+                                    <option value="No">No, requiere ayuda</option>
+                                    <option value="Con Ayuda">Con un poco de ayuda</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-500">Hora de dormir (Noche)</label>
+                                <input type="time" id="nuevo_habito_hora" class="w-full px-4 py-3 border rounded-xl">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 mb-2">Diagnóstico Inicial (seleccione
+                                varios)</label>
+                            <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                                <label class="flex items-center gap-2"><input type="checkbox" value="Sociable"
+                                        class="conducta-check"> Sociable</label>
+                                <label class="flex items-center gap-2"><input type="checkbox" value="Inquieto"
+                                        class="conducta-check"> Inquieto</label>
+                                <label class="flex items-center gap-2"><input type="checkbox" value="Cariñoso"
+                                        class="conducta-check"> Cariñoso</label>
+                                <label class="flex items-center gap-2"><input type="checkbox" value="Independiente"
+                                        class="conducta-check"> Independiente</label>
+                                <label class="flex items-center gap-2"><input type="checkbox" value="Agresivo"
+                                        class="conducta-check"> Agresivo</label>
+                                <label class="flex items-center gap-2"><input type="checkbox" value="Timido"
+                                        class="conducta-check"> Tímido</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ========== 5. CORREO DEL REPRESENTANTE Y SECCIÓN ========== -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Correo
+                                del Representante <span class="text-red-500">*</span></label>
+                            <input type="email" id="nuevo_representante_email" required
+                                class="w-full px-4 py-3 border border-gray-200 rounded-xl">
+                            <p class="text-[11px] text-gray-400 mt-1">El representante debe estar registrado previamente
+                                con este correo.</p>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Sección
+                                (opcional)</label>
+                            <select id="nuevo_seccion_id" class="w-full px-4 py-3 border border-gray-200 rounded-xl">
+                                <option value="">-- Sin asignar --</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="flex justify-end gap-4 pt-6">
+                        <button type="button" onclick="cerrarModalRegistrarNuevoEstudiante()"
+                            class="px-8 py-3 text-gray-500 font-bold hover:bg-gray-100 rounded-2xl transition">Cancelar</button>
+                        <button type="submit" id="btn-enviar-nuevo-estudiante"
+                            class="px-8 py-3 bg-emerald-600 text-white rounded-2xl font-extrabold hover:bg-emerald-700 transition shadow-xl shadow-emerald-200 flex items-center gap-2">
+                            <i class="ph-bold ph-check-circle"></i> Registrar Estudiante
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/admin_registro_estudiante.js"></script>
 </body>
-
-
 
 </html>

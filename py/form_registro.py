@@ -452,6 +452,17 @@ def login_usuario():
             
         # Si el error es claramente de credenciales de Supabase
         if "invalid login credentials" in error_msg:
+            # Verificar si existe como invitado sin clave
+            try:
+                user_check = supabase.table("usuarios").select("estado").eq("email", email).limit(1).execute()
+                if user_check.data and user_check.data[0].get("estado") == "invitado":
+                    return jsonify({
+                        'success': False, 
+                        'message': 'Debes registrar tu clave mediante el enlace de invitación enviado a tu correo antes de ingresar.'
+                    }), 403
+            except Exception:
+                pass
+
             return jsonify({
                 'success': False, 
                 'message': 'Correo o contraseña incorrectos.'
@@ -582,29 +593,68 @@ def crear_personal():
             return jsonify({'success': False, 'message': 'Este correo electrónico ya está registrado en Supabase.'}), 409
         return jsonify({'success': False, 'message': 'Error al enviar la invitación. Intenta de nuevo.'}), 500
 
+@app.route('/api/reenviar_invitacion', methods=['POST'])
+@require_auth
+def reenviar_invitacion():
+    """Reenvía la invitación (usando reset_password_email) para los que no completaron la clave."""
+    user_id_solicitante = request.current_user.id
+    perfil = supabase.table("usuarios").select("rol").eq("id", user_id_solicitante).single().execute()
+    if not perfil.data or perfil.data.get("rol") != "administrador":
+        return jsonify({'success': False, 'message': 'Acción denegada. Solo administradores.'}), 403
+
+    email = request.json.get('email', '').strip()
+    if not email:
+        return jsonify({'success': False, 'message': 'Correo electrónico obligatorio.'}), 400
+
+    try:
+        redirect_url = os.getenv('SET_PASSWORD_URL', 'http://127.0.0.1:5000/set_password.html')
+        supabase_auth.auth.reset_password_email(email, options={"redirect_to": redirect_url})
+        return jsonify({'success': True, 'message': f'Invitación reenviada a {email}.'}), 200
+    except Exception as e:
+        print(f"❌ Error al reenviar invitación a {email}: {e}")
+        return jsonify({'success': False, 'message': 'Error al reenviar invitación.'}), 500
+
 @app.route('/api/completar-perfil', methods=['POST'])
 @require_auth
 def completar_perfil():
-    """Actualiza los datos personales y profesionales de un usuario invitado."""
+    """Completa el perfil de un usuario invitado (docente o representante)."""
     try:
         data = request.json
         user_id = request.current_user.id
+        
+        # 1. Obtener el rol del usuario para lógica específica
+        perfil = supabase.table("usuarios").select("rol").eq("id", user_id).single().execute()
+        rol = perfil.data.get("rol") if perfil.data else None
 
+        nombres = data.get('nombres', '').strip()
+        apellidos = data.get('apellidos', '').strip()
+        telefono = data.get('telefono', '').strip()
+
+        if not nombres or not apellidos:
+            return jsonify({'success': False, 'message': 'Nombres y apellidos son obligatorios.'}), 400
+
+        # Base de actualización unificada
         actualizacion = {
-            "nombres": data.get('nombres', '').strip(),
-            "apellidos": data.get('apellidos', '').strip(),
-            "telefono": data.get('telefono', '').strip(),
-            "fecha_nacimiento": data.get('fecha_nacimiento'),
-            "codigo_cargo": data.get('codigo_cargo', '').strip().upper(),
-            "tipo_cargo": data.get('tipo_cargo', '').strip().upper(),
-            "talla_zapato": data.get('talla_zapato'),
-            "talla_camisa": data.get('talla_camisa'),
-            "talla_pantalon": data.get('talla_pantalon'),
+            "nombres": nombres,
+            "apellidos": apellidos,
+            "telefono": telefono if telefono else None,
             "estado": "activo"   # activamos la cuenta finalmente
         }
 
-        if not actualizacion["nombres"] or not actualizacion["apellidos"]:
-            return jsonify({'success': False, 'message': 'Nombres y apellidos son obligatorios.'}), 400
+        # Campos extra si es personal institucional
+        if rol in ['docente', 'administrador']:
+            if 'fecha_nacimiento' in data:
+                actualizacion["fecha_nacimiento"] = data.get('fecha_nacimiento')
+            if data.get('codigo_cargo'):
+                actualizacion["codigo_cargo"] = data.get('codigo_cargo').strip().upper()
+            if data.get('tipo_cargo'):
+                actualizacion["tipo_cargo"] = data.get('tipo_cargo').strip().upper()
+            if 'talla_zapato' in data:
+                actualizacion["talla_zapato"] = data.get('talla_zapato')
+            if 'talla_camisa' in data:
+                actualizacion["talla_camisa"] = data.get('talla_camisa')
+            if 'talla_pantalon' in data:
+                actualizacion["talla_pantalon"] = data.get('talla_pantalon')
 
         # Actualizar la tabla usuarios
         supabase.table("usuarios").update(actualizacion).eq("id", user_id).execute()
@@ -623,7 +673,9 @@ def completar_perfil():
 @app.route('/api/usuarios', methods=['GET'])
 @require_auth
 def listar_usuarios():
-    """Devuelve la lista de usuarios según tipo: personal (admin+docente) o representante."""
+    """Devuelve la lista de usuarios según tipo: personal (admin+docente) o representante.
+    Para representantes sin nombre (invitados por admin), enriquece con datos de inscripciones.
+    """
     tipo = request.args.get('tipo', 'personal')
     roles_filtro = ['representante'] if tipo in ('representante', 'representantes') else ['administrador', 'docente']
 
@@ -634,11 +686,52 @@ def listar_usuarios():
             .order("created_at", desc=True) \
             .execute()
 
-        return jsonify({'success': True, 'usuarios': response.data}), 200
+        usuarios = response.data or []
+
+        # Para representantes sin nombre (invitados), buscar nombre en inscripciones
+        if roles_filtro == ['representante']:
+            for u in usuarios:
+                nombre_completo = f"{u.get('nombres', '')} {u.get('apellidos', '')}".strip()
+                if not nombre_completo:
+                    # Buscar en inscripciones: nombre_madre es el campo más completo
+                    try:
+                        ins_res = supabase.table("inscripciones") \
+                            .select("nombre_madre, ci_madre") \
+                            .eq("user_id", u['id']) \
+                            .limit(1) \
+                            .execute()
+                        if ins_res.data:
+                            ins = ins_res.data[0]
+                            partes = (ins.get('nombre_madre') or '').split()
+                            if partes:
+                                u['nombres']   = ' '.join(partes[:-1]) if len(partes) > 1 else partes[0]
+                                u['apellidos'] = partes[-1] if len(partes) > 1 else ''
+                            if ins.get('ci_madre'):
+                                u['ci'] = ins['ci_madre']
+                    except Exception as ex:
+                        print(f"⚠️ No se pudo enriquecer nombre del representante {u['id']}: {ex}")
+
+        return jsonify({'success': True, 'usuarios': usuarios}), 200
 
     except Exception as e:
         print(f"❌ Error al listar usuarios: {e}")
         return jsonify({'success': False, 'message': 'Error al obtener usuarios.'}), 500
+
+
+@app.route('/api/activar_cuenta', methods=['POST'])
+@require_auth
+def activar_cuenta():
+    """Marca la cuenta del usuario autenticado como 'activo' tras establecer su contraseña.
+    Llamado desde set_password.html justo después de supabase.auth.updateUser().
+    """
+    try:
+        user_id = request.current_user.id
+        supabase.table("usuarios").update({"estado": "activo"}).eq("id", user_id).execute()
+        print(f"✅ Cuenta activada tras set_password: {user_id}")
+        return jsonify({'success': True, 'message': 'Cuenta activada correctamente.'}), 200
+    except Exception as e:
+        print(f"❌ Error al activar cuenta: {e}")
+        return jsonify({'success': False, 'message': 'No se pudo activar la cuenta.'}), 500
 
 
 @app.route('/api/usuarios/<user_id>', methods=['PUT'])
@@ -732,6 +825,219 @@ def eliminar_usuario(user_id):
 # =======================================================
 # RUTAS DE GESTIÓN (INSCRIPCIONES / ESTUDIANTES)
 # =======================================================
+
+def _nombre_representante(rep_id: str) -> str:
+    """Devuelve el nombre completo del representante.
+    Si la tabla `usuarios` tiene el nombre vacío (invitado por admin sin
+    completar perfil), hace fallback a `inscripciones.nombre_madre`.
+    """
+    if not rep_id:
+        return "Sin representante"
+    try:
+        res_u = supabase.table("usuarios") \
+            .select("nombres, apellidos") \
+            .eq("id", rep_id).limit(1).execute()
+        if res_u.data:
+            nombre = f"{res_u.data[0].get('nombres', '')} {res_u.data[0].get('apellidos', '')}".strip()
+            if nombre:
+                return nombre
+        # Fallback: buscar nombre_madre en inscripciones
+        res_i = supabase.table("inscripciones") \
+            .select("nombre_madre") \
+            .eq("user_id", rep_id).limit(1).execute()
+        if res_i.data and res_i.data[0].get("nombre_madre"):
+            return res_i.data[0]["nombre_madre"].strip()
+    except Exception as ex:
+        print(f"⚠️ _nombre_representante({rep_id}): {ex}")
+    return "Desconocido"
+
+
+@app.route('/api/admin/registrar_estudiante', methods=['POST'])
+@require_auth
+def admin_registrar_estudiante():
+    """Admin (o representante) registra un estudiante directamente en el sistema."""
+    current_user = request.current_user
+
+    # Verificar que sea administrador o representante
+    user_data = supabase.table("usuarios").select("rol").eq("id", current_user.id).execute()
+    rol_solicitante = user_data.data[0].get('rol') if user_data.data else None
+    if rol_solicitante not in ['administrador', 'representante']:
+        return jsonify({'success': False, 'message': 'Acceso no autorizado.'}), 403
+
+    data = request.get_json(silent=True)
+    if not data:
+        return jsonify({'success': False, 'message': 'Datos no proporcionados'}), 400
+
+    # ── Datos del estudiante ──────────────────────────────────────────────────
+    nombre           = data.get('nombre', '').strip()
+    apellidos        = data.get('apellidos', '').strip()
+    fecha_nacimiento = data.get('fecha_nacimiento', '').strip()
+    sexo             = data.get('sexo', '').strip()
+    lugar_nacimiento = data.get('lugar_nacimiento', '').strip()
+    direccion        = data.get('direccion', '').strip()
+    seccion_id       = data.get('seccion_id') or None
+    ci_rep           = data.get('ci_representante', '').strip() or '00000000'
+
+    if not all([nombre, apellidos, fecha_nacimiento, sexo]):
+        return jsonify({'success': False, 'message': 'Faltan datos obligatorios: nombre, apellidos, fecha de nacimiento y sexo.'}), 400
+
+    # ── Determinar el representante ───────────────────────────────────────────
+    if rol_solicitante == 'administrador':
+        # Admin: busca/crea el representante por email
+        email_representante = data.get('email_representante', '').strip().lower()
+        if not email_representante:
+            return jsonify({'success': False, 'message': 'El correo del representante es obligatorio.'}), 400
+
+        rep_user = supabase.table("usuarios").select("id, rol").eq("email", email_representante).execute()
+        if rep_user.data:
+            rep_id   = rep_user.data[0]['id']
+            rol_rep  = rep_user.data[0].get('rol')
+            if rol_rep != 'representante':
+                return jsonify({'success': False, 'message': 'El correo ya está registrado con un rol diferente.'}), 409
+        else:
+            # Crear representante vía invitación
+            try:
+                redirect_url  = os.getenv('SET_PASSWORD_URL', 'https://animated-gnome-3fdf38.netlify.app/set_password.html')
+                auth_response = supabase.auth.admin.invite_user_by_email(
+                    email_representante,
+                    options={"data": {"role": "representante"}, "redirect_to": redirect_url}
+                )
+                rep_id = auth_response.user.id
+                supabase.table("usuarios").insert({
+                    "id": rep_id, "email": email_representante,
+                    "rol": "representante", "estado": "invitado",
+                    "nombres": "", "apellidos": ""
+                }).execute()
+            except Exception as e:
+                print(f"Error al invitar representante: {e}")
+                return jsonify({'success': False, 'message': 'No se pudo crear la invitación para el representante.'}), 500
+    else:
+        # Representante: es él mismo
+        rep_id = current_user.id
+
+    # ── Período académico activo ──────────────────────────────────────────────
+    periodo_id = None
+    try:
+        p_res = supabase.table("periodos_academicos").select("id").eq("estado", "activo").execute()
+        if p_res.data:
+            periodo_id = p_res.data[0]['id']
+        else:
+            p_res2 = supabase.table("periodos_academicos").select("id").eq("estado", "planificacion") \
+                        .order("created_at", desc=True).limit(1).execute()
+            if p_res2.data:
+                periodo_id = p_res2.data[0]['id']
+    except Exception as e:
+        print(f"⚠️ No se pudo obtener período: {e}")
+
+    # ── Generar cédula escolar ────────────────────────────────────────────────
+    try:
+        fecha_nac_obj = datetime.strptime(fecha_nacimiento, "%Y-%m-%d")
+        anio_nac      = str(fecha_nac_obj.year)[-2:]
+    except ValueError:
+        return jsonify({'success': False, 'message': 'Formato de fecha inválido. Use YYYY-MM-DD.'}), 400
+
+    res_hermanos = supabase.table("hijos").select("fecha_nacimiento").eq("representante_id", rep_id).execute()
+    mismo_anio   = sum(
+        1 for h in (res_hermanos.data or [])
+        if h.get('fecha_nacimiento') and
+           datetime.strptime(h['fecha_nacimiento'], "%Y-%m-%d").year == fecha_nac_obj.year
+    )
+    cedula_escolar = f"{mismo_anio + 1}{anio_nac}{ci_rep}"
+
+    # ── Insertar en tabla 'hijos' ─────────────────────────────────────────────
+    datos_hijo = {
+        "nombre":           nombre,
+        "apellidos":        apellidos,
+        "fecha_nacimiento": fecha_nacimiento,
+        "sexo":             sexo,
+        "cedula_escolar":   cedula_escolar,
+        "estado_alumno":    "Activo",
+        "representante_id": rep_id,
+    }
+    try:
+        res_hijo = supabase.table("hijos").insert(datos_hijo).execute()
+        hijo_id  = res_hijo.data[0]['id']
+    except Exception as e:
+        print(f"❌ Error al insertar hijo: {e}")
+        return jsonify({'success': False, 'message': 'Error al guardar los datos del estudiante.'}), 500
+
+    # ── Insertar ficha completa en 'inscripciones' ────────────────────────────
+    # Columnas idénticas a las usadas por /api/inscribir (ruta del representante)
+    try:
+        def _safe_bool(val):
+            if isinstance(val, bool): return val
+            if isinstance(val, str):  return val.lower() in ('true', '1', 'yes', 'on')
+            return bool(val) if val else False
+
+        def _safe_float(val):
+            try:    return float(val) if val not in (None, '', '0', 0) else None
+            except: return None
+
+        conducta_raw = data.get('conducta', [])
+        conducta_list = conducta_raw if isinstance(conducta_raw, list) else []
+
+        datos_inscripcion = {
+            "hijo_id":           hijo_id,
+            "user_id":           rep_id,
+            "periodo_ingreso_id": periodo_id,
+            # Ubicación (van aquí, no en hijos)
+            "lugar_nacimiento":   lugar_nacimiento,
+            "direccion_habitacion": direccion,
+            # Familia
+            "nombre_madre":    data.get('madre_nombre', ''),
+            "ci_madre":        ci_rep,
+            "telefono_madre":  data.get('madre_telefono') or None,
+            "ocupacion_madre": data.get('madre_ocupacion') or None,
+            "nombre_padre":    data.get('padre_nombre') or None,
+            "telefono_padre":  data.get('padre_telefono') or None,
+            "tipo_vivienda":   data.get('vivienda_tipo') or None,
+            "tenencia_vivienda": data.get('vivienda_tenencia') or None,
+            # Salud
+            "fue_cesarea":       _safe_bool(data.get('bio_cesarea')),
+            "es_prematuro":      _safe_bool(data.get('bio_prematuro')),
+            "es_alergico":       _safe_bool(data.get('bio_alergico')),
+            "peso_nacer":        _safe_float(data.get('bio_peso')),
+            "talla_nacer":       _safe_float(data.get('bio_talla')),
+            "enfermedad_cronica": data.get('salud_enfermedad') or None,
+            "medicamento_fiebre": data.get('salud_fiebre') or None,
+            # Hábitos
+            "come_solo":         data.get('habito_come') or None,
+            "hora_dormir":       data.get('habito_hora') or None,
+            "diagnostico_inicial": conducta_list,
+        }
+        supabase.table("inscripciones").insert(datos_inscripcion).execute()
+        print(f"✅ Ficha de inscripción guardada para hijo {hijo_id} (cédula: {cedula_escolar})")
+    except Exception as e:
+        # No es crítico — el alumno ya fue creado en 'hijos'
+        print(f"⚠️ Ficha de inscripción no guardada: {e}")
+
+    # ── Asignar a sección (opcional) ──────────────────────────────────────────
+    if seccion_id:
+        sec_check = supabase.table("secciones").select("id").eq("id", seccion_id).execute()
+        if sec_check.data:
+            try:
+                supabase.table("asignaciones_estudiantes").insert({
+                    "hijo_id":   hijo_id,
+                    "seccion_id": seccion_id,
+                    "estado":    "cursando"
+                }).execute()
+                supabase.table("hijos").update({"estado_alumno": "Inscrito"}).eq("id", hijo_id).execute()
+            except Exception as e:
+                print(f"⚠️ Error al asignar sección: {e}")
+                return jsonify({
+                    'success': True,
+                    'message': f'Estudiante registrado, pero no se pudo asignar a la sección.',
+                    'hijo_id': hijo_id,
+                    'cedula_escolar': cedula_escolar
+                }), 201
+
+    return jsonify({
+        'success': True,
+        'message': 'Estudiante registrado exitosamente. Se ha enviado invitación al representante.',
+        'hijo_id': hijo_id,
+        'cedula_escolar': cedula_escolar
+    }), 201
+
 
 @app.route('/api/estudiantes/buscar/<cedula>', methods=['GET'])
 @require_auth
@@ -859,12 +1165,7 @@ def obtener_matricula():
                 if res_h.data: hijo = res_h.data[0]
                 
             # Datos del representante
-            representante_nombre = "Desconocido"
-            if hijo and hijo.get('representante_id'):
-                res_u = supabase.table("usuarios").select("nombres, apellidos").eq("id", hijo.get('representante_id')).execute()
-                if res_u.data:
-                    rep = res_u.data[0]
-                    representante_nombre = f"{rep.get('nombres', '')} {rep.get('apellidos', '')}".strip()
+            representante_nombre = _nombre_representante(hijo.get('representante_id') if hijo else None)
                     
             # Datos de la sección
             seccion_nombre = "Sin asignar"
@@ -923,13 +1224,13 @@ def obtener_historial():
             
             hijo = hijos_map.get(hijo_id)
 
-            representante_nombre = "Desconocido"
-            if hijo and hijo.get('representante_id'):
-                res_u = supabase.table("usuarios").select("nombres, apellidos").eq("id", hijo.get('representante_id')).execute()
-                if res_u.data:
-                    rep = res_u.data[0]
-                    representante_nombre = f"{rep.get('nombres', '')} {rep.get('apellidos', '')}".strip()
-                    
+            representante_nombre = _nombre_representante(hijo.get('representante_id') if hijo else None)
+
+
+
+
+
+
             seccion_nombre = "Desconocida"
             if seccion_id:
                 res_s = supabase.table("secciones").select("nivel, letra").eq("id", seccion_id).execute()
@@ -2013,8 +2314,8 @@ def generar_estadistica_mensual():
                 # Usamos fecha_fin del mes para que NO cuente en matrícula final
                 fecha_retiro = fecha_fin
 
-            edad = calcular_edad(h['fecha_nacimiento'])
-            edad_label = "Maternal" if edad < 3 else f"{edad} años"
+            edad = calcular_edad(h.get('fecha_nacimiento'))
+            edad_label = f"{edad} años" if edad > 0 else "Desconocida"
             
             # Estaba inscrito AL INICIO del mes
             if fecha_ingreso < fecha_inicio and (not fecha_retiro or fecha_retiro >= fecha_inicio):

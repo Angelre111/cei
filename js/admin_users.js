@@ -180,6 +180,15 @@ function renderizarTablaUsuarios(usuarios) {
                 </td>
                 <td class="px-6 py-4">
                     <div class="flex items-center justify-end gap-2.5">
+                        ${(u.estado === 'invitado' || u.estado === 'pendiente') ? `
+                        <button
+                            data-email="${u.email}"
+                            onclick="reenviarInvitacionBtn(this)"
+                            title="Reenviar enlace de invitación/clave"
+                            class="p-2 text-indigo-500 hover:text-indigo-700 bg-indigo-50 hover:bg-indigo-100 rounded-xl transition-all shadow-sm">
+                            <i class="ph-bold ph-paper-plane-tilt text-lg"></i>
+                        </button>` : ''}
+                        
                         ${esRepresentante ? `
                         <button
                             onclick="abrirModalRepresentanteVincular('${u.id}', '${nombreCompleto.replace(/'/g, "\\'")}')"
@@ -275,6 +284,47 @@ window.abrirModalEditarDesdeBtn = function(btn) {
 
 window.confirmarEliminarDesdeBtn = function(btn) {
     confirmarEliminar(btn.dataset.userId, btn.dataset.nombreCompleto);
+};
+
+window.reenviarInvitacionBtn = async function(btn) {
+    const email = btn.dataset.email;
+    const { isConfirmed } = await Swal.fire({
+        title: '¿Reenviar invitación?',
+        text: `Se enviará un nuevo enlace de configuración de clave a ${email}.`,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'Sí, reenviar',
+        cancelButtonText: 'Cancelar',
+        confirmButtonColor: '#4f46e5',
+        cancelButtonColor: '#9ca3af',
+        customClass: { popup: 'rounded-2xl' }
+    });
+
+    if(!isConfirmed) return;
+
+    Swal.fire({
+        title: 'Reenviando...',
+        allowOutsideClick: false,
+        didOpen: () => Swal.showLoading()
+    });
+
+    try {
+        const token = localStorage.getItem('auth_token');
+        const res = await fetchWithAuth(`${API_BASE}/api/reenviar_invitacion`, {
+            method: 'POST',
+            body: JSON.stringify({ email })
+        });
+        const data = await res.json();
+        
+        if (res.ok && data.success) {
+            Swal.fire('¡Enviado!', data.message, 'success');
+        } else {
+            Swal.fire('Error', data.message || 'Error al reenviar', 'error');
+        }
+    } catch(err) {
+        console.error(err);
+        Swal.fire('Error de red', 'No se pudo contactar al servidor.', 'error');
+    }
 };
 
 window.abrirModalRepresentanteVincular = function(userId, nombre) {

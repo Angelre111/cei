@@ -1,0 +1,161 @@
+// ============================================
+// MODAL REGISTRO COMPLETO DE ESTUDIANTE
+// ============================================
+
+async function abrirModalRegistrarNuevoEstudiante() {
+    // Limpiar formulario
+    const form = document.getElementById('form-nuevo-estudiante');
+    if (form) form.reset();
+    // Limpiar checks de conducta
+    document.querySelectorAll('#form-nuevo-estudiante .conducta-check').forEach(cb => cb.checked = false);
+    // Cargar secciones disponibles
+    await cargarSeccionesNuevoEstudiante();
+
+    const modal = document.getElementById('modal-registrar-nuevo-estudiante');
+    const content = document.getElementById('modal-registrar-nuevo-estudiante-content');
+    if (!modal || !content) return;
+    modal.classList.remove('hidden');
+    setTimeout(() => {
+        modal.classList.remove('opacity-0');
+        content.classList.remove('scale-95');
+        content.classList.add('scale-100');
+    }, 10);
+}
+
+function cerrarModalRegistrarNuevoEstudiante() {
+    const modal = document.getElementById('modal-registrar-nuevo-estudiante');
+    const content = document.getElementById('modal-registrar-nuevo-estudiante-content');
+    if (!modal || !content) return;
+    modal.classList.add('opacity-0');
+    content.classList.remove('scale-100');
+    content.classList.add('scale-95');
+    setTimeout(() => modal.classList.add('hidden'), 300);
+}
+
+async function cargarSeccionesNuevoEstudiante() {
+    try {
+        const res = await fetchWithAuth(`${API_BASE_URL}/api/secciones/disponibles`);
+        const data = await res.json();
+        const select = document.getElementById('nuevo_seccion_id');
+        if (!select) return;
+        if (res.ok && data.success && data.secciones && data.secciones.length > 0) {
+            select.innerHTML = '<option value="">-- Sin asignar --</option>';
+            data.secciones.forEach(sec => {
+                select.innerHTML += `<option value="${sec.id}">${sec.nivel} - ${sec.letra} (Cap. ${sec.capacidad_maxima})</option>`;
+            });
+        } else {
+            select.innerHTML = '<option value="">-- Sin asignar --</option>';
+        }
+    } catch (err) {
+        console.error("Error cargando secciones:", err);
+        const select = document.getElementById('nuevo_seccion_id');
+        if (select) select.innerHTML = '<option value="">-- Sin asignar --</option>';
+    }
+}
+
+// ── Adjuntar listener cuando el DOM esté listo ─────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+    const form = document.getElementById('form-nuevo-estudiante');
+    if (!form) {
+        console.error('[admin_registro_estudiante] No se encontró #form-nuevo-estudiante en el DOM.');
+        return;
+    }
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const btn = document.getElementById('btn-enviar-nuevo-estudiante');
+        const originalText = btn ? btn.innerHTML : '';
+        if (btn) { btn.disabled = true; btn.innerHTML = '<i class="ph ph-spinner animate-spin"></i> Procesando...'; }
+
+        // Recolectar datos — nombres alineados con /api/admin/registrar_estudiante
+        const payload = {
+            nombre:             document.getElementById('nuevo_nino_nombres')?.value.trim() ?? '',
+            apellidos:          document.getElementById('nuevo_nino_apellidos')?.value.trim() ?? '',
+            fecha_nacimiento:   document.getElementById('nuevo_nino_fecha_nacimiento')?.value ?? '',
+            sexo:               document.getElementById('nuevo_nino_sexo')?.value ?? '',
+            lugar_nacimiento:   document.getElementById('nuevo_nino_lugar_nac')?.value.trim() ?? '',
+            direccion:          document.getElementById('nuevo_nino_direccion')?.value.trim() ?? '',
+
+            // Representante
+            email_representante: document.getElementById('nuevo_representante_email')?.value.trim().toLowerCase() ?? '',
+            ci_representante:    document.getElementById('nuevo_madre_ci')?.value.trim() ?? '',
+
+            // Sección (opcional)
+            seccion_id: document.getElementById('nuevo_seccion_id')?.value || null,
+
+            // Datos familiares
+            madre_nombre:    document.getElementById('nuevo_madre_nombre')?.value.trim() ?? '',
+            madre_telefono:  document.getElementById('nuevo_madre_telefono')?.value.trim() ?? '',
+            madre_ocupacion: document.getElementById('nuevo_madre_ocupacion')?.value.trim() ?? '',
+            padre_nombre:    document.getElementById('nuevo_padre_nombre')?.value.trim() ?? '',
+            padre_telefono:  document.getElementById('nuevo_padre_telefono')?.value.trim() ?? '',
+            vivienda_tipo:   document.getElementById('nuevo_vivienda_tipo')?.value ?? '',
+            vivienda_tenencia: document.getElementById('nuevo_vivienda_tenencia')?.value ?? '',
+
+            // Salud
+            bio_cesarea:  document.getElementById('nuevo_bio_cesarea')?.checked ?? false,
+            bio_prematuro: document.getElementById('nuevo_bio_prematuro')?.checked ?? false,
+            bio_alergico: document.getElementById('nuevo_bio_alergico')?.checked ?? false,
+            bio_peso:     document.getElementById('nuevo_bio_peso')?.value.trim() ?? '',
+            bio_talla:    document.getElementById('nuevo_bio_talla')?.value.trim() ?? '',
+            salud_enfermedad: document.getElementById('nuevo_salud_enfermedad')?.value.trim() ?? '',
+            salud_fiebre:     document.getElementById('nuevo_salud_fiebre')?.value.trim() ?? '',
+
+            // Hábitos y conducta
+            habito_come: document.getElementById('nuevo_habito_come')?.value ?? '',
+            habito_hora: document.getElementById('nuevo_habito_hora')?.value ?? '',
+            conducta: Array.from(
+                document.querySelectorAll('#form-nuevo-estudiante .conducta-check:checked')
+            ).map(cb => cb.value),
+        };
+
+        // Validaciones básicas
+        if (!payload.nombre || !payload.apellidos || !payload.fecha_nacimiento ||
+            !payload.sexo || !payload.email_representante) {
+            Swal.fire('Campos incompletos',
+                'Por favor completa los campos obligatorios: Nombres, Apellidos, Fecha de nacimiento, Sexo y Correo del representante.',
+                'warning');
+            if (btn) { btn.disabled = false; btn.innerHTML = originalText; }
+            return;
+        }
+
+        if (!payload.ci_representante) {
+            Swal.fire('Cédula requerida',
+                'La cédula de la madre es necesaria para generar la matrícula del estudiante.',
+                'warning');
+            if (btn) { btn.disabled = false; btn.innerHTML = originalText; }
+            return;
+        }
+
+        try {
+            const res = await fetchWithAuth(`${API_BASE_URL}/api/admin/registrar_estudiante`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            const data = await res.json();
+
+            if (res.ok && data.success) {
+                const cedula = data.cedula_escolar ? ` — Cédula: ${data.cedula_escolar}` : '';
+                Swal.fire({
+                    icon: 'success',
+                    title: '¡Estudiante Registrado!',
+                    text: (data.message || 'Registro exitoso.') + cedula,
+                });
+                cerrarModalRegistrarNuevoEstudiante();
+                if (typeof cargarMatriculaGeneral === 'function') cargarMatriculaGeneral();
+            } else {
+                Swal.fire('Error', data.message || 'No se pudo registrar el estudiante.', 'error');
+            }
+        } catch (err) {
+            console.error('[admin_registro_estudiante] Error de red:', err);
+            Swal.fire('Error de red', 'No se pudo conectar con el servidor. Verifica que el backend está corriendo.', 'error');
+        } finally {
+            if (btn) { btn.disabled = false; btn.innerHTML = originalText; }
+        }
+    });
+
+    console.log('[admin_registro_estudiante] ✅ Listener de submit adjuntado al formulario.');
+});
