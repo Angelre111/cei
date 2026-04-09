@@ -12,7 +12,6 @@ import hashlib
 import random
 from typing import Optional, List
 from datetime import datetime, date, timedelta
-from dateutil.relativedelta import relativedelta
 from functools import wraps
 
 # --- LIBRERÍAS DE TERCEROS ---
@@ -375,6 +374,22 @@ def login_usuario():
                  'message': 'Tu cuenta está inactiva. Contacta a la dirección del plantel.'
              }), 403
 
+        # NUEVO: Manejar estado invitado (Aceptó invitación pero falta completar perfil)
+        if estado_usuario == 'invitado':
+            return jsonify({
+                'success': True,
+                'message': 'Bienvenido. Debes completar tus datos básicos para activar tu cuenta.',
+                'token': response.session.access_token,
+                'refresh_token': response.session.refresh_token,
+                'rol': rol_usuario,
+                'estado': estado_usuario,
+                'require_profile': True,
+                'user': {
+                    'id': user_id,
+                    'email': response.user.email
+                }
+            }), 200
+
         # Lógica inteligente para cuentas "pendientes"
         if estado_usuario == 'pendiente':
             if rol_usuario == 'representante':
@@ -506,88 +521,99 @@ def recuperar_password():
 @app.route('/api/crear_personal', methods=['POST'])
 @require_auth
 def crear_personal():
-    """Ruta para que un admin cree cuentas de otros administradores o docentes. Bloquea representantes."""
-    # SEGURIDAD: Verificar que el usuario autenticado sea administrador
+    """Invita a un nuevo administrador o docente mediante correo electrónico."""
+    # Verificar que el solicitante sea administrador
     user_id_solicitante = request.current_user.id
     perfil = supabase.table("usuarios").select("rol").eq("id", user_id_solicitante).single().execute()
     if not perfil.data or perfil.data.get("rol") != "administrador":
-        return jsonify({'success': False, 'message': 'Acción denegada. Solo los administradores pueden realizar esta acción.'}), 403
+        return jsonify({'success': False, 'message': 'Acción denegada. Solo administradores.'}), 403
+
     data = request.json
-    
-    nombres = data.get('nombres')
-    apellidos = data.get('apellidos')
-    email = data.get('email')
-    rol_front = data.get('rol') 
-    estado_front = data.get('estado', 'activo')
-    password = data.get('password')
+    email = data.get('email', '').strip()
+    rol_front = data.get('rol', '').strip().lower()  # "administrador" o "docente"
 
-    # 1. Validaciones básicas
-    if not all([nombres, apellidos, email, rol_front, password]):
-        return jsonify({'success': False, 'message': 'Todos los campos son obligatorios.'}), 400
+    if not email or not rol_front:
+        return jsonify({'success': False, 'message': 'Correo electrónico y rol son obligatorios.'}), 400
 
-    # Convertimos el rol del frontend ("Administrador") al formato del ENUM ("administrador")
-    rol_db = rol_front.lower()
-
-    # 2. Validación estricta de seguridad (Bloqueamos representantes)
-    if rol_db not in ['administrador', 'docente']:
-        return jsonify({
-            'success': False, 
-            'message': 'Acción denegada. Por este módulo solo se pueden crear Administradores o Docentes.'
-        }), 403
-
-    # 3. Lógica Condicional: Auto-confirmar y Estado Inicial
-    es_admin = (rol_db == 'administrador')
-    estado_inicial = estado_front.lower()
-
-    # Si es admin O si el estado inicial es 'activo', lo confirmamos inmediatamente
-    saltar_confirmacion = es_admin or (estado_inicial == 'activo')
+    if rol_front not in ['administrador', 'docente']:
+        return jsonify({'success': False, 'message': 'Rol inválido. Debe ser "administrador" o "docente".'}), 400
 
     try:
-        # 4. Crear el usuario en Supabase Auth
-        auth_response = supabase.auth.admin.create_user({
-            "email": email,
-            "password": password,
-            "email_confirm": saltar_confirmacion, # <--- Regla condicional dinámica
-            "user_metadata": {
-                "first_name": nombres,
-                "last_name": apellidos,
-                "role": rol_db
+        # 1. Verificar si el correo ya está registrado en auth o en la tabla usuarios
+        existing_user = supabase.table("usuarios").select("id").eq("email", email).execute()
+        if existing_user.data:
+            return jsonify({'success': False, 'message': 'Este correo electrónico ya está registrado en el sistema.'}), 409
+
+        # 2. Enviar invitación por correo (sin contraseña)
+        # Asegúrate de tener SET_PASSWORD_URL en tu .env o usa la por defecto
+        redirect_url = os.getenv('SET_PASSWORD_URL', 'https://tuapp.com/set-password')
+        auth_response = supabase.auth.admin.invite_user_by_email(
+            email,
+            options={
+                "data": {
+                    "role": rol_front
+                },
+                "redirect_to": redirect_url
             }
-        })
+        )
 
         nuevo_user_id = auth_response.user.id
 
-        # 5. Guardar los datos en tu tabla pública 'usuarios'
+        # 3. Insertar registro en la tabla pública 'usuarios' con estado 'invitado'
         datos_usuario = {
             "id": nuevo_user_id,
-            "nombres": nombres,
-            "apellidos": apellidos,
             "email": email,
-            "rol": rol_db,
-            "estado": estado_inicial # <--- Estado personalizado
+            "rol": rol_front,
+            "estado": "invitado",    # esperando que el usuario acepte la invitación
+            "nombres": "",           # vacío hasta que complete perfil
+            "apellidos": ""          # vacío hasta que complete perfil
         }
-        
-        supabase.table("usuarios").upsert(datos_usuario).execute()
-
-        # 6. Preparamos un mensaje de respuesta dinámico
-        mensaje_exito = f'{rol_front} registrado exitosamente en el sistema.'
-        if not saltar_confirmacion:
-            mensaje_exito += ' Se ha enviado un correo al usuario para que verifique su cuenta.'
+        supabase.table("usuarios").insert(datos_usuario).execute()
 
         return jsonify({
-            'success': True, 
-            'message': mensaje_exito
+            'success': True,
+            'message': f'Invitación enviada a {email}. El usuario recibirá un correo para crear su cuenta.'
         }), 201
 
     except Exception as e:
         error_msg = str(e).lower()
-        print(f"❌ Error al crear personal: {error_msg}")
-        
-        # Atrapamos errores de Auth Y errores de llave duplicada en PostgreSQL
-        if any(keyword in error_msg for keyword in ["already registered", "already exists", "unique constraint", "duplicate key"]):
-            return jsonify({'success': False, 'message': 'Este correo electrónico ya está registrado.'}), 409
-            
-        return jsonify({'success': False, 'message': 'Error interno del servidor al crear el usuario.'}), 500
+        print(f"❌ Error al invitar usuario: {error_msg}")
+        if "already registered" in error_msg or "already exists" in error_msg:
+            return jsonify({'success': False, 'message': 'Este correo electrónico ya está registrado en Supabase.'}), 409
+        return jsonify({'success': False, 'message': 'Error al enviar la invitación. Intenta de nuevo.'}), 500
+
+@app.route('/api/completar-perfil', methods=['POST'])
+@require_auth
+def completar_perfil():
+    """Actualiza los datos personales y profesionales de un usuario invitado."""
+    try:
+        data = request.json
+        user_id = request.current_user.id
+
+        actualizacion = {
+            "nombres": data.get('nombres', '').strip(),
+            "apellidos": data.get('apellidos', '').strip(),
+            "telefono": data.get('telefono', '').strip(),
+            "fecha_nacimiento": data.get('fecha_nacimiento'),
+            "codigo_cargo": data.get('codigo_cargo', '').strip().upper(),
+            "tipo_cargo": data.get('tipo_cargo', '').strip().upper(),
+            "talla_zapato": data.get('talla_zapato'),
+            "talla_camisa": data.get('talla_camisa'),
+            "talla_pantalon": data.get('talla_pantalon'),
+            "estado": "activo"   # activamos la cuenta finalmente
+        }
+
+        if not actualizacion["nombres"] or not actualizacion["apellidos"]:
+            return jsonify({'success': False, 'message': 'Nombres y apellidos son obligatorios.'}), 400
+
+        # Actualizar la tabla usuarios
+        supabase.table("usuarios").update(actualizacion).eq("id", user_id).execute()
+
+        return jsonify({'success': True, 'message': 'Perfil actualizado y cuenta activada con éxito.'}), 200
+
+    except Exception as e:
+        print(f"❌ Error al completar perfil: {e}")
+        return jsonify({'success': False, 'message': 'Error interno al actualizar el perfil.'}), 500
 
 
 # =======================================================
@@ -2082,67 +2108,136 @@ def generar_estadistica_mensual():
         return jsonify({'success': False, 'message': 'Error al generar la estadística.'}), 500
 
 
-@app.route('/api/estadistica/rango', methods=['POST'])
+@app.route('/api/admin/estadistica/rango', methods=['POST'])
 @require_auth
-def estadistica_por_rango():
-    """Genera la data de asistencia agrupada por días para pintar gráficos."""
+def estadistica_admin_por_rango():
+    """Estadísticas por rango de fechas para administrador (escuela completa o por aula)."""
     try:
-        data = request.json
-        seccion_id = data.get('seccion_id')
+        # Verificar administrador
+        current_user = request.current_user
+        user_data = supabase.table('usuarios').select('rol').eq('id', current_user.id).execute()
+        if not user_data.data or user_data.data[0].get('rol') != 'administrador':
+            return jsonify({'success': False, 'message': 'Acceso no autorizado.'}), 403
+        
+        data = request.get_json(silent=True) or {}
+        modo = data.get('modo', 'escuela')
+        aula_id = data.get('aula_id')
         fecha_inicio = data.get('fecha_inicio')
         fecha_fin = data.get('fecha_fin')
-
-        if not all([seccion_id, fecha_inicio, fecha_fin]):
-            return jsonify({'success': False, 'message': 'Faltan datos obligatorios.'}), 400
-
-        # Consultar la asistencia en ese rango de fechas
-        res = supabase.table("asistencias").select("fecha, estado_asistencia").eq("seccion_id", seccion_id).gte("fecha", fecha_inicio).lte("fecha", fecha_fin).execute()
         
+        if not fecha_inicio or not fecha_fin:
+            return jsonify({'success': False, 'message': 'Fechas de inicio y fin son requeridas'}), 400
+        
+        if modo == 'aula' and not aula_id:
+            return jsonify({'success': False, 'message': 'ID de aula es requerido para modo aula'}), 400
+        
+        # Obtener asistencias según el modo
+        if modo == 'escuela':
+            # Todas las asistencias en el rango
+            asistencias_res = supabase.table("asistencias") \
+                .select("fecha, estado_asistencia, seccion_id") \
+                .gte("fecha", fecha_inicio) \
+                .lte("fecha", fecha_fin) \
+                .execute()
+            asistencias = asistencias_res.data
+        else:
+            # Obtener IDs de hijos de esa sección
+            hijos_res = supabase.table("asignaciones_estudiantes") \
+                .select("hijo_id") \
+                .eq("seccion_id", aula_id) \
+                .eq("estado", "cursando") \
+                .execute()
+            hijos_ids = [h['hijo_id'] for h in hijos_res.data]
+            
+            if not hijos_ids:
+                return jsonify({
+                    'success': True,
+                    'resumen': {'total_estudiantes': 0, 'total_presentes': 0, 'total_ausentes': 0, 'total_registros': 0, 'porcentaje_asistencia': 0},
+                    'tendencia': []
+                }), 200
+            
+            asistencias_res = supabase.table("asistencias") \
+                .select("fecha, estado_asistencia") \
+                .in_("hijo_id", hijos_ids) \
+                .gte("fecha", fecha_inicio) \
+                .lte("fecha", fecha_fin) \
+                .execute()
+            asistencias = asistencias_res.data
+        
+        # Procesar datos
         total_presentes = 0
         total_ausentes = 0
-        asistencia_diaria = {}
-
-        for a in res.data:
+        asistencia_por_fecha = {}
+        
+        for a in asistencias:
             fecha = a['fecha']
             estado = a['estado_asistencia']
             
-            if fecha not in asistencia_diaria:
-                asistencia_diaria[fecha] = {'presentes': 0, 'ausentes': 0}
+            if fecha not in asistencia_por_fecha:
+                asistencia_por_fecha[fecha] = {'presentes': 0, 'ausentes': 0}
             
             if estado == 'presente':
                 total_presentes += 1
-                asistencia_diaria[fecha]['presentes'] += 1
+                asistencia_por_fecha[fecha]['presentes'] += 1
             else:
                 total_ausentes += 1
-                asistencia_diaria[fecha]['ausentes'] += 1
+                asistencia_por_fecha[fecha]['ausentes'] += 1
         
-        # Ordenar las fechas cronológicamente para el gráfico de línea
-        fechas_ordenadas = sorted(asistencia_diaria.keys())
+        total_registros = total_presentes + total_ausentes
+        porcentaje_asistencia = round((total_presentes / total_registros) * 100, 1) if total_registros > 0 else 0
+        
+        # Construir tendencia diaria
+        fechas_ordenadas = sorted(asistencia_por_fecha.keys())
         tendencia = []
         for f in fechas_ordenadas:
-            # Convertir fecha YYYY-MM-DD a formato corto (ej: 15/03)
             f_obj = datetime.strptime(f, "%Y-%m-%d")
             fecha_corta = f"{f_obj.day:02d}/{f_obj.month:02d}"
-            
             tendencia.append({
+                'fecha': f,
                 'fecha_corta': fecha_corta,
-                'presentes': asistencia_diaria[f]['presentes'],
-                'ausentes': asistencia_diaria[f]['ausentes']
+                'presentes': asistencia_por_fecha[f]['presentes'],
+                'ausentes': asistencia_por_fecha[f]['ausentes']
             })
-
+        
+        # Para el modo escuela, contar estudiantes únicos matriculados en el período activo
+        total_estudiantes = 0
+        if modo == 'escuela':
+            # Obtener período activo o planificación
+            periodo_res = supabase.table("periodos_academicos") \
+                .select("id") \
+                .in_("estado", ["activo", "planificacion"]) \
+                .order("created_at", desc=True) \
+                .limit(1) \
+                .execute()
+            if periodo_res.data:
+                # Contar estudiantes únicos asignados a secciones de ese período
+                estudiantes_res = supabase.table("asignaciones_estudiantes") \
+                    .select("hijo_id", count="exact") \
+                    .eq("estado", "cursando") \
+                    .execute()
+                total_estudiantes = estudiantes_res.count or 0
+        else:
+            # modo aula: ya tenemos hijos_ids
+            total_estudiantes = len(hijos_ids) if 'hijos_ids' in locals() else 0
+        
         return jsonify({
             'success': True,
+            'modo': modo,
+            'aula_id': aula_id,
             'resumen': {
+                'total_estudiantes': total_estudiantes,
                 'total_presentes': total_presentes,
                 'total_ausentes': total_ausentes,
-                'total_registros': total_presentes + total_ausentes
+                'total_registros': total_registros,
+                'porcentaje_asistencia': porcentaje_asistencia
             },
             'tendencia': tendencia
-        }), 200
-
+        })
+        
     except Exception as e:
-        print(f"❌ Error estadística rango: {e}")
-        return jsonify({'success': False, 'message': 'Error al procesar las estadísticas.'}), 500
+        print(f"❌ Error en estadística admin por rango: {e}")
+        return jsonify({'success': False, 'message': 'Error al generar estadísticas'}), 500
+
 
 
 @app.route('/')
@@ -2180,8 +2275,72 @@ def actualizar_password_propia():
         return jsonify({'success': False, 'message': 'Error interno al procesar el cambio de clave.'}), 500
 
 # =======================================================
+# MÓDULO: ESTADÍSTICAS PARA ADMINISTRADOR
+# =======================================================
+
+@app.route('/api/aulas', methods=['GET'])
+@require_auth
+def obtener_aulas():
+    """Obtiene la lista de secciones activas o en planificación con sus docentes asignados."""
+    try:
+        current_user = request.current_user
+        user_id = current_user.id
+        
+        # Verificar rol administrador
+        user_data = supabase.table('usuarios').select('rol').eq('id', user_id).execute()
+        if not user_data.data or user_data.data[0].get('rol') != 'administrador':
+            return jsonify({'success': False, 'message': 'Acceso no autorizado.'}), 403
+        
+        # Obtener período activo o en planificación (el más reciente)
+        periodo_res = supabase.table("periodos_academicos") \
+            .select("id") \
+            .in_("estado", ["activo", "planificacion"]) \
+            .order("created_at", desc=True) \
+            .limit(1) \
+            .execute()
+        
+        periodo_id = periodo_res.data[0]['id'] if periodo_res.data else None
+        
+        # Consultar secciones
+        query = supabase.table("secciones").select(
+            "id, nivel, letra, capacidad_maxima, periodo_id, "
+            "docentes_secciones(docente_id, usuarios(nombres, apellidos))"
+        )
+        if periodo_id:
+            query = query.eq("periodo_id", periodo_id)
+        
+        secciones_res = query.execute()
+        
+        aulas = []
+        for sec in secciones_res.data:
+            docentes_nombres = []
+            if sec.get("docentes_secciones"):
+                for ds in sec["docentes_secciones"]:
+                    if ds.get("usuarios"):
+                        nombre = f"{ds['usuarios'].get('nombres', '')} {ds['usuarios'].get('apellidos', '')}".strip()
+                        if nombre:
+                            docentes_nombres.append(nombre)
+            
+            aulas.append({
+                'id': sec['id'],
+                'nombre': f"{sec['nivel']} - {sec['letra']}",
+                'grado': sec['nivel'],
+                'seccion': sec['letra'],
+                'docente_nombre': ", ".join(docentes_nombres) if docentes_nombres else "Sin asignar"
+            })
+        
+        return jsonify({'success': True, 'aulas': aulas})
+        
+    except Exception as e:
+        print(f"❌ Error al obtener aulas: {e}")
+        return jsonify({'success': False, 'message': 'Error al obtener aulas'}), 500
+
+
+# =======================================================
 # MÓDULO: PROYECTOS DE APRENDIZAJE
 # =======================================================
+
+
 
 @app.route('/api/proyectos', methods=['POST'])
 @require_auth

@@ -100,14 +100,14 @@ function renderizarTablaUsuarios(usuarios) {
     if (!usuarios || usuarios.length === 0) {
         const query = document.getElementById('user-search-input')?.value || '';
         if (query.trim() !== '' && typeof verificarEstadoVacio === 'function') {
-            verificarEstadoVacio('user-table-body', query, 0);
+            verificarEstadoVacio('user-table-body', query, 4);
         } else {
             tbody.innerHTML = `
                 <tr>
-                    <td colspan="4" class="px-6 py-12 text-center text-gray-400">
-                        <div class="flex flex-col items-center gap-2 opacity-60">
-                            <i class="ph-duotone ph-users-three text-5xl mb-2"></i>
-                            <p class="text-sm font-medium">No hay usuarios registrados todavía.</p>
+                    <td colspan="4" class="px-6 py-16 text-center text-gray-400">
+                        <div class="flex flex-col items-center gap-2 opacity-40">
+                            <i class="ph-duotone ph-users-three text-6xl mb-2"></i>
+                            <p class="text-sm font-semibold tracking-tight">No hay usuarios en esta categoría.</p>
                         </div>
                     </td>
                 </tr>`;
@@ -122,7 +122,7 @@ function renderizarTablaUsuarios(usuarios) {
 
     usuarios.forEach(u => {
         const nombreCompleto = `${u.nombres || ''} ${u.apellidos || ''}`.trim();
-        const inicial = nombreCompleto.charAt(0).toUpperCase();
+        const inicial = nombreCompleto.charAt(0).toUpperCase() || '?';
 
         const rolDisplayMap = { administrador: 'Administrador', docente: 'Docente', representante: 'Representante' };
         const rolDisplay = rolDisplayMap[u.rol] || u.rol;
@@ -146,6 +146,7 @@ function renderizarTablaUsuarios(usuarios) {
 
         // El admin no puede eliminarse a sí mismo
         const esMismoUsuario = u.id === currentUserId;
+        const esRepresentante = u.rol === 'representante';
 
         html += `
             <tr class="hover:bg-gray-50/80 border-b border-gray-100 transition-colors group">
@@ -177,8 +178,16 @@ function renderizarTablaUsuarios(usuarios) {
                         <span class="text-xs font-bold uppercase tracking-tight">${estadoDisplay}</span>
                     </div>
                 </td>
-                <td class="px-6 py-4 text-right">
-                    <div class="flex items-center justify-end gap-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                <td class="px-6 py-4">
+                    <div class="flex items-center justify-end gap-2.5">
+                        ${esRepresentante ? `
+                        <button
+                            onclick="abrirModalRepresentanteVincular('${u.id}', '${nombreCompleto.replace(/'/g, "\\'")}')"
+                            title="Ver datos de representante"
+                            class="p-2 text-pink-500 hover:text-pink-700 bg-pink-50 hover:bg-pink-100 rounded-xl transition-all shadow-sm">
+                            <i class="ph-bold ph-eye text-lg"></i>
+                        </button>` : ''}
+                        
                         <button
                             data-user-id="${u.id}"
                             data-nombres="${u.nombres}"
@@ -187,22 +196,23 @@ function renderizarTablaUsuarios(usuarios) {
                             data-estado="${u.estado}"
                             data-rol="${u.rol}"
                             data-es-mismo-usuario="${esMismoUsuario}"
-                            data-es-representante="${u.rol === 'representante'}"
+                            data-es-representante="${esRepresentante}"
                             onclick="abrirModalEditarDesdeBtn(this)"
                             title="Editar usuario"
-                            class="p-2.5 text-blue-500 hover:text-white hover:bg-blue-500 rounded-xl transition-all duration-300 shadow-sm hover:shadow-blue-200">
-                            <i class="ph-bold ph-pencil-simple text-xl"></i>
+                            class="p-2 text-blue-500 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-xl transition-all shadow-sm">
+                            <i class="ph-bold ph-pencil-simple text-lg"></i>
                         </button>
+                        
                         <button
                             data-user-id="${u.id}"
                             data-nombre-completo="${nombreCompleto}"
                             onclick="${esMismoUsuario ? '' : 'confirmarEliminarDesdeBtn(this)'}"
                             title="${esMismoUsuario ? 'No puedes eliminarte a ti mismo' : 'Eliminar usuario'}"
                             ${esMismoUsuario ? 'disabled' : ''}
-                            class="p-2.5 rounded-xl transition-all duration-300 shadow-sm ${esMismoUsuario
-                                ? 'text-gray-200 bg-gray-50 cursor-not-allowed shadow-none'
-                                : 'text-red-500 hover:text-white hover:bg-red-500 hover:shadow-red-200'}">
-                            <i class="ph-bold ph-trash text-xl"></i>
+                            class="p-2 rounded-xl transition-all shadow-sm ${esMismoUsuario
+                ? 'text-gray-200 bg-gray-50 cursor-not-allowed shadow-none'
+                : 'text-gray-400 hover:text-red-500 hover:bg-red-50 border border-transparent hover:border-red-100'}">
+                            <i class="ph-bold ph-trash text-lg"></i>
                         </button>
                     </div>
                 </td>
@@ -250,21 +260,51 @@ function filtrarUsuarios() {
 // ─────────────────────────────────────────────────────────────
 // WRAPPERS: leen data-* del botón y llaman las funciones reales
 // ─────────────────────────────────────────────────────────────
-function abrirModalEditarDesdeBtn(btn) {
+window.abrirModalEditarDesdeBtn = function(btn) {
     abrirModalEditar(
         btn.dataset.userId,
-        btn.dataset.nombres,
-        btn.dataset.apellidos,
-        btn.dataset.email,
-        btn.dataset.estado,
-        btn.dataset.rol,
+        btn.dataset.nombres || '',
+        btn.dataset.apellidos || '',
+        btn.dataset.email || '',
+        btn.dataset.estado || '',
+        btn.dataset.rol || '',
         btn.dataset.esMismoUsuario === 'true',
         btn.dataset.esRepresentante === 'true'
     );
-}
-function confirmarEliminarDesdeBtn(btn) {
+};
+
+window.confirmarEliminarDesdeBtn = function(btn) {
     confirmarEliminar(btn.dataset.userId, btn.dataset.nombreCompleto);
-}
+};
+
+window.abrirModalRepresentanteVincular = function(userId, nombre) {
+    Swal.fire({
+        title: 'Detalles del Representante',
+        html: `
+            <div class="text-left space-y-4">
+                <div class="p-4 bg-rose-50 rounded-2xl border border-rose-100">
+                    <p class="text-[11px] font-black text-rose-400 uppercase tracking-widest mb-1">Nombre Completo</p>
+                    <p class="font-bold text-gray-800">${nombre}</p>
+                    <p class="text-xs text-gray-500 mt-1">ID Usuario: ${userId}</p>
+                </div>
+                <div class="p-4 bg-gray-50 rounded-2xl border border-gray-100 flex items-center gap-3">
+                    <i class="ph-duotone ph-student text-3xl text-gray-400"></i>
+                    <div>
+                        <p class="text-sm font-bold text-gray-700">Hijos vinculados</p>
+                        <p class="text-xs text-gray-400">La vinculación detallada se gestiona en la ficha del alumno.</p>
+                    </div>
+                </div>
+            </div>
+        `,
+        icon: 'info',
+        confirmButtonText: 'Entendido',
+        confirmButtonColor: '#EC4899',
+        customClass: {
+            popup: 'rounded-[2rem]',
+            confirmButton: 'rounded-xl px-8 py-3'
+        }
+    });
+};
 
 // ─────────────────────────────────────────────────────────────
 // ACCIÓN: EDITAR USUARIO — Modal SweetAlert2
@@ -470,16 +510,11 @@ window.abrirModalCrearUsuario = function () {
     const modal = document.getElementById('modal-crear-usuario');
     const content = document.getElementById('modal-crear-usuario-content');
 
-    // Resetear formulario por si acaso
-    document.getElementById('user-first-name').value = '';
-    document.getElementById('user-last-name').value = '';
+    // Resetear formulario simplificado
     document.getElementById('user-email').value = '';
     document.getElementById('user-role').value = '';
-    document.getElementById('user-status').value = 'activo';
-    document.getElementById('user-password').value = '';
 
     modal.classList.remove('hidden');
-    // Pequeño delay para que la transición de opacidad funcione
     setTimeout(() => {
         modal.classList.remove('opacity-0');
         content.classList.remove('scale-95');
@@ -570,15 +605,11 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!btnAddUser) return;
 
     btnAddUser.addEventListener('click', async () => {
-        const nombres = document.getElementById('user-first-name').value.trim();
-        const apellidos = document.getElementById('user-last-name').value.trim();
         const email = document.getElementById('user-email').value.trim();
         const rol = document.getElementById('user-role').value;
-        const estado = document.getElementById('user-status').value;
-        const password = document.getElementById('user-password').value;
 
-        if (!nombres || !apellidos || !email || !rol || !password || !estado) {
-            Swal.fire({ title: 'Campos Incompletos', text: 'Completa todos los campos requeridos.', icon: 'warning', confirmButtonColor: '#9333ea' });
+        if (!email || !rol) {
+            Swal.fire({ title: 'Campos Incompletos', text: 'Por favor, ingresa el correo y selecciona un rol.', icon: 'warning', confirmButtonColor: '#9333ea' });
             return;
         }
 
@@ -588,49 +619,34 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        if (password.length < 6) {
-            Swal.fire({ title: 'Contraseña Corta', text: 'La contraseña debe tener al menos 6 caracteres.', icon: 'warning', confirmButtonColor: '#9333ea' });
-            return;
-        }
-
         const textoOriginal = btnAddUser.innerHTML;
-        btnAddUser.innerHTML = `<svg class="w-4 h-4 animate-spin inline mr-2" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path></svg>Procesando...`;
+        btnAddUser.innerHTML = `<svg class="w-4 h-4 animate-spin inline mr-2" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path></svg>Enviando invitación...`;
         btnAddUser.disabled = true;
 
         try {
             const token = localStorage.getItem('auth_token');
-            if (!token) {
-                Swal.fire({ title: 'Sesión no válida', text: 'Inicia sesión nuevamente.', icon: 'error', confirmButtonColor: '#EF4444' });
-                return;
-            }
-
             const response = await fetchWithAuth(`${API_BASE}/api/crear_personal`, {
                 method: 'POST',
-                body: JSON.stringify({ nombres, apellidos, email, rol, password, estado })
+                body: JSON.stringify({ email, rol })
             });
 
             const data = await response.json();
 
             if (response.ok && data.success) {
-                Swal.fire({ title: '¡Usuario Creado!', text: data.message, icon: 'success', confirmButtonColor: '#9333ea' });
+                Swal.fire({ title: '¡Invitación Enviada!', text: data.message, icon: 'success', confirmButtonColor: '#9333ea' });
 
-                document.getElementById('user-first-name').value = '';
-                document.getElementById('user-last-name').value = '';
                 document.getElementById('user-email').value = '';
                 document.getElementById('user-role').value = '';
-                document.getElementById('user-status').value = 'activo';
-                document.getElementById('user-password').value = '';
 
                 cerrarModalCrearUsuario();
                 await cargarYRenderizarUsuarios();
-
             } else {
-                Swal.fire({ title: 'Error al Crear', text: data.message || 'No se pudo crear el usuario.', icon: 'error', confirmButtonColor: '#EF4444' });
+                Swal.fire({ title: 'Error', text: data.message || 'No se pudo enviar la invitación.', icon: 'error', confirmButtonColor: '#EF4444' });
             }
 
         } catch (error) {
             console.error('Error:', error);
-            Swal.fire({ title: 'Error de Conexión', text: 'Ocurrió un error al conectar con el servidor.', icon: 'error', confirmButtonColor: '#EF4444' });
+            Swal.fire({ title: 'Error de Conexión', text: 'Ocurrió un error al contactar con el servidor.', icon: 'error', confirmButtonColor: '#EF4444' });
         } finally {
             btnAddUser.innerHTML = textoOriginal;
             btnAddUser.disabled = false;
