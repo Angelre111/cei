@@ -2410,14 +2410,16 @@ def generar_estadistica_mensual():
 
 
 @app.route('/api/admin/estadistica/rango', methods=['POST'])
+@app.route('/api/estadistica/rango', methods=['POST'])
 @require_auth
 def estadistica_admin_por_rango():
-    """Estadísticas por rango de fechas para administrador (escuela completa o por aula)."""
+    """Estadísticas por rango de fechas para administrador (escuela) o docente (su aula)."""
     try:
-        # Verificar administrador
         current_user = request.current_user
         user_data = supabase.table('usuarios').select('rol').eq('id', current_user.id).execute()
-        if not user_data.data or user_data.data[0].get('rol') != 'administrador':
+        rol = user_data.data[0].get('rol') if user_data.data else None
+        
+        if rol not in ['administrador', 'docente']:
             return jsonify({'success': False, 'message': 'Acceso no autorizado.'}), 403
         
         data = request.get_json(silent=True) or {}

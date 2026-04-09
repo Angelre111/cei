@@ -3,9 +3,9 @@ const isLocal = window.location.protocol === 'file:' ||
     window.location.hostname === 'localhost' ||
     window.location.hostname === '127.0.0.1';
 
-const API_BASE_URL = isLocal
+window.API_BASE_URL = isLocal
     ? 'http://127.0.0.1:5000'                     // ✅ Flask local (puerto 5000)
-    : 'https://cei-preescolar.onrender.com';      // ✅ Backend Flask en Render (NO Netlify)
+    : 'https://cei-preescolar.onrender.com';      // ✅ Backend Flask en Render
 
 const SUPABASE_URL = 'https://yfvupxrrvqfwafvozypn.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_VnDNWpwncQFFonAktaYOqw_zAXNMtg6';
