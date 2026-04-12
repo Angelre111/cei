@@ -179,8 +179,26 @@
                     localStorage.setItem('user_email', json.user.email);
                     localStorage.setItem('user_id', json.user.id);
                     localStorage.setItem('user_estado', json.estado || 'activo');
+                    
+                    if (json.user.perfil_completado !== undefined) {
+                        localStorage.setItem('perfil_completado', json.user.perfil_completado);
+                    }
 
                     // ENRUTAMIENTO POR ROL
+                    if ((rol === 'administrador' || rol === 'docente') && json.user.perfil_completado === false) {
+                        await Swal.fire({
+                            title: '¡Falta un paso!',
+                            text: 'Debes completar tu perfil profesional antes de continuar.',
+                            icon: 'info',
+                            confirmButtonText: 'Completar perfil',
+                            confirmButtonColor: '#EC4899',
+                            allowOutsideClick: false,
+                            customClass: { popup: 'rounded-2xl shadow-xl' }
+                        });
+                        window.location.href = 'completar_perfil.html';
+                        return;
+                    }
+
                     if (rol === 'administrador') {
                         await Swal.fire({
                             title: '¡Bienvenido!',

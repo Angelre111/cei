@@ -366,6 +366,22 @@ def login_usuario():
         # 4. Extraer los valores exactos de la base de datos
         rol_usuario = user_data.data[0].get('rol')
         estado_usuario = user_data.data[0].get('estado')
+        
+        # Por defecto, asumimos perfil completado a menos que se demuestre lo contrario
+        perfil_completado_flag = True 
+        
+        # Si es docente o administrador, verificar el estado en perfiles_personal
+        if rol_usuario in ['docente', 'administrador']:
+            perfil_personal_res = supabase.table("perfiles_personal").select("perfil_completado").eq("usuario_id", user_id).execute()
+            if perfil_personal_res.data and len(perfil_personal_res.data) > 0:
+                perfil_completado_flag = perfil_personal_res.data[0].get('perfil_completado', False)
+                # Si el perfil no está completado, sobrescribimos el estado_usuario para forzar redirección
+                if not perfil_completado_flag:
+                    estado_usuario = 'perfil_incompleto' 
+            else:
+                # Si no hay registro en perfiles_personal, significa que no ha completado el perfil
+                perfil_completado_flag = False
+                estado_usuario = 'perfil_incompleto'
 
         # Bloquear a cualquier usuario inactivo (Ej. suspendidos por la directiva)
         if estado_usuario == 'inactivo':
@@ -375,7 +391,8 @@ def login_usuario():
              }), 403
 
         # NUEVO: Manejar estado invitado (Aceptó invitación pero falta completar perfil)
-        if estado_usuario == 'invitado':
+        # Esto ahora incluye a los que se detectaron con 'perfil_incompleto'
+        if estado_usuario == 'invitado' or estado_usuario == 'perfil_incompleto':
             return jsonify({
                 'success': True,
                 'message': 'Bienvenido. Debes completar tus datos básicos para activar tu cuenta.',
@@ -383,7 +400,7 @@ def login_usuario():
                 'refresh_token': response.session.refresh_token,
                 'rol': rol_usuario,
                 'estado': estado_usuario,
-                'require_profile': True,
+                'require_profile': not perfil_completado_flag, # Si perfil_completado_flag es False, entonces require_profile es True
                 'user': {
                     'id': user_id,
                     'email': response.user.email
@@ -435,7 +452,8 @@ def login_usuario():
             'ficha_completada': ficha_completada,  # None para admin/docentes, True/False para representantes
             'user': {
                 'id': user_id,
-                'email': response.user.email
+                'email': response.user.email,
+                'perfil_completado': perfil_completado_flag  # Incluido para admin/docente; True para representantes
             }
         }), 200
 
@@ -581,6 +599,13 @@ def crear_personal():
         }
         supabase.table("usuarios").insert(datos_usuario).execute()
 
+        # 4. Inicializar registro en 'perfiles_personal' (solo para admin/docente)
+        datos_perfil = {
+            "usuario_id": nuevo_user_id,
+            "perfil_completado": False
+        }
+        supabase.table("perfiles_personal").insert(datos_perfil).execute()
+
         return jsonify({
             'success': True,
             'message': f'Invitación enviada a {email}. El usuario recibirá un correo para crear su cuenta.'
@@ -617,14 +642,20 @@ def reenviar_invitacion():
 @app.route('/api/completar-perfil', methods=['POST'])
 @require_auth
 def completar_perfil():
-    """Completa el perfil de un usuario invitado (docente o representante)."""
+    """Completa el perfil de un usuario invitado (docente o administrador).
+    Guarda datos básicos en 'usuarios' y datos profesionales en 'perfiles_personal',
+    marcando perfil_completado = True al finalizar.
+    """
     try:
         data = request.json
         user_id = request.current_user.id
         
-        # 1. Obtener el rol del usuario para lógica específica
-        perfil = supabase.table("usuarios").select("rol").eq("id", user_id).single().execute()
-        rol = perfil.data.get("rol") if perfil.data else None
+        # 1. Obtener el rol del usuario
+        perfil_res = supabase.table("usuarios").select("rol").eq("id", user_id).single().execute()
+        rol = perfil_res.data.get("rol") if perfil_res.data else None
+
+        if rol not in ['docente', 'administrador']:
+            return jsonify({'success': False, 'message': 'Solo docentes y administradores pueden completar este perfil.'}), 403
 
         nombres = data.get('nombres', '').strip()
         apellidos = data.get('apellidos', '').strip()
@@ -633,33 +664,41 @@ def completar_perfil():
         if not nombres or not apellidos:
             return jsonify({'success': False, 'message': 'Nombres y apellidos son obligatorios.'}), 400
 
-        # Base de actualización unificada
-        actualizacion = {
+        # 2. Actualizar datos básicos en la tabla 'usuarios'
+        actualizacion_usuario = {
             "nombres": nombres,
             "apellidos": apellidos,
             "telefono": telefono if telefono else None,
-            "estado": "activo"   # activamos la cuenta finalmente
+            "estado": "activo"   # Activar cuenta definitivamente
         }
+        supabase.table("usuarios").update(actualizacion_usuario).eq("id", user_id).execute()
 
-        # Campos extra si es personal institucional
-        if rol in ['docente', 'administrador']:
-            if 'fecha_nacimiento' in data:
-                actualizacion["fecha_nacimiento"] = data.get('fecha_nacimiento')
-            if data.get('codigo_cargo'):
-                actualizacion["codigo_cargo"] = data.get('codigo_cargo').strip().upper()
-            if data.get('tipo_cargo'):
-                actualizacion["tipo_cargo"] = data.get('tipo_cargo').strip().upper()
-            if 'talla_zapato' in data:
-                actualizacion["talla_zapato"] = data.get('talla_zapato')
-            if 'talla_camisa' in data:
-                actualizacion["talla_camisa"] = data.get('talla_camisa')
-            if 'talla_pantalon' in data:
-                actualizacion["talla_pantalon"] = data.get('talla_pantalon')
+        # 3. Actualizar/Insertar datos profesionales en 'perfiles_personal'
+        datos_perfil = {
+            "usuario_id": user_id,
+            "perfil_completado": True,
+        }
+        if data.get('fecha_nacimiento'):
+            datos_perfil["fecha_nacimiento"] = data.get('fecha_nacimiento')
+        if data.get('codigo_cargo'):
+            datos_perfil["codigo_cargo"] = data.get('codigo_cargo').strip().upper()
+        if data.get('tipo_cargo'):
+            datos_perfil["tipo_cargo"] = data.get('tipo_cargo').strip().upper()
+        if data.get('talla_zapato'):
+            datos_perfil["talla_zapato"] = data.get('talla_zapato').strip()
+        if data.get('talla_camisa'):
+            datos_perfil["talla_camisa"] = data.get('talla_camisa').strip()
+        if data.get('talla_pantalon'):
+            datos_perfil["talla_pantalon"] = data.get('talla_pantalon').strip()
 
-        # Actualizar la tabla usuarios
-        supabase.table("usuarios").update(actualizacion).eq("id", user_id).execute()
+        # Upsert: inserta si no existe, actualiza si ya existe (por usuario_id)
+        supabase.table("perfiles_personal").upsert(
+            datos_perfil,
+            on_conflict="usuario_id"
+        ).execute()
 
-        return jsonify({'success': True, 'message': 'Perfil actualizado y cuenta activada con éxito.'}), 200
+        print(f"✅ Perfil completado para usuario {user_id} ({rol})")
+        return jsonify({'success': True, 'message': 'Perfil completado y cuenta activada con éxito.'}), 200
 
     except Exception as e:
         print(f"❌ Error al completar perfil: {e}")
@@ -732,6 +771,26 @@ def activar_cuenta():
     except Exception as e:
         print(f"❌ Error al activar cuenta: {e}")
         return jsonify({'success': False, 'message': 'No se pudo activar la cuenta.'}), 500
+
+
+@app.route('/api/mi_perfil', methods=['GET'])
+@require_auth
+def mi_perfil():
+    """Devuelve el perfil básico del usuario autenticado (rol, estado, nombres).
+    Usado por set_password.html para determinar la redirección post-registro.
+    """
+    try:
+        user_id = request.current_user.id
+        perfil = supabase.table("usuarios").select("rol, estado, nombres, apellidos, email").eq("id", user_id).single().execute()
+        if not perfil.data:
+            return jsonify({'success': False, 'message': 'Usuario no encontrado.'}), 404
+        return jsonify({
+            'success': True,
+            **perfil.data
+        }), 200
+    except Exception as e:
+        print(f"❌ Error al obtener mi_perfil: {e}")
+        return jsonify({'success': False, 'message': 'Error interno.'}), 500
 
 
 @app.route('/api/usuarios/<user_id>', methods=['PUT'])
@@ -3298,6 +3357,213 @@ def descargar_boletin(hijo_id, momento):
     except Exception as e:
         print(f"❌ Error al descargar boletín: {e}")
         return jsonify({'success': False, 'message': 'Error interno al generar el boletín docx.'}), 500
+
+
+# =======================================================
+# MÓDULO: PORTAL DE REPRESENTANTES
+# =======================================================
+
+@app.route('/api/representante/perfil', methods=['GET'])
+@require_auth
+def obtener_perfil_representante():
+    """Obtiene los datos del representante logueado y sus hijos asociados."""
+    try:
+        user = request.current_user
+        
+        # 1. Obtener datos del representante de la tabla 'usuarios'
+        res_rep = supabase.table("usuarios").select("*").eq("id", user.id).execute()
+        if not res_rep.data:
+            return jsonify({'success': False, 'message': 'Usuario no encontrado en el sistema.'}), 404
+            
+        rep_data = res_rep.data[0]
+        
+        # 2. Buscar hijos asociados en la tabla 'hijos'
+        res_hijos = supabase.table("hijos").select("*").eq("representante_id", user.id).execute()
+        
+        hijos_lista = []
+        for h in res_hijos.data:
+            # Enriquecer con la sección actual si existe
+            # Usamos una consulta separada o join para obtener la sección 'cursando'
+            res_asig = supabase.table("asignaciones_estudiantes") \
+                .select("seccion_id, secciones(nivel, letra)") \
+                .eq("hijo_id", h['id']) \
+                .eq("estado", "cursando") \
+                .execute()
+            
+            seccion_nombre = "No asignada"
+            if res_asig.data:
+                # El join con 'secciones' devuelve un objeto anidado
+                asig = res_asig.data[0]
+                sec = asig.get('secciones', {})
+                if sec:
+                    seccion_nombre = f"{sec.get('nivel', '')} - {sec.get('letra', '')}"
+
+            hijos_lista.append({
+                'id': h['id'],
+                'nombres': h['nombre'],
+                'apellidos': h['apellidos'],
+                'cedula_escolar': h['cedula_escolar'],
+                'seccion': seccion_nombre
+            })
+            
+        return jsonify({
+            'success': True,
+            'perfil': {
+                'id': rep_data['id'],
+                'nombres': rep_data['nombres'],
+                'apellidos': rep_data['apellidos'],
+                'email': rep_data['email']
+            },
+            'hijos': hijos_lista
+        }), 200
+
+    except Exception as e:
+        print(f"❌ Error al obtener perfil representante: {e}")
+        return jsonify({'success': False, 'message': 'Error interno en el servidor.'}), 500
+
+@app.route('/api/representante/hijos/<hijo_id>/progreso', methods=['GET'])
+@require_auth
+def obtener_progreso_hijo(hijo_id):
+    """Consulta los indicadores logrados de un hijo para todos los momentos."""
+    try:
+        user = request.current_user
+        
+        # 1. Verificación de seguridad: ¿Es este hijo realmente del representante logueado?
+        res_check = supabase.table("hijos").select("id").eq("id", hijo_id).eq("representante_id", user.id).execute()
+        if not res_check.data:
+            return jsonify({'success': False, 'message': 'Acceso denegado o estudiante no encontrado.'}), 403
+            
+        # 2. Obtener todos los boletines (momentos) del estudiante
+        res_boletines = supabase.table("boletines") \
+            .select("id, momento_pedagogico, recomendaciones_docente") \
+            .eq("hijo_id", hijo_id) \
+            .order("momento_pedagogico") \
+            .execute()
+            
+        progreso = []
+        
+        for bol in res_boletines.data:
+            bol_id = bol['id']
+            # Obtener indicadores logrados en este boletín, incluyendo la descripción del indicador
+            # Nota: indicadores(area_aprendizaje, descripcion) es un join con la tabla 'indicadores'
+            res_ind = supabase.table("boletines_indicadores") \
+                .select("indicador_id, indicadores(area_aprendizaje, descripcion)") \
+                .eq("boletin_id", bol_id) \
+                .execute()
+                
+            indicadores_logrados = []
+            for item in res_ind.data:
+                ind = item.get('indicadores', {})
+                if ind:
+                    indicadores_logrados.append({
+                        'area': ind.get('area_aprendizaje'),
+                        'descripcion': ind.get('descripcion')
+                    })
+                
+            progreso.append({
+                'momento': bol['momento_pedagogico'],
+                'recomendacion': bol['recomendaciones_docente'],
+                'indicadores': indicadores_logrados
+            })
+            
+        return jsonify({
+            'success': True,
+            'hijo_id': hijo_id,
+            'progreso': progreso
+        }), 200
+
+    except Exception as e:
+        print(f"❌ Error al obtener progreso hijo: {e}")
+        return jsonify({'success': False, 'message': 'Error interno en el servidor.'}), 500
+
+
+@app.route('/api/representante/hijos/<hijo_id>/asistencias', methods=['GET'])
+@require_auth
+def obtener_asistencias_hijo(hijo_id):
+    """Consulta las asistencias mensuales de un hijo particular para el portal familiar."""
+    try:
+        user = request.current_user
+        
+        # 1. Verificación de seguridad
+        res_check = supabase.table("hijos").select("id").eq("id", hijo_id).eq("representante_id", user.id).execute()
+        if not res_check.data:
+            return jsonify({'success': False, 'message': 'Acceso denegado o estudiante no encontrado.'}), 403
+
+        fecha_inicio = request.args.get('fecha_inicio')
+        fecha_fin = request.args.get('fecha_fin')
+
+        query = supabase.table("asistencias").select("fecha, estado_asistencia").eq("hijo_id", hijo_id)
+        if fecha_inicio:
+            query = query.gte("fecha", fecha_inicio)
+        if fecha_fin:
+            query = query.lte("fecha", fecha_fin)
+            
+        res_asistencias = query.execute()
+
+        return jsonify({
+            'success': True,
+            'hijo_id': hijo_id,
+            'asistencias': res_asistencias.data
+        }), 200
+
+    except Exception as e:
+        print(f"❌ Error al obtener asistencias hijo: {e}")
+        return jsonify({'success': False, 'message': 'Error interno en el servidor.'}), 500
+
+
+@app.route('/api/representante/perfil', methods=['PUT'])
+@require_auth
+def actualizar_contacto_representante():
+    """Permite al representante actualizar teléfonos y dirección de sus hijos."""
+    try:
+        user = request.current_user
+        data = request.get_json(silent=True) or {}
+
+        hijo_id = data.get('hijo_id')
+        if not hijo_id:
+            return jsonify({'success': False, 'message': 'Se requiere hijo_id.'}), 400
+
+        # Verificación de seguridad: el hijo debe ser del representante
+        res_check = supabase.table("hijos").select("id").eq("id", hijo_id).eq("representante_id", user.id).execute()
+        if not res_check.data:
+            return jsonify({'success': False, 'message': 'Acceso denegado.'}), 403
+
+        # Actualizar inscripción (teléfonos + dirección)
+        datos_actualizados = {}
+        if data.get('telefono_madre') is not None:
+            datos_actualizados['telefono_madre'] = data.get('telefono_madre')
+        if data.get('telefono_padre') is not None:
+            datos_actualizados['telefono_padre'] = data.get('telefono_padre')
+        if data.get('direccion_habitacion') is not None:
+            datos_actualizados['direccion_habitacion'] = data.get('direccion_habitacion')
+
+        if datos_actualizados:
+            res_insc = supabase.table("inscripciones").select("id").eq("hijo_id", hijo_id).order("created_at", desc=True).limit(1).execute()
+            if res_insc.data:
+                supabase.table("inscripciones").update(datos_actualizados).eq("id", res_insc.data[0]['id']).execute()
+
+        return jsonify({'success': True, 'message': 'Datos de contacto actualizados correctamente.'}), 200
+
+    except Exception as e:
+        print(f"❌ Error al actualizar contacto representante: {e}")
+        return jsonify({'success': False, 'message': 'Error interno en el servidor.'}), 500
+
+
+@app.route('/api/comunicados', methods=['GET'])
+@require_auth
+def obtener_comunicados():
+    """Retorna la lista de comunicados publicados, ordenados por fecha descendente."""
+    try:
+        res = supabase.table("comunicados") \
+            .select("id, titulo, contenido, prioridad, created_at") \
+            .order("created_at", desc=True) \
+            .limit(20) \
+            .execute()
+        return jsonify({'success': True, 'comunicados': res.data}), 200
+    except Exception as e:
+        print(f"❌ Error al obtener comunicados: {e}")
+        # Si la tabla no existe aún devolvemos lista vacía en lugar de un 500
+        return jsonify({'success': True, 'comunicados': []}), 200
 
 
 # =======================================================

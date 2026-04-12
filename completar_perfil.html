@@ -466,6 +466,9 @@
                         customClass: { popup: 'rounded-2xl' }
                     });
 
+                    // Guardar el estado exitoso en localStorage
+                    localStorage.setItem('perfil_completado', 'true');
+
                     // Redirigir según el rol del usuario
                     const rol = (userRol || '').toLowerCase();
                     if (rol === 'administrador') {

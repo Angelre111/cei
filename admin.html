@@ -31,10 +31,16 @@
     <script>
         const token = localStorage.getItem('auth_token');
         const userRol = localStorage.getItem('user_rol');
+        const perfilCompletado = localStorage.getItem('perfil_completado');
 
         // Si no hay token, o el rol NO es administrador, lo expulsamos al login
         if (!token || userRol !== 'administrador') {
             window.location.replace('login.html'); // Usamos replace para que no puedan volver atrás
+        }
+
+        // Si el perfil no está completado, lo forzamos a completarlo (Fase D)
+        if (perfilCompletado === 'false' && (userRol === 'administrador' || userRol === 'docente')) {
+            window.location.replace('completar_perfil.html');
         }
     </script>
 
