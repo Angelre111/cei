@@ -535,9 +535,9 @@ def recuperar_password():
         redirect_url = os.getenv('RESET_PASSWORD_URL', 'https://animated-gnome-3fdf38.netlify.app/restablecer.html')
         
         # 3. Disparar el correo usando el SMTP de Supabase
-        supabase_auth.auth.reset_password_email(
+        supabase_auth.auth.reset_password_for_email(
             email, 
-            options={"redirect_to": redirect_url}
+            options={"redirectTo": redirect_url}
         )
 
         return jsonify({'success': True, 'message': 'Enlace de recuperación enviado.'}), 200
@@ -582,7 +582,7 @@ def crear_personal():
                 "data": {
                     "role": rol_front
                 },
-                "redirect_to": redirect_url
+                "redirectTo": redirect_url
             }
         )
 
@@ -633,7 +633,7 @@ def reenviar_invitacion():
 
     try:
         redirect_url = os.getenv('SET_PASSWORD_URL', 'https://animated-gnome-3fdf38.netlify.app/set_password.html')
-        supabase_auth.auth.reset_password_email(email, options={"redirect_to": redirect_url})
+        supabase_auth.auth.reset_password_for_email(email, options={"redirectTo": redirect_url})
         return jsonify({'success': True, 'message': f'Invitación reenviada a {email}.'}), 200
     except Exception as e:
         print(f"❌ Error al reenviar invitación a {email}: {e}")
