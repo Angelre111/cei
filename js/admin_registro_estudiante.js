@@ -55,6 +55,9 @@ async function cargarSeccionesNuevoEstudiante() {
 
 // ── Adjuntar listener cuando el DOM esté listo ─────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
+    // Inicializar máscaras de entrada para evitar números en texto y viceversa
+    setupInputMasks();
+
     const form = document.getElementById('form-nuevo-estudiante');
     if (!form) {
         console.error('[admin_registro_estudiante] No se encontró #form-nuevo-estudiante en el DOM.');
@@ -159,3 +162,54 @@ document.addEventListener('DOMContentLoaded', () => {
 
     console.log('[admin_registro_estudiante] ✅ Listener de submit adjuntado al formulario.');
 });
+
+/**
+ * Configura restricciones de entrada para evitar números en nombres 
+ * y letras en campos numéricos en todos los modales de estudiantes.
+ */
+function setupInputMasks() {
+    // Helper para aplicar máscara por ID
+    const restrict = (id, regex, isDecimal = false) => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.addEventListener('input', function() {
+            this.value = this.value.replace(regex, '');
+            if (isDecimal) {
+                const parts = this.value.split('.');
+                if (parts.length > 2) this.value = parts[0] + '.' + parts.slice(1).join('');
+            }
+        });
+    };
+
+    // Regex patterns
+    const regexSoloTexto = /[^a-zA-ZáéíóúÁÉÍÓÚñÑ ]/g;
+    const regexSoloNumeros = /[^0-9]/g;
+    const regexDecimal = /[^0-9.]/g;
+
+    // --- MODAL: REGISTRO NUEVO ESTUDIANTE ---
+    const textFieldsNuevo = [
+        'nuevo_nino_nombres', 'nuevo_nino_apellidos', 'nuevo_nino_lugar_nac',
+        'nuevo_madre_nombre', 'nuevo_madre_ocupacion', 'nuevo_padre_nombre',
+        'nuevo_salud_fiebre'
+    ];
+    textFieldsNuevo.forEach(id => restrict(id, regexSoloTexto));
+
+    const numFieldsNuevo = [
+        'nuevo_madre_ci', 'nuevo_madre_telefono', 'nuevo_padre_telefono', 'student-cedula'
+    ];
+    numFieldsNuevo.forEach(id => restrict(id, regexSoloNumeros));
+
+    restrict('nuevo_bio_peso', regexDecimal, true);
+    restrict('nuevo_bio_talla', regexDecimal, true);
+
+    // --- MODAL: FICHA MASTER (EDICIÓN) ---
+    const textFieldsFicha = [
+        'f-nombres', 'f-apellidos', 'f-madre-nombre', 'f-padre-nombre', 'f-fiebre'
+    ];
+    textFieldsFicha.forEach(id => restrict(id, regexSoloTexto));
+
+    const numFieldsFicha = [
+        'f-madre-ci', 'f-madre-tel', 'f-padre-tel'
+    ];
+    numFieldsFicha.forEach(id => restrict(id, regexSoloNumeros));
+}

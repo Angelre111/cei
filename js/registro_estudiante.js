@@ -1,4 +1,7 @@
 document.addEventListener('DOMContentLoaded', async () => {
+    // Inicializar máscaras de entrada
+    setupInputMasks();
+
     // 1. Inicializar cliente de Supabase (Lado Cliente) - USA CONSTANTES DE config.js
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
@@ -400,5 +403,71 @@ document.addEventListener('DOMContentLoaded', async () => {
             ], { duration: 300 });
         }
         return valid;
+    }
+
+    /**
+     * Configura restricciones de entrada para evitar números en nombres 
+     * y letras en campos numéricos.
+     */
+    function setupInputMasks() {
+        // --- CAMPOS DE SOLO TEXTO (Bloquear números) ---
+        const textFields = [
+            'nino_nombres',
+            'nino_apellidos',
+            'nino_lugar_nac',
+            'madre_nombre',
+            'madre_ocupacion',
+            'padre_nombre',
+            'salud_fiebre'
+        ];
+
+        textFields.forEach(name => {
+            const input = document.querySelector(`[name="${name}"]`);
+            if (input) {
+                input.addEventListener('input', function() {
+                    // Solo permitimos letras, espacios y acentos
+                    this.value = this.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ ]/g, '');
+                });
+            }
+        });
+
+        // --- CAMPOS DE SOLO NÚMEROS (Bloquear texto) ---
+        const numberFields = [
+            'madre_ci',
+            'madre_telefono',
+            'padre_telefono'
+        ];
+
+        numberFields.forEach(name => {
+            const input = document.querySelector(`[name="${name}"]`);
+            if (input) {
+                input.addEventListener('input', function() {
+                    // Solo permitimos dígitos
+                    this.value = this.value.replace(/[^0-9]/g, '');
+                });
+            }
+        });
+
+        // --- CAMPOS DECIMALES (Peso y Talla) ---
+        const decimalFields = [
+            'bio_peso',
+            'bio_talla'
+        ];
+
+        decimalFields.forEach(name => {
+            const input = document.querySelector(`[name="${name}"]`);
+            if (input) {
+                input.addEventListener('input', function() {
+                    // Permitimos dígitos y un punto decimal
+                    this.value = this.value.replace(/[^0-9.]/g, '');
+                    
+                    // Evitar más de un punto
+                    const parts = this.value.split('.');
+                    if (parts.length > 2) {
+                        this.value = parts[0] + '.' + parts.slice(1).join('');
+                    }
+                });
+            }
+        });
     }
 });

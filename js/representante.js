@@ -81,9 +81,14 @@ async function cargarPerfilRepresentante() {
     AppState.hijos = data.hijos || [];
 
     // Actualizar UI del header
-    const nombreRep = `${data.perfil.nombres} ${data.perfil.apellidos}`;
+    let nombreRep = `${data.perfil.nombres || ''} ${data.perfil.apellidos || ''}`.trim();
+    if (!nombreRep) nombreRep = "Representante";
+
     document.querySelectorAll('.rep-nombre').forEach(el => el.textContent = nombreRep);
-    document.querySelectorAll('.rep-inicial').forEach(el => el.textContent = data.perfil.nombres[0]?.toUpperCase() || 'R');
+    document.querySelectorAll('.rep-inicial').forEach(el => {
+        const inicial = data.perfil.nombres ? data.perfil.nombres[0].toUpperCase() : 'R';
+        el.textContent = inicial;
+    });
 
     // Pre-llenar formulario de datos personales
     const emailEl = document.getElementById('perfil-email');

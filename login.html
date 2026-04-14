@@ -178,6 +178,7 @@
                     localStorage.setItem('user_rol', rol);
                     localStorage.setItem('user_email', json.user.email);
                     localStorage.setItem('user_id', json.user.id);
+                    localStorage.setItem('user_nombres', `${json.user.nombres || ''} ${json.user.apellidos || ''}`.trim());
                     localStorage.setItem('user_estado', json.estado || 'activo');
                     
                     if (json.user.perfil_completado !== undefined) {

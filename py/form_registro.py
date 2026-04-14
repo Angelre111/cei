@@ -348,12 +348,12 @@ def login_usuario():
         print(f"🔍 Autenticado en Auth - ID: {user_id}")
 
         # 2. Consultar la tabla 'usuarios' buscando primero por ID
-        user_data = supabase.table("usuarios").select("rol, estado").eq("id", user_id).execute()
+        user_data = supabase.table("usuarios").select("rol, estado, nombres, apellidos").eq("id", user_id).execute()
         
         # Respaldo: Si falla por ID, buscamos por email (evita problemas de desincronización)
         if not user_data.data or len(user_data.data) == 0:
             print(f"⚠️ No se encontró por ID. Buscando por email: {email}")
-            user_data = supabase.table("usuarios").select("rol, estado").eq("email", email).execute()
+            user_data = supabase.table("usuarios").select("rol, estado, nombres, apellidos").eq("email", email).execute()
 
         # 3. FLUJO ESTRICTO: Si sigue sin existir, BLOQUEAMOS (No hay rol por defecto)
         if not user_data.data or len(user_data.data) == 0:
@@ -453,6 +453,8 @@ def login_usuario():
             'user': {
                 'id': user_id,
                 'email': response.user.email,
+                'nombres': user_data.data[0].get('nombres', ''),
+                'apellidos': user_data.data[0].get('apellidos', ''),
                 'perfil_completado': perfil_completado_flag  # Incluido para admin/docente; True para representantes
             }
         }), 200
@@ -3242,7 +3244,7 @@ def descargar_boletin(hijo_id, momento):
     """Genera y descarga el boletín de evaluación en formato Word (.docx)."""
     try:
         # 1. Obtener datos del estudiante y el representante
-        res_hijo = supabase.table("hijos").select("nombre, apellidos, cedula_escolar, representante_id").eq("id", hijo_id).single().execute()
+        res_hijo = supabase.table("hijos").select("nombre, apellidos, cedula_escolar, representante_id, fecha_nacimiento").eq("id", hijo_id).single().execute()
         
         if not res_hijo.data:
             return jsonify({'success': False, 'message': 'Estudiante no encontrado'}), 404
@@ -3250,6 +3252,24 @@ def descargar_boletin(hijo_id, momento):
         hijo = res_hijo.data
         nombre_alumno = f"{hijo.get('nombre', '')} {hijo.get('apellidos', '')}".strip()
         cedula = hijo.get('cedula_escolar', 'S/N')
+
+        # --- Procesar Fecha de Nacimiento y Edad ---
+        f_nac_raw = hijo.get('fecha_nacimiento')
+        fecha_nac_formateada = ""
+        edad_valor = ""
+        
+        if f_nac_raw:
+            try:
+                # Convertir de string ISO (YYYY-MM-DD) a objeto date
+                fecha_dt = datetime.strptime(f_nac_raw, "%Y-%m-%d").date()
+                fecha_nac_formateada = fecha_dt.strftime("%d/%m/%Y")
+                
+                # Calcular edad exacta
+                hoy = date.today()
+                edad_valor = hoy.year - fecha_dt.year - ((hoy.month, hoy.day) < (fecha_dt.month, fecha_dt.day))
+            except Exception as e:
+                print(f"⚠️ Error procesando fecha del alumno {hijo_id}: {e}")
+
         
         representante_nombre = "Desconocido"
         if hijo.get('representante_id'):
@@ -3267,7 +3287,9 @@ def descargar_boletin(hijo_id, momento):
             
         seccion_id = res_asig.data[0]['seccion_id']
         secciones_data = res_asig.data[0].get('secciones', {})
-        seccion_nombre = f"{secciones_data.get('nivel', '')} - {secciones_data.get('letra', '')}".strip() if secciones_data else "Desconocida"
+        grupo_estudiante = secciones_data.get('nivel', '')
+        seccion_estudiante = secciones_data.get('letra', '')
+        seccion_nombre = f"{grupo_estudiante} - {seccion_estudiante}".strip() if secciones_data else "Desconocida"
 
         # Buscar las docentes asignadas a esta sección
         docentes_nombres = []
@@ -3305,7 +3327,7 @@ def descargar_boletin(hijo_id, momento):
                     ind_data = item.get('indicadores')
                     if ind_data:
                         area = ind_data.get('area_aprendizaje', '').lower()
-                        desc = {"descripcion": ind_data.get('descripcion', '')}
+                        desc = ind_data.get('descripcion', '')
                         
                         # Clasificación dinámica basada en palabras clave
                         if 'personal' in area or 'social' in area or 'formación' in area:
@@ -3328,8 +3350,11 @@ def descargar_boletin(hijo_id, momento):
         contexto = {
             "nombre_alumno": nombre_alumno,
             "cedula": cedula,
+            "fecha_nacimiento": fecha_nac_formateada,
+            "edad": edad_valor,
+            "nivel": grupo_estudiante,     # La plantilla usa {{ nivel }}
+            "letra": seccion_estudiante,   # La plantilla usa {{ letra }}
             "representante": representante_nombre,
-            "seccion": seccion_nombre,
             "docentes": docentes_str,
             "momento": momento,
             "recomendacion": recomendacion,
@@ -3406,12 +3431,22 @@ def obtener_perfil_representante():
                 'seccion': seccion_nombre
             })
             
+        # 3. Preparar nombres con fallback si están vacíos
+        nombres_final = rep_data.get('nombres', '').strip()
+        apellidos_final = rep_data.get('apellidos', '').strip()
+
+        if not nombres_final and not apellidos_final:
+            fallback = _nombre_representante(user.id)
+            if fallback and fallback not in ["Desconocido", "Sin representante"]:
+                nombres_final = fallback
+                apellidos_final = ""
+
         return jsonify({
             'success': True,
             'perfil': {
                 'id': rep_data['id'],
-                'nombres': rep_data['nombres'],
-                'apellidos': rep_data['apellidos'],
+                'nombres': nombres_final,
+                'apellidos': apellidos_final,
                 'email': rep_data['email']
             },
             'hijos': hijos_lista

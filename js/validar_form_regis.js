@@ -1,5 +1,9 @@
 // validar_form_regis.js
 
+document.addEventListener('DOMContentLoaded', () => {
+    setupInputMasks();
+});
+
 document.getElementById('register-form').addEventListener('submit', async (e) => {
   e.preventDefault();
 
@@ -103,3 +107,27 @@ document.getElementById('register-form').addEventListener('submit', async (e) =>
     submitBtn.innerHTML = originalBtnText;
   }
 });
+
+/**
+ * Configura restricciones de entrada para evitar números en nombres 
+ * y letras en campos numéricos.
+ */
+function setupInputMasks() {
+    const restrict = (id, regex) => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.addEventListener('input', function() {
+            this.value = this.value.replace(regex, '');
+        });
+    };
+
+    const regexSoloTexto = /[^a-zA-ZáéíóúÁÉÍÓÚñÑ ]/g;
+    const regexSoloNumeros = /[^0-9]/g;
+
+    // Nombres y Apellidos
+    restrict('nombres', regexSoloTexto);
+    restrict('apellidos', regexSoloTexto);
+
+    // Teléfono
+    restrict('phone', regexSoloNumeros);
+}
