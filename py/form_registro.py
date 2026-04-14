@@ -282,7 +282,7 @@ def registrar_usuario():
                     "role": "representante" # Metadato útil
                 },
                 # Aquí Supabase enviará el correo con el token mágico
-                "email_redirect_to": os.getenv('REDIRECT_URL', 'https://animated-gnome-3fdf38.netlify.app/login.html')  
+                "email_redirect_to": os.getenv('REDIRECT_URL', 'https://animated-gnome-3fdf38.netlify.app/form_registro_estudiante.html')  
             }
         })
         
