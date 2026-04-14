@@ -55,6 +55,13 @@ CORS(app,
      automatic_options=True)   # flask-cors responde OPTIONS sin pasar por @require_auth
 
 # =======================================================
+# RUTA DE PRUEBA (HEALTH CHECK)
+# =======================================================
+@app.route('/test-ping')
+def test_ping():
+    return "pong", 200
+
+# =======================================================
 # RATE LIMITING
 # =======================================================
 limiter = Limiter(
@@ -460,8 +467,12 @@ def login_usuario():
         }), 200
 
     except Exception as e:
+        import traceback
+        error_details = traceback.format_exc()
+        print(f"⚠️ Error Login Critico: {e}")
+        print(error_details)
+        
         error_msg = str(e).lower()
-        print(f"⚠️ Error Login: {e}")
         
         # NUEVO: Si no ha verificado el correo en Supabase
         if "email not confirmed" in error_msg:
