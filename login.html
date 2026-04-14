@@ -167,7 +167,13 @@
 
                 const json = await res.json().catch(() => ({}));
 
-                if (res.ok) {
+                if (res.ok && json.success) {
+                    // Verificación de seguridad
+                    if (!json.user) {
+                        console.error('Error: El objeto "user" no está presente en la respuesta exitosa.');
+                        throw new Error('La respuesta del servidor no contiene los datos del usuario.');
+                    }
+
                     console.log('Respuesta del Servidor:', json);
                     // Normalizar el rol a minúsculas
                     const rol = (json.rol || 'representante').toLowerCase();
