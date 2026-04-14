@@ -282,7 +282,7 @@ def registrar_usuario():
                     "role": "representante" # Metadato útil
                 },
                 # Aquí Supabase enviará el correo con el token mágico
-                "email_redirect_to": os.getenv('REDIRECT_URL', 'http://127.0.0.1:5000/login.html')  
+                "email_redirect_to": os.getenv('REDIRECT_URL', 'https://animated-gnome-3fdf38.netlify.app/login.html')  
             }
         })
         
@@ -532,7 +532,7 @@ def recuperar_password():
             }), 404
 
         # 2. Configurar a dónde irá el usuario cuando haga clic en el correo
-        redirect_url = os.getenv('RESET_PASSWORD_URL', 'http://127.0.0.1:5000/restablecer.html')
+        redirect_url = os.getenv('RESET_PASSWORD_URL', 'https://animated-gnome-3fdf38.netlify.app/restablecer.html')
         
         # 3. Disparar el correo usando el SMTP de Supabase
         supabase_auth.auth.reset_password_email(
@@ -575,7 +575,7 @@ def crear_personal():
 
         # 2. Enviar invitación por correo (sin contraseña)
         # Asegúrate de tener SET_PASSWORD_URL en tu .env o usa la por defecto
-        redirect_url = os.getenv('SET_PASSWORD_URL', 'https://tuapp.com/set-password')
+        redirect_url = os.getenv('SET_PASSWORD_URL', 'https://animated-gnome-3fdf38.netlify.app/set_password.html')
         auth_response = supabase.auth.admin.invite_user_by_email(
             email,
             options={
@@ -632,7 +632,7 @@ def reenviar_invitacion():
         return jsonify({'success': False, 'message': 'Correo electrónico obligatorio.'}), 400
 
     try:
-        redirect_url = os.getenv('SET_PASSWORD_URL', 'http://127.0.0.1:5000/set_password.html')
+        redirect_url = os.getenv('SET_PASSWORD_URL', 'https://animated-gnome-3fdf38.netlify.app/set_password.html')
         supabase_auth.auth.reset_password_email(email, options={"redirect_to": redirect_url})
         return jsonify({'success': True, 'message': f'Invitación reenviada a {email}.'}), 200
     except Exception as e:

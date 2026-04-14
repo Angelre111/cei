@@ -118,10 +118,117 @@
                 transform: translateY(0);
             }
         }
+
+        /* =====================================================
+           SPLASH LOADER (Identidad Administrativa)
+        ===================================================== */
+        #splash-loader {
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            background-color: #eff6ff; /* blue-50 */
+            background-image: radial-gradient(circle at 50% 0%, #dbeafe 0%, transparent 70%); /* blue-100 */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.5s ease-out, visibility 0.5s ease-out;
+        }
+
+        #splash-loader.hidden {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+
+        .splash-logo-container {
+            width: 96px;
+            height: 96px;
+            background: #ffffff;
+            border-radius: 50%;
+            border: 4px solid #ffffff;
+            box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.2), inset 0 2px 4px rgba(0, 0, 0, 0.06);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 16px;
+            animation: float-logo 3s ease-in-out infinite;
+        }
+
+        .splash-logo-container img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+            padding: 4px;
+        }
+
+        @keyframes float-logo {
+            0%, 100% {
+                transform: translateY(0);
+                box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.2), inset 0 2px 4px rgba(0, 0, 0, 0.06); /* blue-500 shadow */
+            }
+            50% {
+                transform: translateY(-10px);
+                box-shadow: 0 20px 25px -5px rgba(59, 130, 246, 0.3), inset 0 2px 4px rgba(0, 0, 0, 0.06);
+            }
+        }
+
+        .splash-title {
+            font-size: 1.5rem;
+            font-weight: 900;
+            color: #1F2937;
+            letter-spacing: -0.025em;
+            margin: 0;
+            line-height: 1.2;
+        }
+
+        .splash-subtitle {
+            font-size: 0.6875rem;
+            font-weight: 900;
+            color: #3b82f6; /* blue-500 */
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            margin-top: 4px;
+            margin-bottom: 24px;
+        }
+
+        .splash-dots {
+            display: flex;
+            gap: 8px;
+        }
+
+        .splash-dots span {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            animation: bounce-dots 1.4s ease-in-out infinite;
+        }
+
+        .splash-dots span:nth-child(1) { background-color: #3b82f6; } /* blue-500 */
+        .splash-dots span:nth-child(2) { background-color: #a855f7; animation-delay: 0.2s; } /* purple-500 */
+        .splash-dots span:nth-child(3) { background-color: #ec4899; animation-delay: 0.4s; } /* pink-500 */
+
+        @keyframes bounce-dots {
+            0%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-12px); }
+        }
     </style>
 </head>
 
 <body class="bg-blue-50/90"> <!-- Capa semi-transparente para legibilidad -->
+
+    <div id="splash-loader">
+        <div class="splash-logo-container">
+            <img src="img/cei.png" onerror="this.src='https://placehold.co/100x100/EFF6FF/3B82F6?text=CEI'"
+                alt="Logo CEI La Paragua">
+        </div>
+        <h2 class="splash-title">CEI La Paragua</h2>
+        <p class="splash-subtitle">Cargando panel administrativo...</p>
+        <div class="splash-dots">
+            <span></span><span></span><span></span>
+        </div>
+    </div>
 
     <div class="flex h-screen overflow-hidden">
 
@@ -3333,6 +3440,18 @@
     </div>
 
     <script src="js/admin_registro_estudiante.js"></script>
+
+    <script>
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                const splash = document.getElementById('splash-loader');
+                if (splash) {
+                    splash.classList.add('hidden');
+                    setTimeout(() => splash.style.display = 'none', 500);
+                }
+            }, 1000);
+        });
+    </script>
 </body>
 
 </html>
