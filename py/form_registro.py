@@ -537,7 +537,7 @@ def recuperar_password():
         # 3. Disparar el correo usando el SMTP de Supabase
         supabase_auth.auth.reset_password_for_email(
             email, 
-            options={"redirectTo": redirect_url}
+            options={"redirect_to": redirect_url}
         )
 
         return jsonify({'success': True, 'message': 'Enlace de recuperación enviado.'}), 200
@@ -582,7 +582,7 @@ def crear_personal():
                 "data": {
                     "role": rol_front
                 },
-                "redirectTo": redirect_url
+                "redirect_to": redirect_url
             }
         )
 
@@ -633,7 +633,7 @@ def reenviar_invitacion():
 
     try:
         redirect_url = os.getenv('SET_PASSWORD_URL', 'https://cei-teh4.onrender.com/set_password.html')
-        supabase_auth.auth.reset_password_for_email(email, options={"redirectTo": redirect_url})
+        supabase_auth.auth.reset_password_for_email(email, options={"redirect_to": redirect_url})
         return jsonify({'success': True, 'message': f'Invitación reenviada a {email}.'}), 200
     except Exception as e:
         print(f"❌ Error al reenviar invitación a {email}: {e}")
