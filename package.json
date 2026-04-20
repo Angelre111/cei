@@ -19,5 +19,8 @@
   "homepage": "https://github.com/Angelre111/cei#readme",
   "devDependencies": {
     "supabase": "^2.76.9"
+  },
+  "dependencies": {
+    "puppeteer": "^24.41.0"
   }
 }

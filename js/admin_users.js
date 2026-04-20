@@ -586,35 +586,6 @@ window.cerrarModalCrearUsuario = function () {
     }, 300);
 };
 
-// ─────────────────────────────────────────────────────────────
-// CARGA SILENCIOSA: ESTADÍSTICAS DEL DASHBOARD
-// ─────────────────────────────────────────────────────────────
-async function cargarEstadisticasDashboard() {
-    try {
-        const response = await fetchWithAuth(`${API_BASE}/api/usuarios`);
-        if (!response.ok) return;
-
-        const data = await response.json();
-        if (!data.success || !data.usuarios) return;
-
-        // Si la caché aún no tiene datos (el usuario no visitó la sección),
-        // llenamos la caché también para que el buscador funcione luego.
-        if (cachedUsuarios.length === 0) {
-            cachedUsuarios = data.usuarios;
-        }
-
-        const totalAdmins = data.usuarios.filter(u => u.rol === 'administrador').length;
-        const totalDocentes = data.usuarios.filter(u => u.rol === 'docente').length;
-
-        const cardAdmins = document.getElementById('dash-total-admins');
-        const cardDocentes = document.getElementById('dash-total-teachers');
-        if (cardAdmins) cardAdmins.innerText = totalAdmins;
-        if (cardDocentes) cardDocentes.innerText = totalDocentes;
-
-    } catch (err) {
-        console.warn('No se pudieron cargar estadísticas del dashboard:', err);
-    }
-}
 
 // ─────────────────────────────────────────────────────────────
 // FORMULARIO: CREAR NUEVO USUARIO
@@ -639,10 +610,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // ── Carga silenciosa de estadísticas para el Dashboard ─────
-    // Corre al inicio para mostrar conteos reales sin necesidad
-    // de que el usuario navegue a la sección de Usuarios.
-    cargarEstadisticasDashboard();
 
     // ── Buscador de Usuarios ────────────────────────────────
     const searchInput = document.getElementById('user-search-input');

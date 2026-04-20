@@ -53,83 +53,72 @@ window.cargarIndicadoresDeProyecto = async function(proyectoId, estadoProyecto) 
     }
 }
 
+window.abrirModalVerProyecto = function() {
+    const modal = document.getElementById('modal-ver-proyecto');
+    const content = document.getElementById('modal-ver-proyecto-content');
+    modal.classList.remove('hidden');
+    setTimeout(() => {
+        modal.classList.remove('opacity-0');
+        content.classList.remove('scale-100'); // Note: previously scale-95
+        content.classList.remove('scale-95');
+    }, 10);
+}
+
+window.cerrarModalVerProyecto = function() {
+    const modal = document.getElementById('modal-ver-proyecto');
+    const content = document.getElementById('modal-ver-proyecto-content');
+    modal.classList.add('opacity-0');
+    content.classList.add('scale-95');
+    setTimeout(() => modal.classList.add('hidden'), 300);
+}
+
 function renderizarIndicadores(estadoProyecto) {
-    const container = document.getElementById('lista-indicadores-areas');
-    if (!container) return;
+    // 1. Renderizado para el panel lateral (clásico - OPCIONAL mantenerlo)
+    const containerPanel = document.getElementById('lista-indicadores-areas');
     
+    // 2. Renderizado para el Modal Premium (Nuevo)
+    const containerModal = document.getElementById('proyecto-indicadores-lista');
+    const conteoBadge = document.getElementById('proyecto-detalle-conteo');
+    
+    if (conteoBadge) conteoBadge.innerText = `${indicadoresCargadas.length} Indicadores`;
+
     if (indicadoresCargadas.length === 0) {
-        container.innerHTML = `
-            <div class="text-center py-10 bg-white rounded-xl border border-dashed border-gray-200 mt-4">
-                <i class="ph-duotone ph-list-checks text-4xl text-gray-300 mb-2"></i>
-                <p class="text-sm font-bold text-gray-500">Este proyecto no tiene indicadores.</p>
+        const emptyHTML = `
+            <div class="col-span-full text-center py-10 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
+                <i class="ph-duotone ph-list-checks text-4xl text-slate-300 mb-2"></i>
+                <p class="text-sm font-bold text-slate-500">Este proyecto no tiene indicadores.</p>
             </div>`;
+        if (containerModal) containerModal.innerHTML = emptyHTML;
         return;
     }
-    
-    // Agrupar por área
-    const agrupados = {
-        "Formación Personal y Social": [],
-        "Relación entre los Componentes del Ambiente": [],
-        "Comunicación y Representación": []
-    };
-    
+
+    let htmlModal = '';
     indicadoresCargadas.forEach(ind => {
-        let key = ind.area_aprendizaje;
-        if(key.includes("Personal")) key = "Formación Personal y Social";
-        else if(key.includes("Ambiente")) key = "Relación entre los Componentes del Ambiente";
-        else if(key.includes("Comunicación")) key = "Comunicación y Representación";
-        
-        if(agrupados[key]) {
-            agrupados[key].push(ind);
-        } else {
-            agrupados[ind.area_aprendizaje] = [ind];
-        }
+        // Definir color según el área
+        let colorBadge = 'bg-slate-100 text-slate-600';
+        const area = ind.area_aprendizaje.toLowerCase();
+        if(area.includes('personal')) colorBadge = 'bg-blue-50 text-blue-600 border border-blue-100';
+        else if(area.includes('ambiente')) colorBadge = 'bg-emerald-50 text-emerald-600 border border-emerald-100';
+        else if(area.includes('comunicaci')) colorBadge = 'bg-purple-50 text-purple-600 border border-purple-100';
+
+        const btnBorrar = estadoProyecto === 'activo' ? `
+            <button onclick="eliminarIndicador('${ind.id}')" class="absolute top-3 right-3 text-slate-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity">
+                <i class="ph-fill ph-trash text-lg"></i>
+            </button>
+        ` : '';
+
+        htmlModal += `
+            <div class="p-4 rounded-xl border border-slate-200 bg-white shadow-sm hover:shadow-md transition-shadow relative group animate-fade-in">
+                <span class="inline-block px-2 py-1 rounded-md text-[9px] font-black uppercase tracking-wider mb-2 ${colorBadge}">
+                    ${ind.area_aprendizaje}
+                </span>
+                <p class="text-sm font-medium text-slate-700 leading-snug pr-6">${ind.descripcion}</p>
+                ${btnBorrar}
+            </div>
+        `;
     });
 
-    let html = '';
-    
-    // Renderizar caja por caja
-    for (const [area, lista] of Object.entries(agrupados)) {
-        if (lista.length === 0) continue;
-        
-        let colorBg, colorText, iconArea;
-        if(area.includes('Formación') || area.includes('Personal')) {
-            colorBg = 'bg-pink-50 border-pink-100'; colorText = 'text-pink-600'; iconArea = 'ph-user-circle';
-        } else if(area.includes('Ambiente')) {
-            colorBg = 'bg-green-50 border-green-100'; colorText = 'text-green-600'; iconArea = 'ph-plant';
-        } else {
-            colorBg = 'bg-blue-50 border-blue-100'; colorText = 'text-blue-600'; iconArea = 'ph-chats-circle';
-        }
-        
-        let areaHTML = `
-            <div class="${colorBg} border rounded-2xl p-4 shadow-sm mb-4">
-                <h4 class="text-[11px] font-black ${colorText} uppercase tracking-widest mb-3 flex items-center gap-1.5 flex-shrink-0">
-                    <i class="ph-fill ${iconArea}"></i> ${area}
-                </h4>
-                <div class="space-y-2">
-        `;
-        
-        lista.forEach(ind => {
-            const puedeBorrarUI = estadoProyecto === 'activo' ? `
-                <div class="flex gap-1 flex-shrink-0">
-                    <button onclick="abrirModalEditarIndicador('${ind.id}')" class="p-1.5 text-gray-400 hover:text-yellow-600 bg-white hover:bg-yellow-50 border border-transparent hover:border-yellow-200 rounded-lg transition-colors"><i class="ph-bold ph-pencil-simple text-sm"></i></button>
-                    <button onclick="eliminarIndicador('${ind.id}')" class="p-1.5 text-gray-400 hover:text-red-500 bg-white hover:bg-red-50 border border-transparent hover:border-red-200 rounded-lg transition-colors"><i class="ph-bold ph-trash text-sm"></i></button>
-                </div>
-            ` : '';
-            
-            areaHTML += `
-                <div class="bg-white p-3 rounded-xl border border-gray-100 shadow-sm flex items-center justify-between group">
-                    <p class="text-sm font-medium text-gray-700 pr-4">${ind.descripcion}</p>
-                    ${puedeBorrarUI}
-                </div>
-            `;
-        });
-        
-        areaHTML += `</div></div>`;
-        html += areaHTML;
-    }
-    
-    container.innerHTML = html;
+    if (containerModal) containerModal.innerHTML = htmlModal;
 }
 
 async function crearIndicador() {

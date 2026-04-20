@@ -383,9 +383,8 @@ function renderizarProgreso(progreso) {
                         <!-- Botón descargar boletín -->
                         <button onclick="descargarBoletin(${AppState.hijoActivo?.id}, '${momento.momento}')"
                             class="mt-3 w-full py-2 flex items-center justify-center gap-2 text-xs font-semibold text-gray-600
-                                   bg-white border border-gray-200 rounded-xl hover:border-gray-400 hover:bg-gray-50 transition-all">
                             <i class="ph-bold ph-download w-4 h-4"></i>
-                            Descargar Boletín Word
+                            Descargar Boletín PDF
                         </button>
                     </div>
                 </div>`;
@@ -549,7 +548,7 @@ function descargarBoletin(hijoId, momento) {
 
     Swal.fire({
         title: `Generando Boletín — Momento ${momento}...`,
-        text: 'Preparando documento Word',
+        text: 'Preparando diseño PDF Premium',
         allowOutsideClick: false,
         didOpen: () => { Swal.showLoading(); }
     });

@@ -139,40 +139,80 @@ function renderizarRecomendaciones() {
 }
 
 function actualizarChipsRapidos() {
+    // 1. Manejar chips (si existen en otros paneles)
     const container = document.getElementById('eval-chips-container');
-    if (!container) return;
-    
-    // Chips estáticos siempre presentes
-    const chipsEstaticos = `
-        <button type="button" onclick="insertarRecomendacion('¡Felicidades por tus logros este lapso! Sigue así.')" class="px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-100 rounded-lg text-[11px] font-bold transition-colors">
-            <i class="ph-bold ph-star mr-1"></i> Felicitación
-        </button>
-        <button type="button" onclick="insertarRecomendacion('Se recomienda reforzar el repaso en el hogar.')" class="px-3 py-1.5 bg-orange-50 hover:bg-orange-100 text-orange-700 border border-orange-100 rounded-lg text-[11px] font-bold transition-colors">
-            <i class="ph-bold ph-house mr-1"></i> Repaso en Hogar
-        </button>
-    `;
-
-    // Botón especial para agregar mas (abre el modal)
-    const btnMas = `<button type="button" onclick="abrirModalBancoRecomendaciones()" class="px-3 py-1.5 bg-gray-50 hover:bg-gray-100 text-gray-500 border border-gray-200 rounded-lg text-[11px] font-bold transition-colors border-dashed ml-auto">
-                        <i class="ph-bold ph-plus"></i> Gestionar Banco
-                    </button>`;
-                    
-    // Renderizar recomendaciones desde Supabase
-    let chipsHTML = '';
-    const maxChips = Math.min(3, recomendacionesCargadas.length);
-    for(let i=0; i<maxChips; i++) {
-        const rec = recomendacionesCargadas[i];
-        const clases = ['bg-pink-50 text-pink-700 border-pink-100', 'bg-emerald-50 text-emerald-700 border-emerald-100', 'bg-cyan-50 text-cyan-700 border-cyan-100'];
-        const claseColor = clases[i % clases.length];
-        
-        chipsHTML += `
-            <button type="button" onclick="insertarRecomendacion(\`${rec.texto.replace(/`/g, "'")}\`)" class="px-3 py-1.5 ${claseColor} hover:bg-white rounded-lg text-[11px] font-bold transition-colors shadow-sm capitalize">
-                <i class="ph-bold ph-chat-circle mr-1"></i> ${rec.titulo.substring(0, 15)}
+    if (container) {
+        // Chips estáticos siempre presentes
+        const chipsEstaticos = `
+            <button type="button" onclick="insertarRecomendacion('¡Felicidades por tus logros este lapso! Sigue así.')" class="px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-100 rounded-lg text-[11px] font-bold transition-colors">
+                <i class="ph-bold ph-star mr-1"></i> Felicitación
+            </button>
+            <button type="button" onclick="insertarRecomendacion('Se recomienda reforzar el repaso en el hogar.')" class="px-3 py-1.5 bg-orange-50 hover:bg-orange-100 text-orange-700 border border-orange-100 rounded-lg text-[11px] font-bold transition-colors">
+                <i class="ph-bold ph-house mr-1"></i> Repaso en Hogar
             </button>
         `;
+
+        // Botón especial para agregar mas (abre el modal)
+        const btnMas = `<button type="button" onclick="abrirModalBancoRecomendaciones()" class="px-3 py-1.5 bg-gray-50 hover:bg-gray-100 text-gray-500 border border-gray-200 rounded-lg text-[11px] font-bold transition-colors border-dashed ml-auto">
+                            <i class="ph-bold ph-plus"></i> Gestionar Banco
+                        </button>`;
+                        
+        // Renderizar recomendaciones desde Supabase
+        let chipsHTML = '';
+        const maxChips = Math.min(3, recomendacionesCargadas.length);
+        for(let i=0; i<maxChips; i++) {
+            const rec = recomendacionesCargadas[i];
+            const clases = ['bg-pink-50 text-pink-700 border-pink-100', 'bg-emerald-50 text-emerald-700 border-emerald-100', 'bg-cyan-50 text-cyan-700 border-cyan-100'];
+            const claseColor = clases[i % clases.length];
+            
+            chipsHTML += `
+                <button type="button" onclick="insertarRecomendacion(\`${rec.texto.replace(/`/g, "'")}\`)" class="px-3 py-1.5 ${claseColor} hover:bg-white rounded-lg text-[11px] font-bold transition-colors shadow-sm capitalize">
+                    <i class="ph-bold ph-chat-circle mr-1"></i> ${rec.titulo.substring(0, 15)}
+                </button>
+            `;
+        }
+        
+        container.innerHTML = chipsEstaticos + chipsHTML + btnMas;
     }
-    
-    container.innerHTML = chipsEstaticos + chipsHTML + btnMas;
+
+    // 2. Manejar Select Dinámico (Banco Rápido del nuevo panel)
+    const bancoSelect = document.getElementById('eval-banco-select');
+    if (bancoSelect) {
+        // Limpiar excepto el primero
+        const currentVal = bancoSelect.value;
+        bancoSelect.innerHTML = '<option value="">-- Usar frase del banco --</option>';
+        
+        // Frases por defecto
+        const defaultPhrases = [
+            "¡Felicidades por tus logros este lapso! Sigue así.",
+            "Muestra gran interés en las actividades grupales.",
+            "Se recomienda reforzar el repaso en el hogar.",
+            "Ha logrado consolidar los indicadores satisfactoriamente."
+        ];
+
+        defaultPhrases.forEach(p => {
+            const opt = document.createElement('option');
+            opt.value = p;
+            opt.textContent = p.length > 40 ? p.substring(0, 40) + "..." : p;
+            bancoSelect.appendChild(opt);
+        });
+
+        // Frases personalizadas de la API
+        if (recomendacionesCargadas.length > 0) {
+            const group = document.createElement('optgroup');
+            group.label = "Mis Frases Guardadas";
+            
+            recomendacionesCargadas.forEach(rec => {
+                const opt = document.createElement('option');
+                opt.value = rec.texto;
+                opt.textContent = rec.titulo;
+                group.appendChild(opt);
+            });
+            bancoSelect.appendChild(group);
+        }
+
+        bancoSelect.value = currentVal;
+    }
 }
 
 async function crearRecomendacion() {

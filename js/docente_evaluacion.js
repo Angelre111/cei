@@ -1,38 +1,50 @@
 // ============================================
-// LÓGICA DEL PANEL MAESTRO DE EVALUACIONES
+// LÓGICA DEL PANEL MAESTRO DE EVALUACIONES (PREMIUM)
 // ============================================
 
 let masterIndicators = {};
 let currentEvalData = { logrados: [] };
 
 document.addEventListener('DOMContentLoaded', () => {
-    const selMomento = document.getElementById('eval-momento-select');
-    const selEstudiante = document.getElementById('eval-estudiante-select');
+    // Nuevos IDs del HTML SaaS
+    const selMomento = document.getElementById('eval-momento');
+    const selEstudiante = document.getElementById('eval-estudiante');
+    const btnCargar = document.getElementById('btn-cargar-evaluacion');
     const btnGuardar = document.getElementById('btn-guardar-evaluacion');
+    const btnDescargar = document.getElementById('btn-descargar-boletin');
     
-    const btnWord = document.querySelector('#eval-download-buttons button:nth-child(1)');
-    const btnPDF = document.querySelector('#eval-download-buttons button:nth-child(2)');
+    const selBanco = document.getElementById('eval-banco-select');
+    const btnInsertarFrase = document.getElementById('btn-insertar-frase');
 
+    // Al cambiar el momento, recargamos indicadores maestros
     if (selMomento) {
         selMomento.addEventListener('change', async (e) => {
             const momento = e.target.value;
             if (momento) {
                 await fetchMasterIndicators(momento);
-                habilitarEstudiantes();
-                limpiarPanel();
             }
         });
     }
 
-    if (selEstudiante) {
-        selEstudiante.addEventListener('change', async (e) => {
-            const hijoId = e.target.value;
+    // El botón Cargar Datos es el disparador principal ahora
+    if (btnCargar) {
+        btnCargar.addEventListener('click', async () => {
+            const hijoId = selEstudiante.value;
             const momento = selMomento.value;
-            if (hijoId && momento) {
-                await fetchEvaluacionEstudiante(hijoId, momento);
-            } else {
-                limpiarPanel();
+            
+            if (!hijoId || !momento) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Selección Incompleta',
+                    text: 'Por favor seleccione un estudiante y un momento pedagógico.',
+                    customClass: { popup: 'rounded-3xl' }
+                });
+                return;
             }
+
+            // Fix: Asegurar que los indicadores maestros estén cargados antes de renderizar
+            await fetchMasterIndicators(momento);
+            await fetchEvaluacionEstudiante(hijoId, momento);
         });
     }
 
@@ -40,38 +52,39 @@ document.addEventListener('DOMContentLoaded', () => {
         btnGuardar.addEventListener('click', guardarEvaluacion);
     }
     
-    if (btnWord) {
-        btnWord.addEventListener('click', descargarBoletinWord);
+    if (btnDescargar) {
+        btnDescargar.addEventListener('click', descargarBoletinPDF);
     }
-    
-    if (btnPDF) {
-        btnPDF.addEventListener('click', () => {
-            Swal.fire({
-                icon: 'info',
-                title: 'PDF en camino',
-                text: 'La descarga directa en PDF estará disponible próximamente.',
-                customClass: { popup: 'rounded-3xl' }
-            });
+
+    if (btnInsertarFrase && selBanco) {
+        btnInsertarFrase.addEventListener('click', () => {
+            const frase = selBanco.value;
+            if (frase) {
+                const textarea = document.getElementById('eval-recomendacion');
+                const currentText = textarea.value;
+                textarea.value = currentText + (currentText ? ' ' : '') + frase;
+                selBanco.value = ''; // Reset select
+            }
         });
     }
+
+    // El banco de frases ahora se gestiona dinámicamente desde js/docente_recomendaciones.js
 });
 
-function habilitarEstudiantes() {
-    const selEstudiante = document.getElementById('eval-estudiante-select');
-    selEstudiante.disabled = false;
-    if (selEstudiante.options.length > 0) {
-        selEstudiante.options[0].text = "Seleccione un estudiante...";
-    }
-}
+
+
 
 function limpiarPanel() {
     document.getElementById('eval-empty-state').classList.remove('hidden');
-    document.getElementById('eval-col-formacion').innerHTML = '';
-    document.getElementById('eval-col-ambiente').innerHTML = '';
-    document.getElementById('eval-col-comunicacion').innerHTML = '';
+    document.getElementById('eval-empty-state').classList.add('flex');
+    document.getElementById('eval-content-area').classList.add('hidden');
+    document.getElementById('eval-content-area').classList.remove('flex');
+    
+    const container = document.getElementById('eval-indicadores-container');
+    if (container) container.innerHTML = '';
+    
     document.getElementById('eval-recomendacion').value = '';
-    document.getElementById('eval-download-buttons').classList.add('hidden');
-    document.getElementById('btn-guardar-evaluacion').disabled = true;
+    document.getElementById('btn-descargar-boletin').classList.add('hidden');
     
     currentEvalData = { logrados: [] };
 }
@@ -92,7 +105,6 @@ async function fetchMasterIndicators(momento) {
         if (res.ok && data.success) {
             masterIndicators = data.data || {};
         } else {
-            console.error("Error indicadores maestro:", data.message);
             masterIndicators = {};
         }
     } catch(e) {
@@ -102,9 +114,10 @@ async function fetchMasterIndicators(momento) {
 }
 
 async function fetchEvaluacionEstudiante(hijoId, momento) {
-    document.getElementById('eval-empty-state').classList.add('hidden');
-    document.getElementById('btn-guardar-evaluacion').disabled = false;
-    document.getElementById('btn-guardar-evaluacion').innerHTML = '<i class="ph-spinner animate-spin text-xl"></i> Cargando...';
+    const btnCargar = document.getElementById('btn-cargar-evaluacion');
+    const originalHTML = btnCargar.innerHTML;
+    btnCargar.disabled = true;
+    btnCargar.innerHTML = '<i class="ph-spinner animate-spin"></i> Cargando...';
     
     try {
         const token = localStorage.getItem('auth_token');
@@ -115,102 +128,129 @@ async function fetchEvaluacionEstudiante(hijoId, momento) {
         });
         
         const data = await res.json();
+        
+        // Transición de áreas
+        document.getElementById('eval-empty-state').classList.add('hidden');
+        document.getElementById('eval-empty-state').classList.remove('flex');
+        document.getElementById('eval-content-area').classList.remove('hidden');
+        document.getElementById('eval-content-area').classList.add('flex');
+
         if (res.ok && data.success) {
             currentEvalData = data.data || { logrados: [] };
-            renderizarPanel();
         } else {
             currentEvalData = { logrados: [] };
-            renderizarPanel();
         }
+        
+        renderizarPanelPremium();
+        
     } catch(e) {
         console.error(e);
-        currentEvalData = { logrados: [] };
-        renderizarPanel();
+        Swal.fire('Error', 'No se pudo conectar con el servidor.', 'error');
     } finally {
-        document.getElementById('btn-guardar-evaluacion').innerHTML = '<i class="ph-bold ph-floppy-disk text-xl"></i> Guardar Evaluación';
+        btnCargar.disabled = false;
+        btnCargar.innerHTML = originalHTML;
     }
 }
 
-function renderizarPanel() {
+function renderizarPanelPremium() {
     // Si tiene boleta, mostrar btn descargar
     if (currentEvalData.boleta_id) {
-        document.getElementById('eval-download-buttons').classList.remove('hidden');
+        document.getElementById('btn-descargar-boletin').classList.remove('hidden');
     } else {
-        document.getElementById('eval-download-buttons').classList.add('hidden');
+        document.getElementById('btn-descargar-boletin').classList.add('hidden');
     }
 
     document.getElementById('eval-recomendacion').value = currentEvalData.recomendacion_docente || '';
     
-    renderizarArea('Formación Personal y Social', 'eval-col-formacion');
-    renderizarArea('Relación entre los Componentes del Ambiente', 'eval-col-ambiente');
-    renderizarArea('Comunicación y Representación', 'eval-col-comunicacion');
+    // Llamamos a la función premium inyectada
+    renderizarIndicadoresPremium(masterIndicators, currentEvalData.logrados || []);
 }
 
-function renderizarArea(nombreArea, colId) {
-    const container = document.getElementById(colId);
-    let lista = [];
-    
-    for (let key in masterIndicators) {
-        if (key.includes("Personal") && nombreArea.includes("Personal")) lista = masterIndicators[key];
-        else if (key.includes("Ambiente") && nombreArea.includes("Ambiente")) lista = masterIndicators[key];
-        else if (key.includes("Comunicación") && nombreArea.includes("Comunicación")) lista = masterIndicators[key];
-    }
-    
-    if (!lista || lista.length === 0) {
-        container.innerHTML = `<p class="text-xs text-gray-400 p-4 text-center border-2 border-dashed rounded-xl border-gray-100 flex flex-col items-center gap-2"><i class="ph-duotone ph-list-dashes text-2xl text-gray-300"></i> Sin indicadores cargados en este momento</p>`;
+/**
+ * Función inyectada por el usuario con diseño SaaS/Premium
+ */
+function renderizarIndicadoresPremium(agrupados, logrados) {
+    const container = document.getElementById('eval-indicadores-container');
+    container.innerHTML = '';
+
+    // Si no hay indicadores
+    if (Object.keys(agrupados).length === 0) {
+        container.innerHTML = `<div class="p-8 bg-slate-50 rounded-2xl text-center text-slate-500 border border-slate-100">No hay indicadores registrados para este momento.</div>`;
         return;
     }
-    
-    let html = '';
-    lista.forEach(ind => {
-        const isLogrado = currentEvalData.logrados.includes(ind.id);
-        
-        html += `
-        <div class="bg-white p-3 rounded-xl shadow-sm border border-gray-100 flex flex-col gap-2 eval-indicator-card group" data-id="${ind.id}">
-            <p class="text-[12px] font-medium text-gray-700 leading-snug">${ind.descripcion}</p>
-            <div class="flex items-center gap-2 mt-1">
-                <select class="indicator-select w-full px-2 py-1.5 border rounded-lg text-[11px] font-bold outline-none border-gray-200 transition-colors cursor-pointer appearance-none ${isLogrado ? 'bg-green-50 text-green-700 border-green-200' : 'bg-gray-50 text-gray-500'}">
-                    <option value="" ${!isLogrado ? 'selected' : ''}>⏳ Pendiente / En Proceso</option>
-                    <option value="L" ${isLogrado ? 'selected' : ''}>✅ Logrado</option>
-                </select>
+
+    // Iterar por cada área de aprendizaje
+    for (const [area, indicadores] of Object.entries(agrupados)) {
+        // 1. Crear Tarjeta (Card) por Área
+        const areaCard = document.createElement('div');
+        areaCard.className = 'bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-[0_2px_10px_rgb(0,0,0,0.02)]';
+
+        // Determinar icono sutil según el nombre del área
+        let iconClass = 'ph-brain';
+        if(area.toLowerCase().includes('personal')) iconClass = 'ph-user-focus';
+        if(area.toLowerCase().includes('ambiente')) iconClass = 'ph-leaf';
+        if(area.toLowerCase().includes('comunicaci')) iconClass = 'ph-chats-teardrop';
+
+        // 2. Cabecera del Área
+        const areaHeader = document.createElement('div');
+        areaHeader.className = 'bg-slate-50 px-5 py-4 border-b border-slate-200 flex items-center gap-3';
+        areaHeader.innerHTML = `
+            <div class="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0">
+                <i class="ph-fill ${iconClass} text-lg"></i>
             </div>
-            <div class="text-[9px] text-gray-400 font-bold uppercase truncate mt-0.5" title="${ind.proyecto_nombre}"><i class="ph-fill ph-book-open text-gray-300"></i> ${ind.proyecto_nombre}</div>
-        </div>
+            <h4 class="text-sm font-black text-slate-800 uppercase tracking-widest">${area}</h4>
         `;
-    });
-    
-    container.innerHTML = html;
-    
-    container.querySelectorAll('.indicator-select').forEach(sel => {
-        sel.addEventListener('change', function() {
-            if(this.value === 'L') {
-                this.classList.replace('bg-gray-50', 'bg-green-50');
-                this.classList.replace('text-gray-500', 'text-green-700');
-                this.classList.replace('border-gray-200', 'border-green-200');
-            } else {
-                this.classList.replace('bg-green-50', 'bg-gray-50');
-                this.classList.replace('text-green-700', 'text-gray-500');
-                this.classList.replace('border-green-200', 'border-gray-200');
-            }
+        areaCard.appendChild(areaHeader);
+
+        // 3. Lista de Indicadores interactiva
+        const listDiv = document.createElement('div');
+        listDiv.className = 'flex flex-col divide-y divide-slate-100';
+
+        indicadores.forEach(ind => {
+            // Verificar si este indicador está en el array de 'logrados'
+            const isChecked = logrados.includes(ind.id) ? 'checked' : '';
+            
+            const itemLabel = document.createElement('label');
+            itemLabel.className = 'group relative flex items-start gap-4 p-5 hover:bg-emerald-50/50 cursor-pointer transition-colors';
+
+            
+            // Usamos "peer" de Tailwind para animar el custom checkbox basado en el input invisible
+            itemLabel.innerHTML = `
+                <div class="relative flex items-center shrink-0 pt-0.5">
+                    <input type="checkbox" class="eval-checkbox peer sr-only" value="${ind.id}" ${isChecked}>
+                    
+                    <div class="w-6 h-6 rounded-full border-2 border-slate-300 bg-white peer-checked:bg-emerald-500 peer-checked:border-emerald-500 transition-all flex items-center justify-center shadow-sm">
+                        <i class="ph-bold ph-check text-white opacity-0 peer-checked:opacity-100 scale-50 peer-checked:scale-100 transition-all duration-200"></i>
+                    </div>
+                </div>
+                
+                <div class="flex-1">
+                    <p class="text-sm font-medium text-slate-700 group-hover:text-slate-900 transition-colors leading-relaxed">${ind.descripcion}</p>
+                    ${ind.proyecto_nombre ? `<span class="inline-block mt-2 px-2.5 py-1 bg-slate-100 text-slate-500 text-[10px] font-bold uppercase tracking-wide rounded-md border border-slate-200"><i class="ph-bold ph-folder text-slate-400 mr-1"></i>${ind.proyecto_nombre}</span>` : ''}
+                </div>
+            `;
+            listDiv.appendChild(itemLabel);
         });
-    });
+
+        areaCard.appendChild(listDiv);
+        container.appendChild(areaCard);
+    }
 }
 
 async function guardarEvaluacion() {
-    const hijoId = document.getElementById('eval-estudiante-select').value;
-    const momento = document.getElementById('eval-momento-select').value;
+    const hijoId = document.getElementById('eval-estudiante').value;
+    const momento = document.getElementById('eval-momento').value;
     const recomendacion = document.getElementById('eval-recomendacion').value.trim();
     const btnGuardar = document.getElementById('btn-guardar-evaluacion');
     
+    // Obtener indicadores marcados
     const logrados = [];
-    document.querySelectorAll('.eval-indicator-card').forEach(card => {
-        const id = card.getAttribute('data-id');
-        const select = card.querySelector('.indicator-select');
-        if(select && select.value === 'L') {
-            logrados.push(id);
-        }
+    document.querySelectorAll('.eval-checkbox:checked').forEach(input => {
+        logrados.push(input.value);
     });
     
+    if (!hijoId || !momento) return;
+
     btnGuardar.disabled = true;
     btnGuardar.innerHTML = '<i class="ph-spinner animate-spin text-xl"></i> Guardando...';
     
@@ -234,14 +274,22 @@ async function guardarEvaluacion() {
         const data = await res.json();
         
         if (res.ok && data.success) {
-            Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Boleta Guardada', showConfirmButton: false, timer: 2000 });
-            document.getElementById('eval-download-buttons').classList.remove('hidden');
-            // Update local memory to not lose context immediately 
-            currentEvalData.boleta_id = data.data.boleta_id;
+            Swal.fire({ 
+                toast: true, 
+                position: 'top-end', 
+                icon: 'success', 
+                title: 'Evaluación Guardada Correctamente', 
+                showConfirmButton: false, 
+                timer: 2500 
+            });
+            document.getElementById('btn-descargar-boletin').classList.remove('hidden');
+            
+            // Actualizar memoria local
+            currentEvalData.boleta_id = data.data?.boleta_id || true;
             currentEvalData.recomendacion_docente = recomendacion;
             currentEvalData.logrados = logrados;
         } else {
-            Swal.fire('Error', data.message || 'No se pudo guardar.', 'error');
+            Swal.fire('Error', data.message || 'No se pudo guardar la evaluación.', 'error');
         }
     } catch(e) {
         console.error(e);
@@ -252,15 +300,15 @@ async function guardarEvaluacion() {
     }
 }
 
-function descargarBoletinWord() {
-    const hijoId = document.getElementById('eval-estudiante-select').value;
-    const momento = document.getElementById('eval-momento-select').value;
+function descargarBoletinPDF() {
+    const hijoId = document.getElementById('eval-estudiante').value;
+    const momento = document.getElementById('eval-momento').value;
     
     if (!hijoId || !momento) return;
     
     Swal.fire({
         title: 'Generando Boletín...',
-        text: 'Preparando el documento Word oficial',
+        text: 'Preparando el documento PDF Premium oficial',
         allowOutsideClick: false,
         didOpen: () => { Swal.showLoading(); }
     });
@@ -268,10 +316,9 @@ function descargarBoletinWord() {
     const token = localStorage.getItem('auth_token');
     const baseUrl = typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : 'http://127.0.0.1:5000';
     
-    // Direct link with token to force download in browser
+    // Enlace directo con token
     const url = `${baseUrl}/api/boletines/descargar/${hijoId}/${momento}?token=${token}`;
     
-    // Small delay to allow the loading spinner to be seen
     setTimeout(() => {
         Swal.close();
         window.open(url, '_blank');

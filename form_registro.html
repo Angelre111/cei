@@ -58,6 +58,20 @@
             backdrop-filter: blur(5px);
             /* Efecto de desenfoque para el fondo detrás del formulario */
         }
+
+        /* Cambios de restablecer.html */
+        .valid { color: #10B981; }
+        .invalid { color: #9CA3AF; }
+        .valid i { color: #10B981; }
+        .invalid i { color: #D1D5DB; }
+
+        .requirement-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.75rem;
+            transition: all 0.3s ease;
+        }
     </style>
     <!-- Iconos Phosphor Icons -->
     <script src="https://unpkg.com/phosphor-icons"></script>
@@ -139,13 +153,28 @@
                 <div class="relative">
                     <i class="ph-lock-key text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2"></i>
                     <input type="password" id="password" name="password" required
-                        class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl input-focus transition duration-200 text-sm"
-                        placeholder="Mínimo 8 carácteres, mayúscula y símbolo">
+                        class="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-xl input-focus transition duration-200 text-sm"
+                        placeholder="••••••••">
+                    <button type="button" onclick="togglePassword('password', 'eye-icon-1')" class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-pink-500 transition-colors">
+                        <i id="eye-icon-1" class="ph-eye text-lg"></i>
+                    </button>
                 </div>
-                <p class="text-[11px] text-gray-500 mt-1.5 ml-1 flex items-center gap-1">
-                    <i class="ph-info text-pink-500"></i>
-                    Debe incluir una letra mayúscula, una minúscula, un número y un símbolo (Ej: @$!%*?&).
-                </p>
+                
+                <!-- Lista de Requisitos de Contraseña -->
+                <div class="mt-3 grid grid-cols-2 gap-2 bg-white/50 p-3 rounded-2xl border border-gray-100">
+                    <div id="req-length" class="requirement-item invalid">
+                        <i class="ph-circle"></i> <span>Mín. 8 caracteres</span>
+                    </div>
+                    <div id="req-upper" class="requirement-item invalid">
+                        <i class="ph-circle"></i> <span>Una mayúscula</span>
+                    </div>
+                    <div id="req-number" class="requirement-item invalid">
+                        <i class="ph-circle"></i> <span>Un número</span>
+                    </div>
+                    <div id="req-symbol" class="requirement-item invalid">
+                        <i class="ph-circle"></i> <span>Un símbolo (!@#...)</span>
+                    </div>
+                </div>
             </div>
 
             <!-- Campo Confirmar Contraseña -->
@@ -153,10 +182,13 @@
                 <label for="confirm-password" class="block text-sm font-medium text-gray-700 mb-1">Confirmar
                     Contraseña</label>
                 <div class="relative">
-                    <i class="ph-lock-key-open text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2"></i>
+                    <i class="ph-shield-check text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2"></i>
                     <input type="password" id="confirm-password" name="confirm-password" required
-                        class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl input-focus transition duration-200"
-                        placeholder="Repite la contraseña">
+                        class="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-xl input-focus transition duration-200"
+                        placeholder="••••••••">
+                    <button type="button" onclick="togglePassword('confirm-password', 'eye-icon-2')" class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-pink-500 transition-colors">
+                        <i id="eye-icon-2" class="ph-eye text-lg"></i>
+                    </button>
                 </div>
             </div>
 
@@ -173,8 +205,8 @@
 
             <!-- Botón de Registro -->
             <div>
-                <button type="submit"
-                    class="w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-xl shadow-lg text-lg font-semibold text-white color-paragua-primary hover:bg-pink-600 transition duration-300 transform hover:scale-[1.01]">
+                <button type="submit" id="btn-submit"
+                    class="w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-xl shadow-lg text-lg font-semibold text-white color-paragua-primary hover:bg-pink-600 transition duration-300 transform hover:scale-[1.01] opacity-50 cursor-not-allowed" disabled>
                     <i class="ph-user-plus mr-2 text-xl"></i> Registrarme
                 </button>
             </div>
@@ -201,6 +233,71 @@
     <script src="js/validar_form_regis.js"></script>
 
 
+    <script>
+        const passwordInput = document.getElementById('password');
+        const confirmInput = document.getElementById('confirm-password');
+        const btnSubmit = document.getElementById('btn-submit');
+
+        const requirements = {
+            length: { re: /.{8,}/, el: document.getElementById('req-length') },
+            upper: { re: /[A-Z]/, el: document.getElementById('req-upper') },
+            number: { re: /[0-9]/, el: document.getElementById('req-number') },
+            symbol: { re: /[^A-Za-z0-9]/, el: document.getElementById('req-symbol') }
+        };
+
+        function validatePassword() {
+            const val = passwordInput.value;
+            let allValid = true;
+
+            for (const key in requirements) {
+                const isValid = requirements[key].re.test(val);
+                const el = requirements[key].el;
+                const icon = el.querySelector('i');
+
+                if (isValid) {
+                    el.classList.remove('invalid');
+                    el.classList.add('valid');
+                    icon.classList.replace('ph-circle', 'ph-check-circle');
+                } else {
+                    el.classList.remove('valid');
+                    el.classList.add('invalid');
+                    icon.classList.replace('ph-check-circle', 'ph-circle');
+                    allValid = false;
+                }
+            }
+
+            // Validar si coinciden y términos aceptados
+            const termsChecked = document.getElementById('terms').checked;
+            const match = val === confirmInput.value && val !== '';
+            
+            if (allValid && match && termsChecked) {
+                btnSubmit.disabled = false;
+                btnSubmit.classList.remove('opacity-50', 'cursor-not-allowed');
+            } else {
+                btnSubmit.disabled = true;
+                btnSubmit.classList.add('opacity-50', 'cursor-not-allowed');
+            }
+        }
+
+        if (passwordInput && confirmInput) {
+            passwordInput.addEventListener('input', validatePassword);
+            confirmInput.addEventListener('input', validatePassword);
+            const termsEl = document.getElementById('terms');
+            if (termsEl) termsEl.addEventListener('change', validatePassword);
+        }
+
+        function togglePassword(inputId, iconId) {
+            const input = document.getElementById(inputId);
+            const icon = document.getElementById(iconId);
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.replace('ph-eye', 'ph-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.replace('ph-eye-slash', 'ph-eye');
+            }
+        }
+    </script>
 </body>
 
 </html>

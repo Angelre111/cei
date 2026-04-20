@@ -2,6 +2,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Inicializar máscaras de entrada
     setupInputMasks();
 
+    // Inicializar validación de edad
+    setupAgeValidation();
+
     // 1. Inicializar cliente de Supabase (Lado Cliente) - USA CONSTANTES DE config.js
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
@@ -467,6 +470,60 @@ document.addEventListener('DOMContentLoaded', async () => {
                         this.value = parts[0] + '.' + parts.slice(1).join('');
                     }
                 });
+            }
+        });
+    }
+
+    /**
+     * Valida la edad del niño en tiempo real (debe ser entre 2 y 6 años)
+     * También auto-completa el campo de edad.
+     */
+    function setupAgeValidation() {
+        const inputFecha = document.getElementById('nino_fecha_nacimiento');
+        const inputEdad = document.getElementById('nino_edad');
+        const msgValidacion = document.getElementById('msg-validacion-edad');
+        const nextBtn = document.getElementById('nextBtn');
+
+        if (!inputFecha || !msgValidacion) return;
+
+        inputFecha.addEventListener('input', () => {
+            const value = inputFecha.value;
+            if (!value) {
+                msgValidacion.classList.add('opacity-0', '-translate-y-1');
+                inputFecha.classList.remove('border-emerald-500', 'border-red-500');
+                if (inputEdad) inputEdad.value = "";
+                if (nextBtn) nextBtn.disabled = false;
+                return;
+            }
+
+            const fechaNac = new Date(value);
+            const hoy = new Date();
+            
+            let edad = hoy.getFullYear() - fechaNac.getFullYear();
+            const m = hoy.getMonth() - fechaNac.getMonth();
+            if (m < 0 || (m === 0 && hoy.getDate() < fechaNac.getDate())) {
+                edad--;
+            }
+
+            if (inputEdad) inputEdad.value = edad;
+
+            msgValidacion.classList.remove('opacity-0', '-translate-y-1');
+            msgValidacion.classList.add('opacity-100', 'translate-y-0');
+
+            if (edad >= 2 && edad <= 6) {
+                msgValidacion.innerText = `✅ Edad permitida preescolar: ${edad} años`;
+                msgValidacion.className = "text-[10px] font-bold mt-1.5 ml-1 transition-all duration-300 opacity-100 translate-y-0 text-emerald-500";
+                inputFecha.classList.remove('border-gray-300', 'border-red-500');
+                inputFecha.classList.add('border-emerald-500');
+                if (nextBtn) nextBtn.disabled = false;
+            } else {
+                const motivo = edad < 2 ? "(El ingreso es desde los 2 años)" : "(Excede la edad preescolar)";
+                msgValidacion.innerText = `❌ Edad no permitida: ${edad} años ${motivo}`;
+                msgValidacion.className = "text-[10px] font-bold mt-1.5 ml-1 transition-all duration-300 opacity-100 translate-y-0 text-red-500";
+                inputFecha.classList.remove('border-gray-300', 'border-emerald-500');
+                inputFecha.classList.add('border-red-500');
+                // Bloqueamos la navegación al siguiente paso
+                if (nextBtn) nextBtn.disabled = true;
             }
         });
     }

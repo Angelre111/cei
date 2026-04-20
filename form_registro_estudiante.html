@@ -202,14 +202,15 @@
                     <div>
                         <label class="label-primary">Fecha de Nacimiento <span class="text-pink-500">*</span></label>
                         <div class="input-group">
-                            <input type="date" name="nino_fecha_nacimiento" class="input-field" required>
+                            <input type="date" id="nino_fecha_nacimiento" name="nino_fecha_nacimiento" class="input-field" required>
                             <i class="ph ph-calendar-blank input-icon"></i>
                         </div>
+                        <div id="msg-validacion-edad" class="text-[10px] font-bold mt-1.5 ml-1 transition-all duration-300 opacity-0 transform -translate-y-1"></div>
                     </div>
                     <div>
                         <label class="label-primary">Edad (Años)</label>
                         <div class="input-group">
-                            <input type="number" name="nino_edad" class="input-field" placeholder="0">
+                            <input type="number" id="nino_edad" name="nino_edad" class="input-field" placeholder="0" readonly>
                             <i class="ph ph-cake input-icon"></i>
                         </div>
                     </div>

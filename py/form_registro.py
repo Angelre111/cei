@@ -25,6 +25,13 @@ from pydantic import BaseModel, ValidationError
 from dotenv import load_dotenv
 from supabase import create_client, Client, ClientOptions
 
+# --- IMPORTACIONES NUEVAS PARA REPORTLAB ---
+from reportlab.lib.pagesizes import letter, portrait
+from reportlab.lib import colors
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, Image
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.units import inch
+
 # --- CONFIGURACIÓN INICIAL ---
 load_dotenv()
 
@@ -2418,71 +2425,223 @@ def generar_estadistica_mensual():
                     clave = 'mat' if edad < 3 else (str(edad) if edad <= 6 else '6')
                     edades_h[clave] += 1
 
-        # 5. Construir Diccionario para el Word (Contexto)
-        context = {
-            # Encabezado
-            "mes": meses_nombres[mes].upper(),
-            "periodo_escolar": seccion_info.get("periodos_academicos", {}).get("nombre", ""),
-            "dias_habiles": dias_habiles,
-            "seccion": f"{seccion_info.get('nivel', '')} {seccion_info.get('letra', '')}",
-            "dias_trabajados": dias_trabajados,
-            "docentes": docentes_str.upper(),
-            
-            # Tablas Dinámicas
-            "dias_asistencia": dias_asistencia_lista,
-            "ingresos": ingresos_lista,
-            "egresos": egresos_lista,
-            
-            # Totales Asistencia
-            "total_v": tot_asist_v, "total_h": tot_asist_h, "total_t": tot_asist_t,
-            "prom_v": prom_v, "prom_h": prom_h, "prom_t": prom_t,
-            
-            # Cuadro de Matrícula
-            "mat_ini_v": mat_ini_v, "mat_ini_h": mat_ini_h, "mat_ini_t": mat_ini_v + mat_ini_h,
-            "ing_v": ing_v, "ing_h": ing_h, "ing_t": ing_v + ing_h,
-            "sum_v": mat_ini_v + ing_v, "sum_h": mat_ini_h + ing_h, "sum_t": (mat_ini_v + ing_v) + (mat_ini_h + ing_h),
-            "egr_v": egr_v, "egr_h": egr_h, "egr_t": egr_v + egr_h,
-            "mat_fin_v": mat_fin_v, "mat_fin_h": mat_fin_h, "mat_fin_t": mat_fin_v + mat_fin_h,
-            
-            # Edades (Maternal, 3, 4, 5, 6, Total)
-            "ed_mat_v": edades_v['mat'], "ed_mat_h": edades_h['mat'], "ed_mat_t": edades_v['mat'] + edades_h['mat'],
-            "ed_3_v": edades_v['3'], "ed_3_h": edades_h['3'], "ed_3_t": edades_v['3'] + edades_h['3'],
-            "ed_4_v": edades_v['4'], "ed_4_h": edades_h['4'], "ed_4_t": edades_v['4'] + edades_h['4'],
-            "ed_5_v": edades_v['5'], "ed_5_h": edades_h['5'], "ed_5_t": edades_v['5'] + edades_h['5'],
-            "ed_6_v": edades_v['6'], "ed_6_h": edades_h['6'], "ed_6_t": edades_v['6'] + edades_h['6'],
-            "ed_tot_v": sum(edades_v.values()), "ed_tot_h": sum(edades_h.values()), "ed_tot_t": sum(edades_v.values()) + sum(edades_h.values())
-        }
+        # =========================================================
+        # 5. GENERACIÓN DEL PDF CON REPORTLAB (DISEÑO PREMIUM SAAS COMPRIMIDO)
+        # =========================================================
+        pdf_buffer = io.BytesIO()
+        
+        # Márgenes reducidos a 25pt para asegurar que todo quepa en una sola hoja
+        doc = SimpleDocTemplate(pdf_buffer, pagesize=portrait(letter), 
+                                rightMargin=25, leftMargin=25, topMargin=25, bottomMargin=25)
+        elements = []
+        styles = getSampleStyleSheet()
 
-        # 6. Renderizar Plantilla y Devolver .docx en memoria
-        # (Compatible con Windows local y Render/Linux sin dependencias externas)
-        SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-        plantilla_path = os.path.join(SCRIPT_DIR, "plantillas", "estadistica_mensual.docx")
-        if not os.path.exists(plantilla_path):
-            return jsonify({'success': False, 'message': 'Plantilla de estadística no encontrada.'}), 404
+        # --- Estilos Personalizados ---
+        section_style = ParagraphStyle(
+            name='SectionTitle', fontName='Helvetica-Bold', fontSize=10, 
+            textColor=colors.HexColor("#0F172A"), spaceBefore=10, spaceAfter=5,
+            borderPadding=4, backColor=colors.HexColor("#F1F5F9")
+        )
 
-        doc = DocxTemplate(plantilla_path)
-        doc.render(context)
+        # --- 1. ENCABEZADO CON LOGO ---
+        # Buscamos la imagen subiendo un nivel en la carpeta (../img/cei.png)
+        logo_path = os.path.join(os.path.dirname(__file__), '..', 'img', 'cei.png')
+        if os.path.exists(logo_path):
+            logo = Image(logo_path, width=1.1*inch, height=1.1*inch)
+        else:
+            logo = Paragraph("") # Fallback de seguridad si no halla la imagen
 
-        # Guardar en memoria (sin tocar el disco ni usar subprocess)
-        file_stream = io.BytesIO()
-        doc.save(file_stream)
-        file_stream.seek(0)
+        # Texto del encabezado con HTML-like tags para diferentes tamaños y colores
+        header_text = """
+        <para align="center">
+            <font size="10" color="#475569"><b>REPÚBLICA BOLIVARIANA DE VENEZUELA</b></font><br/>
+            <font size="10" color="#475569"><b>MINISTERIO DEL PODER POPULAR PARA LA EDUCACIÓN</b></font><br/>
+            <font size="12" color="#1E293B"><b>C.E.I. "LA PARAGUA"</b></font><br/><br/>
+            <font size="13" color="#2563EB"><b>ESTADÍSTICA MENSUAL OFICIAL</b></font>
+        </para>
+        """
+        p_header = Paragraph(header_text, styles['Normal'])
+        
+        # Tabla invisible para estructurar: Logo a la izquierda, texto centrado
+        t_header = Table([[logo, p_header, ""]], colWidths=[1.3*inch, 5.0*inch, 1.3*inch])
+        t_header.setStyle(TableStyle([
+            ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
+            ('ALIGN', (1,0), (1,0), 'CENTER'),
+        ]))
+        elements.append(t_header)
+        elements.append(Spacer(1, 10))
 
-        nombre_archivo = f"Estadistica_{meses_nombres[mes]}_{anio}.docx"
+        # --- 2. TABLA DE METADATOS (Banner Info) ---
+        meta_data = [
+            ["Mes:", meses_nombres[mes].upper(), "Año Escolar:", seccion_info.get("periodos_academicos", {}).get("nombre", "")],
+            ["Sección:", f"{seccion_info.get('nivel', '')} {seccion_info.get('letra', '')}", "Días Hábiles:", str(dias_habiles)],
+            ["Docentes:", docentes_str.upper(), "Días Trabajados:", str(dias_trabajados)]
+        ]
+        meta_table = Table(meta_data, colWidths=[0.8*inch, 3.2*inch, 1.2*inch, 2.4*inch])
+        meta_table.setStyle(TableStyle([
+            ('FONTNAME', (0,0), (-1,-1), 'Helvetica'),
+            ('FONTSIZE', (0,0), (-1,-1), 9),
+            ('FONTNAME', (0,0), (0,-1), 'Helvetica-Bold'), 
+            ('FONTNAME', (2,0), (2,-1), 'Helvetica-Bold'), 
+            ('TEXTCOLOR', (0,0), (-1,-1), colors.HexColor("#334155")),
+            ('TEXTCOLOR', (1,0), (1,-1), colors.HexColor("#0F172A")), 
+            ('TEXTCOLOR', (3,0), (3,-1), colors.HexColor("#0F172A")),
+            ('BACKGROUND', (0,0), (-1,-1), colors.HexColor("#F8FAFC")),
+            ('BOX', (0,0), (-1,-1), 1, colors.HexColor("#E2E8F0")),
+            ('INNERGRID', (0,0), (-1,-1), 0.5, colors.HexColor("#E2E8F0")),
+            ('BOTTOMPADDING', (0,0), (-1,-1), 5),
+            ('TOPPADDING', (0,0), (-1,-1), 5),
+            ('ALIGN', (0,0), (-1,-1), 'LEFT'),
+        ]))
+        elements.append(meta_table)
+        elements.append(Spacer(1, 10))
+
+        # --- Función de Estilo Base Comprimido ---
+        def get_premium_table_style():
+            return TableStyle([
+                ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor("#1E293B")), # Cabecera Slate
+                ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+                ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+                ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+                ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                ('FONTSIZE', (0, 0), (-1, 0), 8), # Fuente reducida para ahorrar espacio
+                ('BOTTOMPADDING', (0, 0), (-1, 0), 4),
+                ('TOPPADDING', (0, 0), (-1, 0), 4),
+                ('BACKGROUND', (0, 1), (-1, -1), colors.HexColor("#F8FAFC")),
+                ('TEXTCOLOR', (0, 1), (-1, -1), colors.HexColor("#334155")),
+                ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
+                ('FONTSIZE', (0, 1), (-1, -1), 8),
+                ('BOTTOMPADDING', (0, 1), (-1, -1), 3),
+                ('TOPPADDING', (0, 1), (-1, -1), 3),
+                ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor("#E2E8F0")),
+                ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor("#F8FAFC")]),
+            ])
+
+        # --- 3. ASISTENCIA DIARIA ---
+        elements.append(Paragraph("1. CONTROL DE ASISTENCIA DIARIA", section_style))
+        asistencia_data = [["FECHA", "DÍA", "VARONES (V)", "HEMBRAS (H)", "TOTAL"]]
+        
+        for dia in dias_asistencia_lista:
+            asistencia_data.append([dia['fecha'], dia['nombre'], str(dia['v']), str(dia['h']), str(dia['t'])])
+            
+        asistencia_data.append(["", "TOTAL", str(tot_asist_v), str(tot_asist_h), str(tot_asist_t)])
+        asistencia_data.append(["", "PROM. MENSUAL", str(prom_v), str(prom_h), str(prom_t)])
+
+        t_asistencia = Table(asistencia_data, colWidths=[1.2*inch, 1.6*inch, 1.4*inch, 1.4*inch, 1.4*inch])
+        style_asis = get_premium_table_style()
+        style_asis.add('BACKGROUND', (1, -2), (-1, -1), colors.HexColor("#DBEAFE"))
+        style_asis.add('TEXTCOLOR', (1, -2), (-1, -1), colors.HexColor("#1E3A8A"))
+        style_asis.add('FONTNAME', (1, -2), (-1, -1), 'Helvetica-Bold')
+        t_asistencia.setStyle(style_asis)
+        elements.append(t_asistencia)
+        elements.append(Spacer(1, 10))
+
+        # =========================================================================
+        # SECCIONES COLUMNARES (LADO A LADO) PARA COMPRIMIR EN UNA SOLA PÁGINA
+        # =========================================================================
+
+        # --- 4. EGRESOS E INGRESOS (LADO A LADO) ---
+        egresos_data = [["N°", "APELLIDO Y NOMBRE", "EDAD", "SEXO"]]
+        if not egresos_lista:
+            egresos_data.append(["-", "Sin egresos reportados", "-", "-"])
+        else:
+            for idx, egr in enumerate(egresos_lista):
+                egresos_data.append([str(idx+1), egr['nombre'], egr['edad'], egr['sexo']])
+        
+        t_egresos = Table(egresos_data, colWidths=[0.3*inch, 2.1*inch, 0.7*inch, 0.6*inch])
+        t_egresos.setStyle(get_premium_table_style())
+
+        ingresos_data = [["N°", "APELLIDO Y NOMBRE", "EDAD", "SEXO"]]
+        if not ingresos_lista:
+            ingresos_data.append(["-", "Sin ingresos reportados", "-", "-"])
+        else:
+            for idx, ing in enumerate(ingresos_lista):
+                ingresos_data.append([str(idx+1), ing['nombre'], ing['edad'], ing['sexo']])
+        
+        t_ingresos = Table(ingresos_data, colWidths=[0.3*inch, 2.1*inch, 0.7*inch, 0.6*inch])
+        t_ingresos.setStyle(get_premium_table_style())
+
+        # Envolvemos las tablas en Listas junto con sus títulos para anidarlas
+        wrapper_egresos = [Paragraph("2. EGRESOS (RETIRADOS)", section_style), t_egresos]
+        wrapper_ingresos = [Paragraph("3. INGRESOS (MATRICULADOS)", section_style), t_ingresos]
+
+        t_row2 = Table([[wrapper_egresos, wrapper_ingresos]], colWidths=[3.8*inch, 3.8*inch])
+        t_row2.setStyle(TableStyle([
+            ('VALIGN', (0,0), (-1,-1), 'TOP'),
+            ('LEFTPADDING', (0,0), (-1,-1), 0),
+            ('RIGHTPADDING', (0,0), (-1,-1), 0),
+            ('BOTTOMPADDING', (0,0), (-1,-1), 0),
+            ('TOPPADDING', (0,0), (-1,-1), 0),
+        ]))
+        elements.append(t_row2)
+        elements.append(Spacer(1, 5))
+
+        # --- 5. RESUMEN Y EDADES (LADO A LADO) ---
+        mat_data = [
+            ["DESCRIPCIÓN", "V", "H", "T"],
+            ["Alumnos para 1ero del mes", str(mat_ini_v), str(mat_ini_h), str(mat_ini_v + mat_ini_h)],
+            ["Matriculados en el mes", str(ing_v), str(ing_h), str(ing_v + ing_h)],
+            ["Suma", str(mat_ini_v + ing_v), str(mat_ini_h + ing_h), str((mat_ini_v + ing_v) + (mat_ini_h + ing_h))],
+            ["Alumnos Retirados", str(egr_v), str(egr_h), str(egr_v + egr_h)],
+            ["Alumnos último del mes", str(mat_fin_v), str(mat_fin_h), str(mat_fin_v + mat_fin_h)],
+        ]
+        t_mat = Table(mat_data, colWidths=[2.2*inch, 0.5*inch, 0.5*inch, 0.5*inch])
+        style_mat = get_premium_table_style()
+        style_mat.add('ALIGN', (0,1), (0,-1), 'LEFT')
+        style_mat.add('BACKGROUND', (0,-1), (-1,-1), colors.HexColor("#DBEAFE"))
+        style_mat.add('TEXTCOLOR', (0,-1), (-1,-1), colors.HexColor("#1E3A8A"))
+        style_mat.add('FONTNAME', (0,-1), (-1,-1), 'Helvetica-Bold')
+        t_mat.setStyle(style_mat)
+
+        edades_data = [
+            ["EDAD", "V", "H", "T"],
+            ["Maternal", str(edades_v['mat']), str(edades_h['mat']), str(edades_v['mat'] + edades_h['mat'])],
+            ["De 3 años", str(edades_v['3']), str(edades_h['3']), str(edades_v['3'] + edades_h['3'])],
+            ["De 4 años", str(edades_v['4']), str(edades_h['4']), str(edades_v['4'] + edades_h['4'])],
+            ["De 5 años", str(edades_v['5']), str(edades_h['5']), str(edades_v['5'] + edades_h['5'])],
+            ["De 6 años", str(edades_v['6']), str(edades_h['6']), str(edades_v['6'] + edades_h['6'])],
+            ["TOTAL", str(sum(edades_v.values())), str(sum(edades_h.values())), str(sum(edades_v.values()) + sum(edades_h.values()))],
+        ]
+        t_edades = Table(edades_data, colWidths=[1.5*inch, 0.7*inch, 0.7*inch, 0.8*inch])
+        style_edades = get_premium_table_style()
+        style_edades.add('BACKGROUND', (0,-1), (-1,-1), colors.HexColor("#DBEAFE"))
+        style_edades.add('TEXTCOLOR', (0,-1), (-1,-1), colors.HexColor("#1E3A8A"))
+        style_edades.add('FONTNAME', (0,-1), (-1,-1), 'Helvetica-Bold')
+        t_edades.setStyle(style_edades)
+
+        wrapper_mat = [Paragraph("4. RESUMEN DE MATRÍCULA", section_style), t_mat]
+        wrapper_edades = [Paragraph("5. DISTRIBUCIÓN POR EDADES", section_style), t_edades]
+
+        t_row3 = Table([[wrapper_mat, wrapper_edades]], colWidths=[3.8*inch, 3.8*inch])
+        t_row3.setStyle(TableStyle([
+            ('VALIGN', (0,0), (-1,-1), 'TOP'),
+            ('LEFTPADDING', (0,0), (-1,-1), 0),
+            ('RIGHTPADDING', (0,0), (-1,-1), 0),
+            ('BOTTOMPADDING', (0,0), (-1,-1), 0),
+            ('TOPPADDING', (0,0), (-1,-1), 0),
+        ]))
+        elements.append(t_row3)
+
+        # --- CONSTRUIR EL PDF ---
+        doc.build(elements)
+        pdf_buffer.seek(0)
+
+        nombre_archivo = f"Estadistica_MPPE_{meses_nombres[mes]}_{anio}.pdf"
+        
         return send_file(
-            file_stream,
+            pdf_buffer,
             as_attachment=True,
             download_name=nombre_archivo,
-            mimetype='application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+            mimetype='application/pdf'
         )
 
     except Exception as e:
         print(f"❌ Error en estadística: {e}")
-        return jsonify({'success': False, 'message': 'Error al generar la estadística.'}), 500
-
+        return jsonify({'success': False, 'message': 'Error al generar el PDF de estadística.'}), 500
 
 @app.route('/api/admin/estadistica/rango', methods=['POST'])
 @app.route('/api/estadistica/rango', methods=['POST'])
+@app.route('/api/docente/estadistica/rango', methods=['POST'])
 @require_auth
 def estadistica_admin_por_rango():
     """Estadísticas por rango de fechas para administrador (escuela) o docente (su aula)."""
@@ -2495,8 +2654,19 @@ def estadistica_admin_por_rango():
             return jsonify({'success': False, 'message': 'Acceso no autorizado.'}), 403
         
         data = request.get_json(silent=True) or {}
-        modo = data.get('modo', 'escuela')
-        aula_id = data.get('aula_id')
+        
+        # Lógica para detectar si es la ruta simplificada del docente
+        if request.path == '/api/docente/estadistica/rango':
+            modo = 'aula'
+            # Buscar la sección asignada a este docente automáticamente
+            res_sec = supabase.table("docentes_secciones").select("seccion_id").eq("docente_id", current_user.id).execute()
+            if not res_sec.data:
+                return jsonify({'success': False, 'message': 'No tienes ninguna sección asignada.'}), 404
+            aula_id = res_sec.data[0]['seccion_id']
+        else:
+            modo = data.get('modo', 'escuela')
+            aula_id = data.get('aula_id')
+        
         fecha_inicio = data.get('fecha_inicio')
         fecha_fin = data.get('fecha_fin')
         
@@ -2595,6 +2765,23 @@ def estadistica_admin_por_rango():
             # modo aula: ya tenemos hijos_ids
             total_estudiantes = len(hijos_ids) if 'hijos_ids' in locals() else 0
         
+        # Calcular porcentaje real: presentes / (estudiantes × días con datos)
+        # Si el sistema solo registra presentes (no ausentes), el denominador real
+        # es total_estudiantes × número_de_días_con_registro
+        num_dias_con_datos = len(asistencia_por_fecha)
+        if total_estudiantes > 0 and num_dias_con_datos > 0:
+            total_esperado = total_estudiantes * num_dias_con_datos
+            # total_ausentes calculados como diferencia con lo esperado
+            ausentes_reales = total_esperado - total_presentes
+            if ausentes_reales < 0:
+                ausentes_reales = 0
+            total_ausentes = ausentes_reales
+            total_registros = total_esperado
+            porcentaje_asistencia = round((total_presentes / total_esperado) * 100, 1)
+        else:
+            # Sin estudiantes registrados o sin días de datos, usar lo que tengamos
+            porcentaje_asistencia = round((total_presentes / total_registros) * 100, 1) if total_registros > 0 else 0
+        
         return jsonify({
             'success': True,
             'modo': modo,
@@ -2689,9 +2876,12 @@ def obtener_aulas():
         aulas = []
         for sec in secciones_res.data:
             docentes_nombres = []
-            if sec.get("docentes_secciones"):
-                for ds in sec["docentes_secciones"]:
-                    if ds.get("usuarios"):
+            rel_docentes = sec.get("docentes_secciones")
+            if rel_docentes:
+                if isinstance(rel_docentes, dict):
+                    rel_docentes = [rel_docentes]
+                for ds in rel_docentes:
+                    if isinstance(ds, dict) and ds.get("usuarios") and isinstance(ds["usuarios"], dict):
                         nombre = f"{ds['usuarios'].get('nombres', '')} {ds['usuarios'].get('apellidos', '')}".strip()
                         if nombre:
                             docentes_nombres.append(nombre)
@@ -3348,46 +3538,163 @@ def descargar_boletin(hijo_id, momento):
                         elif 'comunicación' in area or 'representación' in area or 'lenguaje' in area:
                             ind_comunicacion.append(desc)
 
-        # 5. Cargar plantilla e inyectar contexto
-        # Usamos os.path.dirname(__file__) equivalente a tu SCRIPT_DIR
-        plantilla_path = os.path.join(os.path.dirname(__file__), "plantillas", "boletin_plantilla.docx")
+        # =========================================================
+        # 5. GENERACIÓN DEL BOLETÍN EN PDF (DISEÑO PREMIUM EQUILIBRADO)
+        # =========================================================
+        pdf_buffer = io.BytesIO()
         
-        # Validación de seguridad por si no existe el archivo aún
-        if not os.path.exists(plantilla_path):
-            return jsonify({'success': False, 'message': 'Falta el archivo de plantilla (boletin_plantilla.docx) en el servidor.'}), 404
+        # Márgenes equilibrados (30pt) para respiración visual y compresión eficiente
+        doc = SimpleDocTemplate(pdf_buffer, pagesize=portrait(letter), 
+                                rightMargin=30, leftMargin=30, topMargin=15, bottomMargin=20)
+        elements = []
+        styles = getSampleStyleSheet()
 
-        doc = DocxTemplate(plantilla_path)
+        # --- Estilos Personalizados (Punto Medio) ---
+        section_title_style = ParagraphStyle(
+            name='SectionTitle', fontName='Helvetica-Bold', fontSize=10.5, 
+            textColor=colors.HexColor("#0F172A"), spaceBefore=8, spaceAfter=4,
+            borderPadding=3.5, backColor=colors.HexColor("#E2E8F0")
+        )
+        area_desc_style = ParagraphStyle(
+            name='AreaDesc', fontName='Helvetica-Oblique', fontSize=8.5,
+            textColor=colors.HexColor("#475569"), spaceAfter=4, leading=11
+        )
+        bullet_style = ParagraphStyle(
+            name='PremiumBullet', fontName='Helvetica', fontSize=9.5,
+            textColor=colors.HexColor("#1E293B"), leftIndent=15, firstLineIndent=-10, 
+            spaceBefore=1.5, spaceAfter=3, leading=12
+        )
+        recom_style = ParagraphStyle(
+            name='Recomendacion', fontName='Helvetica', fontSize=9.5,
+            textColor=colors.HexColor("#1E3A8A"), leading=13
+        )
+
+        # --- 1. ENCABEZADO CON LOGO ---
+        logo_path = os.path.join(os.path.dirname(__file__), '..', 'img', 'cei.png')
+        if os.path.exists(logo_path):
+            logo = Image(logo_path, width=1.05*inch, height=1.05*inch)
+        else:
+            logo = Paragraph("")
+
+        momento_nombres = {"1": "PRIMER", "2": "SEGUNDO", "3": "TERCER"}
+        momento_texto = momento_nombres.get(str(momento), "")
+
+        header_text = f"""
+        <para align="center">
+            <font size="9" color="#475569"><b>MINISTERIO DEL PODER POPULAR PARA LA EDUCACIÓN</b></font><br/>
+            <font size="11" color="#1E293B"><b>C.E.I. "LA PARAGUA"</b></font><br/>
+            <font size="8" color="#64748B">MUNICIPIO ANGOSTURA DEL ORINOCO - CIUDAD BOLÍVAR - ESTADO BOLÍVAR</font><br/>
+            <font size="11.5" color="#2563EB"><b>AVANCES DEL {momento_texto} MOMENTO PEDAGÓGICO</b></font>
+        </para>
+        """
+        p_header = Paragraph(header_text, styles['Normal'])
         
-        contexto = {
-            "nombre_alumno": nombre_alumno,
-            "cedula": cedula,
-            "fecha_nacimiento": fecha_nac_formateada,
-            "edad": edad_valor,
-            "nivel": grupo_estudiante,     # La plantilla usa {{ nivel }}
-            "letra": seccion_estudiante,   # La plantilla usa {{ letra }}
-            "representante": representante_nombre,
-            "docentes": docentes_str,
-            "momento": momento,
-            "recomendacion": recomendacion,
-            "ind_formacion": ind_formacion,
-            "ind_ambiente": ind_ambiente,
-            "ind_comunicacion": ind_comunicacion
-        }
+        t_header = Table([[logo, p_header, ""]], colWidths=[1.15*inch, 5.0*inch, 1.15*inch])
+        t_header.setStyle(TableStyle([
+            ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
+            ('ALIGN', (1,0), (1,0), 'CENTER'),
+        ]))
+        elements.append(t_header)
+        elements.append(Spacer(1, 10)) 
+
+        # --- 2. TARJETA DE DATOS DEL ALUMNO ---
+        meta_data = [
+            ["Alumno (a):", nombre_alumno, "Cédula:", cedula],
+            ["Fecha Nac.:", fecha_nac_formateada, "Edad:", f"{edad_valor} años"],
+            ["Docente(s):", docentes_str, "Representante:", representante_nombre],
+            ["Grupo/Nivel:", grupo_estudiante, "Sección:", f'"{seccion_estudiante}"']
+        ]
+        meta_table = Table(meta_data, colWidths=[0.9*inch, 2.95*inch, 0.9*inch, 2.55*inch])
+        meta_table.setStyle(TableStyle([
+            ('FONTNAME', (0,0), (-1,-1), 'Helvetica'),
+            ('FONTSIZE', (0,0), (-1,-1), 8.5),
+            ('FONTNAME', (0,0), (0,-1), 'Helvetica-Bold'), 
+            ('FONTNAME', (2,0), (2,-1), 'Helvetica-Bold'), 
+            ('TEXTCOLOR', (0,0), (-1,-1), colors.HexColor("#334155")),
+            ('TEXTCOLOR', (1,0), (1,-1), colors.HexColor("#0F172A")), 
+            ('TEXTCOLOR', (3,0), (3,-1), colors.HexColor("#0F172A")),
+            ('BACKGROUND', (0,0), (-1,-1), colors.HexColor("#F8FAFC")),
+            ('BOX', (0,0), (-1,-1), 1, colors.HexColor("#E2E8F0")),
+            ('INNERGRID', (0,0), (-1,-1), 0.5, colors.HexColor("#E2E8F0")),
+            ('BOTTOMPADDING', (0,0), (-1,-1), 5), # Un respiro mayor
+            ('TOPPADDING', (0,0), (-1,-1), 5),
+            ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
+        ]))
+        elements.append(meta_table)
+        elements.append(Spacer(1, 10))
+
+        # --- 3. ÁREAS DE APRENDIZAJE ---
+        elements.append(Paragraph("ÁREAS DE APRENDIZAJE:", ParagraphStyle(
+            name='AreaTitle', fontName='Helvetica-Bold', fontSize=11, textColor=colors.HexColor("#1E293B"), spaceAfter=6
+        )))
+
+        # 3.1 Formación Personal y Social
+        elements.append(Paragraph("Formación Personal y Social", section_title_style))
+        elements.append(Paragraph("Se refiere a la capacidad del niño de identificarse como persona única, valiosa con características propias, con derecho a un nombre, una familia, una nacionalidad, que reconozcan al sexo al que pertenecen precisando los aspectos comunes y diferentes. Implica la aceptación y aprecio de sí mismo y sus capacidades de resolver conflictos y acuerdos.", area_desc_style))
+        if not ind_formacion:
+            elements.append(Paragraph("• En proceso de desarrollo para este momento.", bullet_style))
+        for ind in ind_formacion:
+            elements.append(Paragraph(f"• {ind}", bullet_style))
+
+        # 3.2 Relación entre los componentes del Ambiente
+        elements.append(Paragraph("Relación entre los Componentes del Ambiente", section_title_style))
+        elements.append(Paragraph("Se refiere a la relación entre el niño y las experiencias de aprendizaje con el medio físico y natural que lo rodea. Supone el descubrimiento de interesantes universos para observar y explorar, a través de acciones que lo conlleven al conocimiento y establecimiento de relaciones espaciales y entre objetos y así generar procesos que lo lleven a noción de número, el cuidado y conservación del entorno natural.", area_desc_style))
+        if not ind_ambiente:
+            elements.append(Paragraph("• En proceso de desarrollo para este momento.", bullet_style))
+        for ind in ind_ambiente:
+            elements.append(Paragraph(f"• {ind}", bullet_style))
+
+        # 3.3 Comunicación y Representación
+        elements.append(Paragraph("Comunicación y Representación", section_title_style))
+        elements.append(Paragraph("Se contempla como mediadora de las demás, es la forma de comunicación que sirven de nexo entre el mundo interior y el exterior del individuo, en ella se articula la comprensión y utilización y las otras formas de representación para canalizar los sentimientos y emociones de los niños con el propósito de convertirlo en una fuente de disfrute, también propicia aprender a comunicarse en contextos múltiples y así establecer relaciones sociales.", area_desc_style))
+        if not ind_comunicacion:
+            elements.append(Paragraph("• En proceso de desarrollo para este momento.", bullet_style))
+        for ind in ind_comunicacion:
+            elements.append(Paragraph(f"• {ind}", bullet_style))
+
+        elements.append(Spacer(1, 12))
+
+        # --- 4. RECOMENDACIONES DEL DOCENTE ---
+        elements.append(Paragraph("Recomendaciones de la Docente:", section_title_style))
         
-        doc.render(contexto)
+        recom_text = recomendacion if recomendacion.strip() else "Sin recomendaciones registradas para este momento."
         
-        # 6. Guardar en memoria y retornar
-        file_stream = io.BytesIO()
-        doc.save(file_stream)
-        file_stream.seek(0)
-        
-        nombre_descarga = f"Boletin_Momento{momento}_{nombre_alumno.replace(' ', '_')}.docx"
+        t_recom = Table([[Paragraph(recom_text, recom_style)]], colWidths=[7.3*inch])
+        t_recom.setStyle(TableStyle([
+            ('BACKGROUND', (0,0), (-1,-1), colors.HexColor("#DBEAFE")), 
+            ('BOX', (0,0), (-1,-1), 1, colors.HexColor("#BFDBFE")), 
+            ('PADDING', (0,0), (-1,-1), 10), # Padding cómodo
+            ('VALIGN', (0,0), (-1,-1), 'MIDDLE')
+        ]))
+        elements.append(t_recom)
+        elements.append(Spacer(1, 30)) # Espacio ideal para sello y firma
+
+        # --- 5. FIRMAS ---
+        firmas_data = [
+            ["___________________________", "___________________________", "___________________________"],
+            ["Director(a)", "Sello", "Docente"]
+        ]
+        t_firmas = Table(firmas_data, colWidths=[2.4*inch, 2.4*inch, 2.4*inch])
+        t_firmas.setStyle(TableStyle([
+            ('ALIGN', (0,0), (-1,-1), 'CENTER'),
+            ('FONTNAME', (0,0), (-1,-1), 'Helvetica-Bold'),
+            ('FONTSIZE', (0,0), (-1,-1), 9.5),
+            ('TEXTCOLOR', (0,0), (-1,-1), colors.HexColor("#475569")),
+            ('TOPPADDING', (0,1), (-1,1), 4), 
+        ]))
+        elements.append(t_firmas)
+
+        # --- CONSTRUIR EL PDF ---
+        doc.build(elements)
+        pdf_buffer.seek(0)
+
+        nombre_descarga = f"Boletin_Momento{momento}_{nombre_alumno.replace(' ', '_')}.pdf"
         
         return send_file(
-            file_stream,
+            pdf_buffer,
             as_attachment=True,
             download_name=nombre_descarga,
-            mimetype="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+            mimetype="application/pdf"
         )
         
     except Exception as e:

@@ -181,6 +181,7 @@
                         <input type="date" id="fecha_nacimiento" name="fecha_nacimiento" required
                             class="field-input pl-10 cursor-pointer">
                     </div>
+                    <div id="msg-validacion-edad" class="text-[10px] font-bold mt-1.5 ml-1 transition-all duration-300 opacity-0 transform -translate-y-1"></div>
                 </div>
             </div>
 
@@ -605,6 +606,53 @@
         if (fechaNacInput) {
             fechaNacInput.max = fechaMax;
         }
+
+        // -----------------------------
+        // 6. VALIDACIÓN DE EDAD REAL-TIME (Mínimo 18 años)
+        // -----------------------------
+        function setupAgeValidation() {
+            const inputFecha = document.getElementById('fecha_nacimiento');
+            const msgValidacion = document.getElementById('msg-validacion-edad');
+            const btnSubmit = document.getElementById('submitBtn');
+
+            if (!inputFecha || !msgValidacion) return;
+
+            inputFecha.addEventListener('input', () => {
+                const value = inputFecha.value;
+                if (!value) {
+                    msgValidacion.classList.add('opacity-0', '-translate-y-1');
+                    inputFecha.classList.remove('border-emerald-500', 'border-red-500', 'box-shadow');
+                    if (btnSubmit) btnSubmit.disabled = false;
+                    return;
+                }
+
+                const fechaNac = new Date(value);
+                const hoy = new Date();
+                
+                let edad = hoy.getFullYear() - fechaNac.getFullYear();
+                const m = hoy.getMonth() - fechaNac.getMonth();
+                if (m < 0 || (m === 0 && hoy.getDate() < fechaNac.getDate())) {
+                    edad--;
+                }
+
+                msgValidacion.classList.remove('opacity-0', '-translate-y-1');
+                msgValidacion.classList.add('opacity-100', 'translate-y-0');
+
+                if (edad >= 18) {
+                    msgValidacion.innerText = `✅ Edad válida para laborar: ${edad} años`;
+                    msgValidacion.className = "text-[10px] font-bold mt-1.5 ml-1 transition-all duration-300 opacity-100 translate-y-0 text-emerald-600";
+                    inputFecha.style.borderColor = "#10B981";
+                    if (btnSubmit) btnSubmit.disabled = false;
+                } else {
+                    msgValidacion.innerText = `❌ Edad insuficiente: ${edad} años (Mínimo 18)`;
+                    msgValidacion.className = "text-[10px] font-bold mt-1.5 ml-1 transition-all duration-300 opacity-100 translate-y-0 text-red-500";
+                    inputFecha.style.borderColor = "#EF4444";
+                    if (btnSubmit) btnSubmit.disabled = true;
+                }
+            });
+        }
+
+        setupAgeValidation();
 
         // Pequeña animación de bienvenida
         Swal.fire({

@@ -153,43 +153,48 @@ function renderizarListaProyectos(lista) {
 
 function seleccionarProyecto(id) {
     proyectoSeleccionadoId = id;
-    renderizarListaProyectos(proyectosCargados); // Para repintar la selección (Highlight visual)
+    // renderizarListaProyectos(proyectosCargados); // Opcional, para highlight en la lista si se mantiene
     
     const proyecto = proyectosCargados.find(p => p.id === id);
     if (!proyecto) return;
 
-    // Mostrar el contenedor de detalle y ocultar el empty state
-    document.getElementById('proyecto-empty-state').classList.add('hidden');
+    // 1. Poblar el nuevo Modal Premium
+    document.getElementById('proyecto-detalle-nombre').innerText = proyecto.nombre;
     
-    const content = document.getElementById('proyecto-content');
-    content.classList.remove('hidden');
-    
-    // Poblar Header de Proyecto
-    document.getElementById('detalle-momento-badge').innerText = `Momento ${proyecto.momento_pedagogico}`;
-    document.getElementById('detalle-proyecto-nombre').innerText = proyecto.nombre;
-    
-    // Ocultar botón "Cerrar Proyecto" si ya está cerrado, y ocultar form de añadir indicador
-    const btnCerrar = document.getElementById('btn-cerrar-proyecto');
-    const formIndicador = document.getElementById('form-agregar-indicador');
+    const badgeEstado = document.getElementById('proyecto-detalle-estado');
+    const btnCerrarOficial = document.getElementById('btn-cerrar-proyecto-oficial');
     
     if (proyecto.estado === 'cerrado') {
-        btnCerrar.classList.add('hidden');
-        formIndicador.classList.add('hidden');
-        document.getElementById('detalle-momento-badge').classList.replace('bg-purple-100', 'bg-gray-200');
-        document.getElementById('detalle-momento-badge').classList.replace('text-purple-700', 'text-gray-600');
+        badgeEstado.innerHTML = '<i class="ph-fill ph-lock"></i> Proyecto Finalizado';
+        badgeEstado.className = 'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-slate-100 text-slate-500 text-[10px] font-black uppercase tracking-widest border border-slate-200 mb-2';
+        if (btnCerrarOficial) btnCerrarOficial.classList.add('hidden');
     } else {
-        btnCerrar.classList.remove('hidden');
-        formIndicador.classList.remove('hidden');
-        document.getElementById('detalle-momento-badge').classList.replace('bg-gray-200', 'bg-purple-100');
-        document.getElementById('detalle-momento-badge').classList.replace('text-gray-600', 'text-purple-700');
+        badgeEstado.innerHTML = '<i class="ph-fill ph-check-circle"></i> Proyecto Activo';
+        badgeEstado.className = 'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-emerald-50 text-emerald-600 text-[10px] font-black uppercase tracking-widest border border-emerald-100 mb-2';
+        if (btnCerrarOficial) {
+            btnCerrarOficial.classList.remove('hidden');
+            // Re-vincular el evento de cerrar
+            btnCerrarOficial.onclick = () => {
+                cerrarModalVerProyecto();
+                cerrarProyecto(proyecto.id);
+            };
+        }
     }
 
-    // Aquí cargamos usando el script nuevo:
+    // Diagnóstico (si no existe en el objeto, ponemos un placeholder amable)
+    const diagDiv = document.getElementById('proyecto-detalle-diagnostico');
+    if (diagDiv) {
+        diagDiv.innerText = proyecto.diagnostico || 'Se observa interés en el grupo por explorar nuevas temáticas relacionadas con este proyecto. Se planifican actividades lúdicas y constructivas.';
+    }
+
+    // 2. Abrir el Modal
+    if (typeof window.abrirModalVerProyecto === 'function') {
+        window.abrirModalVerProyecto();
+    }
+
+    // 3. Cargar los indicadores (inyectará en el modal)
     if (typeof window.cargarIndicadoresDeProyecto === 'function') {
         window.cargarIndicadoresDeProyecto(proyecto.id, proyecto.estado);
-    } else {
-        const listaIndicadores = document.getElementById('lista-indicadores-areas');
-        listaIndicadores.innerHTML = `<div class="text-center py-10">Error: No se definió cargarIndicadoresDeProyecto</div>`;
     }
 }
 

@@ -8,9 +8,16 @@ async function abrirModalRegistrarNuevoEstudiante() {
     if (form) form.reset();
     // Limpiar checks de conducta
     document.querySelectorAll('#form-nuevo-estudiante .conducta-check').forEach(cb => cb.checked = false);
-    // Cargar secciones disponibles
-    await cargarSeccionesNuevoEstudiante();
 
+    // Resetear validación de edad
+    const msgValidacion = document.getElementById('msg-validacion-edad');
+    const inputFecha = document.getElementById('nuevo_nino_fecha_nacimiento');
+    const btnSubmit = document.getElementById('btn-enviar-nuevo-estudiante');
+    if (msgValidacion) msgValidacion.classList.add('opacity-0', '-translate-y-1');
+    if (inputFecha) inputFecha.classList.remove('border-emerald-400', 'border-red-400', 'focus:ring-red-100');
+    if (btnSubmit) btnSubmit.disabled = false;
+
+    // Abrir el modal INMEDIATAMENTE para evitar retraso visual
     const modal = document.getElementById('modal-registrar-nuevo-estudiante');
     const content = document.getElementById('modal-registrar-nuevo-estudiante-content');
     if (!modal || !content) return;
@@ -20,6 +27,9 @@ async function abrirModalRegistrarNuevoEstudiante() {
         content.classList.remove('scale-95');
         content.classList.add('scale-100');
     }, 10);
+
+    // Cargar secciones disponibles en segundo plano
+    cargarSeccionesNuevoEstudiante();
 }
 
 function cerrarModalRegistrarNuevoEstudiante() {
@@ -212,4 +222,55 @@ function setupInputMasks() {
         'f-madre-ci', 'f-madre-tel', 'f-padre-tel'
     ];
     numFieldsFicha.forEach(id => restrict(id, regexSoloNumeros));
+
+    // --- VALIDACIÓN DE EDAD REAL-TIME ---
+    setupAgeValidation();
+}
+
+/**
+ * Valida la edad del niño en tiempo real (debe ser entre 2 y 6 años)
+ */
+function setupAgeValidation() {
+    const inputFecha = document.getElementById('nuevo_nino_fecha_nacimiento');
+    const msgValidacion = document.getElementById('msg-validacion-edad');
+    const btnSubmit = document.getElementById('btn-enviar-nuevo-estudiante');
+
+    if (!inputFecha || !msgValidacion) return;
+
+    inputFecha.addEventListener('input', () => {
+        const value = inputFecha.value;
+        if (!value) {
+            msgValidacion.classList.add('opacity-0', '-translate-y-1');
+            inputFecha.classList.remove('border-emerald-400', 'border-red-400', 'ring-red-100');
+            if (btnSubmit) btnSubmit.disabled = false;
+            return;
+        }
+
+        const fechaNac = new Date(value);
+        const hoy = new Date();
+        
+        let edad = hoy.getFullYear() - fechaNac.getFullYear();
+        const m = hoy.getMonth() - fechaNac.getMonth();
+        if (m < 0 || (m === 0 && hoy.getDate() < fechaNac.getDate())) {
+            edad--;
+        }
+
+        msgValidacion.classList.remove('opacity-0', '-translate-y-1');
+        msgValidacion.classList.add('opacity-100', 'translate-y-0');
+
+        if (edad >= 2 && edad <= 6) {
+            msgValidacion.innerText = `✅ Edad permitida: ${edad} años`;
+            msgValidacion.className = "text-[10px] font-bold mt-1 ml-1 transition-all duration-300 opacity-100 translate-y-0 text-emerald-500";
+            inputFecha.classList.remove('border-gray-100', 'border-red-400', 'focus:ring-red-100');
+            inputFecha.classList.add('border-emerald-400', 'focus:ring-emerald-100');
+            if (btnSubmit) btnSubmit.disabled = false;
+        } else {
+            const motivo = edad < 2 ? "(Mínimo 2 años)" : "(Máximo 6 años)";
+            msgValidacion.innerText = `❌ Edad no permitida: ${edad} años ${motivo}`;
+            msgValidacion.className = "text-[10px] font-bold mt-1 ml-1 transition-all duration-300 opacity-100 translate-y-0 text-red-500";
+            inputFecha.classList.remove('border-gray-100', 'border-emerald-400', 'focus:ring-emerald-100');
+            inputFecha.classList.add('border-red-400', 'focus:ring-red-100');
+            if (btnSubmit) btnSubmit.disabled = true;
+        }
+    });
 }
