@@ -91,8 +91,11 @@
                 <div class="relative">
                     <i class="ph-lock-key text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2"></i>
                     <input type="password" id="password" name="password" required
-                        class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl input-focus transition duration-200"
+                        class="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-xl input-focus transition duration-200"
                         placeholder="••••••••">
+                    <button type="button" onclick="togglePassword('password', 'eye-icon-login')" class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-pink-500 transition-colors">
+                        <i id="eye-icon-login" class="ph-eye text-lg"></i>
+                    </button>
                 </div>
             </div>
 
@@ -456,6 +459,18 @@
                     confirmButtonColor: '#EC4899',
                     customClass: { popup: 'rounded-[2rem]' }
                 });
+            }
+        }
+
+        function togglePassword(inputId, iconId) {
+            const input = document.getElementById(inputId);
+            const icon = document.getElementById(iconId);
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.replace('ph-eye', 'ph-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.replace('ph-eye-slash', 'ph-eye');
             }
         }
     </script>
