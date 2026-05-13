@@ -32,6 +32,22 @@ from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, 
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import inch
 
+# --- IMPORTACIONES PARA RESPALDO EN LA NUBE (GOOGLE DRIVE) ---
+import json
+import gzip
+import shutil
+from io import BytesIO
+try:
+    from apscheduler.schedulers.background import BackgroundScheduler
+    from apscheduler.triggers.cron import CronTrigger
+    import googleapiclient.discovery
+    import googleapiclient.http
+    from google.oauth2 import service_account
+    DRIVE_AVAILABLE = True
+except ImportError:
+    DRIVE_AVAILABLE = False
+    print("⚠️  APScheduler / google-api-python-client no instalados. El respaldo automático en Drive está deshabilitado.")
+
 # --- CONFIGURACIÓN INICIAL ---
 load_dotenv()
 
@@ -796,21 +812,78 @@ def activar_cuenta():
 @app.route('/api/mi_perfil', methods=['GET'])
 @require_auth
 def mi_perfil():
-    """Devuelve el perfil básico del usuario autenticado (rol, estado, nombres).
-    Usado por set_password.html para determinar la redirección post-registro.
-    """
+    """Devuelve el perfil completo del usuario autenticado (datos básicos + profesionales)."""
     try:
         user_id = request.current_user.id
-        perfil = supabase.table("usuarios").select("rol, estado, nombres, apellidos, email").eq("id", user_id).single().execute()
+        
+        # 1. Datos básicos de la tabla 'usuarios'
+        perfil = supabase.table("usuarios").select(
+            "rol, estado, nombres, apellidos, email, telefono"
+        ).eq("id", user_id).single().execute()
+        
         if not perfil.data:
             return jsonify({'success': False, 'message': 'Usuario no encontrado.'}), 404
+            
+        # 2. Datos profesionales de la tabla 'perfiles_personal'
+        perfil_personal = supabase.table("perfiles_personal").select(
+            "fecha_nacimiento, codigo_cargo, tipo_cargo, talla_zapato, talla_camisa, talla_pantalon, perfil_completado"
+        ).eq("usuario_id", user_id).single().execute()
+        
+        personal_data = perfil_personal.data if perfil_personal.data else {}
+        
         return jsonify({
             'success': True,
-            **perfil.data
+            **perfil.data,
+            'fecha_nacimiento': personal_data.get('fecha_nacimiento'),
+            'codigo_cargo': personal_data.get('codigo_cargo'),
+            'tipo_cargo': personal_data.get('tipo_cargo'),
+            'talla_zapato': personal_data.get('talla_zapato'),
+            'talla_camisa': personal_data.get('talla_camisa'),
+            'talla_pantalon': personal_data.get('talla_pantalon'),
+            'perfil_completado': personal_data.get('perfil_completado', False)
         }), 200
+        
     except Exception as e:
-        print(f"❌ Error al obtener mi_perfil: {e}")
+        print(f"❌ Error en mi_perfil: {e}")
         return jsonify({'success': False, 'message': 'Error interno.'}), 500
+
+
+@app.route('/api/perfil', methods=['PUT'])
+@require_auth
+def actualizar_perfil():
+    """Actualiza los datos profesionales del usuario autenticado."""
+    try:
+        user_id = request.current_user.id
+        data = request.get_json(silent=True) or {}
+        
+        # Campos permitidos (solo los de perfiles_personal)
+        campos_permitidos = [
+            'fecha_nacimiento', 'codigo_cargo', 'tipo_cargo', 
+            'talla_zapato', 'talla_camisa', 'talla_pantalon'
+        ]
+        datos_update = {k: v for k, v in data.items() if k in campos_permitidos and v is not None}
+        
+        if not datos_update:
+            return jsonify({'success': False, 'message': 'No hay campos válidos para actualizar.'}), 400
+            
+        # Agregar el usuario_id y marcar perfil como completado
+        datos_update['usuario_id'] = user_id
+        datos_update['perfil_completado'] = True
+        
+        # Upsert: si existe el registro lo actualiza, si no lo inserta
+        supabase.table("perfiles_personal").upsert(
+            datos_update,
+            on_conflict="usuario_id"
+        ).execute()
+        
+        # También actualizar el estado del usuario si estaba en 'invitado' o 'perfil_incompleto'
+        supabase.table("usuarios").update({"estado": "activo"}).eq("id", user_id).execute()
+        
+        return jsonify({'success': True, 'message': 'Perfil actualizado correctamente.'}), 200
+        
+    except Exception as e:
+        print(f"❌ Error al actualizar perfil: {e}")
+        return jsonify({'success': False, 'message': 'Error interno al actualizar el perfil.'}), 500
 
 
 @app.route('/api/usuarios/<user_id>', methods=['PUT'])
@@ -1226,12 +1299,35 @@ def asignar_estudiante():
 @app.route('/api/matricula', methods=['GET'])
 @require_auth
 def obtener_matricula():
-    """Obtiene todos los estudiantes asignados a una sección para mostrar la tabla general."""
+    """Obtiene estudiantes asignados.
+    Acepta ?seccion_id=<uuid> para filtrar por aula específica (para el panel de promoción).
+    Sin filtro, devuelve todos los activos (comportamiento legacy).
+    """
     try:
-        # Buscamos las asignaciones activas (incluyendo aquellas con estado NULL por retrocompatibilidad)
-        res_asignaciones = supabase.table("asignaciones_estudiantes").select("*").or_("estado.eq.cursando,estado.is.null").execute()
+        seccion_id_filtro = request.args.get('seccion_id')
+
+        if not seccion_id_filtro:
+            periodo_res = supabase.table("periodos_academicos") \
+                .select("id") \
+                .in_("estado", ["activo", "planificacion"]) \
+                .order("created_at", desc=True) \
+                .limit(1).execute()
+            
+            if periodo_res.data:
+                periodo_actual_id = periodo_res.data[0]['id']
+                query = supabase.table("asignaciones_estudiantes") \
+                    .select("*, secciones!inner(periodo_id)") \
+                    .eq("estado", "cursando") \
+                    .eq("secciones.periodo_id", periodo_actual_id)
+            else:
+                query = supabase.table("asignaciones_estudiantes") \
+                    .select("*").eq("estado", "cursando")
+        else:
+            query = supabase.table("asignaciones_estudiantes").select("*").eq("estado", "cursando").eq("seccion_id", seccion_id_filtro)
+
+        res_asignaciones = query.execute()
         asignaciones = res_asignaciones.data
-        
+
         matricula_completa = []
         for asig in asignaciones:
             hijo_id = asig.get('hijo_id')
@@ -1362,6 +1458,273 @@ def retirar_estudiante(asignacion_id):
     except Exception as e:
         print(f"❌ Error al retirar estudiante: {e}")
         return jsonify({'success': False, 'message': 'Error interno al cambiar el estado del estudiante.'}), 500
+
+@app.route('/api/promocion', methods=['POST'])
+@require_auth
+def promover_estudiantes():
+    """Promueve, repite o retira estudiantes de forma individual por aula.
+
+    Acepta dos formatos de payload (backward-compatible):
+
+    NUEVO (preferido):
+    {
+        "seccion_origen_id": "uuid",
+        "periodo_origen_id": "uuid",
+        "periodo_destino_id": "uuid",
+        "acciones": [
+            { "hijo_id": "uuid", "accion": "promover"|"repetir"|"retirar", "seccion_destino_id": "uuid|null" }
+        ]
+    }
+
+    LEGACY (compatibilidad):
+    { "hijos_ids": ["uuid", ...], "periodo_origen_id": "uuid", "periodo_destino_id": "uuid" }
+    """
+    try:
+        # 1. Verificar rol administrador
+        solicitante_id = request.current_user.id
+        perfil = supabase.table("usuarios").select("rol").eq("id", solicitante_id).maybe_single().execute()
+        if not perfil.data or perfil.data.get("rol") != "administrador":
+            return jsonify({'success': False, 'message': 'Solo administradores pueden realizar esta acción.'}), 403
+
+        data = request.get_json(silent=True) or {}
+        periodo_origen_id = data.get('periodo_origen_id')
+        periodo_destino_id = data.get('periodo_destino_id')
+        seccion_origen_id = data.get('seccion_origen_id') # Asegura cerrar exactamente el aula que se visualiza
+        acciones = data.get('acciones')          # Nuevo formato
+        hijos_ids = data.get('hijos_ids', [])    # Formato legacy
+
+        # 2. Determinar período origen
+        if periodo_origen_id:
+            res_periodo = supabase.table("periodos_academicos").select("*").eq("id", periodo_origen_id).maybe_single().execute()
+            if not res_periodo.data:
+                return jsonify({'success': False, 'message': 'Período origen no encontrado.'}), 404
+            periodo_origen = res_periodo.data
+        else:
+            res_periodo = supabase.table("periodos_academicos").select("*").eq("estado", "activo").maybe_single().execute()
+            if not res_periodo.data:
+                return jsonify({'success': False, 'message': 'No hay un período activo configurado.'}), 404
+            periodo_origen = res_periodo.data
+            periodo_origen_id = periodo_origen['id']
+
+        # 3. Determinar período destino
+        if periodo_destino_id:
+            res_periodo_dest = supabase.table("periodos_academicos").select("*").eq("id", periodo_destino_id).maybe_single().execute()
+            if not res_periodo_dest.data:
+                return jsonify({'success': False, 'message': 'Período destino no encontrado.'}), 404
+            periodo_destino_id = res_periodo_dest.data['id']
+        else:
+            try:
+                años = periodo_origen['nombre'].split('-')
+                nuevo_inicio = int(años[0]) + 1
+                nuevo_fin = int(años[1]) + 1 if len(años) > 1 else nuevo_inicio + 1
+                nombre_destino = f"{nuevo_inicio}-{nuevo_fin}"
+                res_exist = supabase.table("periodos_academicos").select("id, nombre").eq("nombre", nombre_destino).maybe_single().execute()
+                if res_exist.data:
+                    periodo_destino_id = res_exist.data['id']
+                else:
+                    return jsonify({
+                        'success': False,
+                        'message': f'No se encontró el siguiente período escolar ({nombre_destino}). Por favor, créalo manualmente en la sección de Períodos Académicos antes de continuar.'
+                    }), 400
+            except Exception as ex:
+                print(f"Error calculando periodo destino: {ex}")
+                return jsonify({'success': False, 'message': 'No se pudo determinar el período destino. Por favor selecciónelo manualmente.'}), 400
+
+        jerarquia_niveles = ['MATERNAL', '1ER GRUPO', '2DO GRUPO', '3ER GRUPO']
+        resultados = []
+
+        # ────────────────────────────────────────────────────────────────────
+        # MODO NUEVO: payload con acciones individuales
+        # ────────────────────────────────────────────────────────────────────
+        if acciones and isinstance(acciones, list):
+            for item in acciones:
+                hijo_id = item.get('hijo_id')
+                accion = (item.get('accion') or 'promover').lower()
+                seccion_destino_id = item.get('seccion_destino_id')
+
+                try:
+                    # Buscar asignación activa del alumno
+                    query_asig = supabase.table("asignaciones_estudiantes") \
+                        .select("id, seccion_id, secciones!inner(nivel, letra, periodo_id)") \
+                        .eq("hijo_id", hijo_id) \
+                        .in_("estado", ["cursando", None])
+                        
+                    if seccion_origen_id:
+                        # Buscamos ESPECÍFICAMENTE en el aula que el administrador está viendo
+                        query_asig = query_asig.eq("seccion_id", seccion_origen_id)
+                    else:
+                        # Fallback (legacy)
+                        query_asig = query_asig.eq("secciones.periodo_id", periodo_origen_id)
+                        
+                    res_asig = query_asig.limit(1).execute()
+
+                    if not res_asig.data:
+                        resultados.append({'hijo_id': hijo_id, 'accion': accion, 'status': 'Error: asignación de origen no encontrada.', 'exito': False})
+                        continue
+
+                    asig = res_asig.data[0]
+                    asig_id = asig['id']
+                    nivel_actual = asig['secciones']['nivel']
+                    letra_actual = asig['secciones']['letra']
+
+                    # ── RETIRAR ──────────────────────────────────────────
+                    if accion == 'retirar':
+                        fecha_hoy = datetime.now().strftime('%Y-%m-%d')
+                        supabase.table("asignaciones_estudiantes").update({"estado": "retirado"}).eq("id", asig_id).execute()
+                        supabase.table("hijos").update({
+                            "estado_alumno": "Retirado",
+                            "fecha_retiro": fecha_hoy,
+                            "motivo_retiro": "Retiro procesado mediante panel de promoción"
+                        }).eq("id", hijo_id).execute()
+                        resultados.append({'hijo_id': hijo_id, 'accion': accion, 'status': 'Retirado exitosamente.', 'exito': True})
+                        continue
+
+                    # ── PROMOVER o REPETIR ────────────────────────────────
+                    if nivel_actual in jerarquia_niveles:
+                        idx = jerarquia_niveles.index(nivel_actual)
+
+                        if accion == 'promover' and idx == len(jerarquia_niveles) - 1:
+                            # 3er Grupo → EGRESAR
+                            supabase.table("asignaciones_estudiantes").update({"estado": "egresado"}).eq("id", asig_id).execute()
+                            supabase.table("hijos").update({"estado_alumno": "Egresado"}).eq("id", hijo_id).execute()
+                            resultados.append({'hijo_id': hijo_id, 'accion': accion, 'status': 'Egresado exitosamente.', 'exito': True})
+                            continue
+
+                        # Calcular nivel destino según la acción
+                        nivel_destino = jerarquia_niveles[idx + 1] if accion == 'promover' else nivel_actual
+
+                        # Determinar sección destino
+                        dest_id = seccion_destino_id  # Puede venir del frontend
+                        if not dest_id:
+                            # Auto-buscar: misma letra en el período destino
+                            sec_res = supabase.table("secciones").select("id") \
+                                .eq("periodo_id", periodo_destino_id) \
+                                .eq("nivel", nivel_destino) \
+                                .eq("letra", letra_actual).execute()
+                            if sec_res.data:
+                                dest_id = sec_res.data[0]['id']
+                            else:
+                                # Cualquier sección del nivel destino
+                                sec_res_alt = supabase.table("secciones").select("id") \
+                                    .eq("periodo_id", periodo_destino_id) \
+                                    .eq("nivel", nivel_destino).limit(1).execute()
+                                if sec_res_alt.data:
+                                    dest_id = sec_res_alt.data[0]['id']
+
+                        if not dest_id:
+                            resultados.append({'hijo_id': hijo_id, 'accion': accion, 'status': f'Error: No existe sección para {nivel_destino} en el período destino.', 'exito': False})
+                            continue
+
+                        # ── Idempotencia: verificar si ya existe la asignación destino ──────
+                        ya_existe = supabase.table("asignaciones_estudiantes") \
+                            .select("id") \
+                            .eq("hijo_id", hijo_id) \
+                            .eq("seccion_id", dest_id) \
+                            .execute()
+
+                        if not ya_existe.data:
+                            # Crear nueva asignación en período destino
+                            supabase.table("asignaciones_estudiantes").insert({
+                                "hijo_id": hijo_id,
+                                "seccion_id": dest_id,
+                                "estado": "cursando"
+                            }).execute()
+                        else:
+                            # Si ya existe (idempotencia), garantizamos que esté activo ("cursando").
+                            # Esto soluciona bugs donde quedaron en "promovido" o "retirado" por accidente.
+                            id_dest_existente = ya_existe.data[0]['id']
+                            supabase.table("asignaciones_estudiantes").update({"estado": "cursando"}).eq("id", id_dest_existente).execute()
+
+                        estado_origen = "promovido" if accion == "promover" else "repetido"
+                        # Cerrar la asignación origen
+                        supabase.table("asignaciones_estudiantes") \
+                            .update({"estado": estado_origen}) \
+                            .eq("id", asig_id) \
+                            .execute()
+
+                        # Actualizar estado general del alumno
+                        supabase.table("hijos").update({"estado_alumno": "Inscrito"}).eq("id", hijo_id).execute()
+
+                        if not ya_existe.data:
+                            label = 'Promovido' if accion == 'promover' else 'Repitente asignado'
+                            resultados.append({'hijo_id': hijo_id, 'accion': accion, 'status': f'{label} → {nivel_destino}', 'exito': True})
+                        else:
+                            resultados.append({'hijo_id': hijo_id, 'accion': accion, 'status': f'Ya se encontraba en {nivel_destino} (Regularizado)', 'exito': True, 'omitido': True})
+                    else:
+                        resultados.append({'hijo_id': hijo_id, 'accion': accion, 'status': f'Error: Nivel {nivel_actual} no reconocido.', 'exito': False})
+
+                except Exception as e_hijo:
+                    print(f"Error procesando hijo {hijo_id}: {e_hijo}")
+                    resultados.append({'hijo_id': hijo_id, 'accion': accion, 'status': f'Error crítico: {str(e_hijo)}', 'exito': False})
+
+        # ────────────────────────────────────────────────────────────────────
+        # MODO LEGACY: hijos_ids[] (todos promueven por defecto)
+        # ────────────────────────────────────────────────────────────────────
+        else:
+            query_asig = supabase.table("asignaciones_estudiantes") \
+                .select("id, hijo_id, seccion_id, secciones!inner(nivel, letra, periodo_id)") \
+                .eq("secciones.periodo_id", periodo_origen_id) \
+                .in_("estado", ["cursando", None])
+
+            if hijos_ids:
+                query_asig = query_asig.in_("hijo_id", hijos_ids)
+
+            res_asig = query_asig.execute()
+            asignaciones = res_asig.data
+
+            if not asignaciones:
+                return jsonify({'success': False, 'message': 'No se encontraron estudiantes para promover en los filtros seleccionados.'}), 404
+
+            for asig in asignaciones:
+                try:
+                    hijo_id = asig['hijo_id']
+                    nivel_actual = asig['secciones']['nivel']
+                    letra_actual = asig['secciones']['letra']
+
+                    if nivel_actual in jerarquia_niveles:
+                        idx = jerarquia_niveles.index(nivel_actual)
+                        if idx == len(jerarquia_niveles) - 1:
+                            supabase.table("asignaciones_estudiantes").update({"estado": "egresado"}).eq("id", asig['id']).execute()
+                            supabase.table("hijos").update({"estado_alumno": "Egresado"}).eq("id", hijo_id).execute()
+                            resultados.append({'hijo_id': hijo_id, 'status': 'egresado', 'exito': True})
+                        else:
+                            nivel_destino = jerarquia_niveles[idx + 1]
+                            sec_res = supabase.table("secciones").select("id") \
+                                .eq("periodo_id", periodo_destino_id) \
+                                .eq("nivel", nivel_destino) \
+                                .eq("letra", letra_actual).execute()
+                            seccion_destino_id = sec_res.data[0]['id'] if sec_res.data else None
+                            if not seccion_destino_id:
+                                sec_alt = supabase.table("secciones").select("id") \
+                                    .eq("periodo_id", periodo_destino_id) \
+                                    .eq("nivel", nivel_destino).limit(1).execute()
+                                if sec_alt.data:
+                                    seccion_destino_id = sec_alt.data[0]['id']
+                            if not seccion_destino_id:
+                                resultados.append({'hijo_id': hijo_id, 'status': f'Error: No existe sección para {nivel_destino}.', 'exito': False})
+                                continue
+                            supabase.table("asignaciones_estudiantes").insert({"hijo_id": hijo_id, "seccion_id": seccion_destino_id, "estado": "cursando"}).execute()
+                            # Cerrar el registro anterior
+                            supabase.table("asignaciones_estudiantes").update({"estado": "promovido"}).eq("id", asig['id']).execute()
+                            supabase.table("hijos").update({"estado_alumno": "Inscrito"}).eq("id", hijo_id).execute()
+                            resultados.append({'hijo_id': hijo_id, 'status': f'Promovido a {nivel_destino}', 'exito': True})
+                    else:
+                        resultados.append({'hijo_id': hijo_id, 'status': f'Error: Nivel {nivel_actual} no reconocido.', 'exito': False})
+                except Exception as e_hijo:
+                    print(f"Error procesando hijo {hijo_id}: {e_hijo}")
+                    resultados.append({'hijo_id': hijo_id, 'status': f'Error crítico: {str(e_hijo)}', 'exito': False})
+
+        exitos = sum(1 for r in resultados if r['exito'])
+        return jsonify({
+            'success': True,
+            'message': f'Proceso finalizado. Estudiantes procesados: {len(resultados)}. Éxitos: {exitos}.',
+            'resultados': resultados
+        }), 200
+
+    except Exception as e:
+        print(f"❌ Error en promoción: {e}")
+        return jsonify({'success': False, 'message': f'Error interno al procesar la promoción: {str(e)}'}), 500
+
 
 @require_auth
 def verificar_estado(user_id):
@@ -1759,16 +2122,27 @@ class SeccionSchema(BaseModel):
 @app.route('/api/secciones', methods=['GET'])
 @require_auth
 def listar_secciones():
-    """Obtiene todas las secciones con su período y docente asociado."""
+    """Obtiene secciones con su período y docente asociado.
+    Acepta ?periodo_id=<uuid> para filtrar por un período específico.
+    Acepta ?nivel=<nivel> para filtrar adicionalmente por nivel.
+    """
     if not _verificar_admin(request.current_user.id):
         return jsonify({'success': False, 'message': 'Solo administradores.'}), 403
     try:
-        # Hacemos JOIN con periodos_academicos
-        # También buscamos el docente asociado a través de docentes_secciones
-        response = supabase.table("secciones") \
-            .select("id, nivel, letra, capacidad_maxima, periodo_id, periodos_academicos(nombre, estado), docentes_secciones(docente_id, usuarios(nombres, apellidos))") \
-            .execute()
-        
+        # Filtros opcionales por query params
+        periodo_id_filtro = request.args.get('periodo_id')
+        nivel_filtro = request.args.get('nivel')
+
+        query = supabase.table("secciones") \
+            .select("id, nivel, letra, capacidad_maxima, periodo_id, periodos_academicos(nombre, estado), docentes_secciones(docente_id, usuarios(nombres, apellidos))")
+
+        if periodo_id_filtro:
+            query = query.eq("periodo_id", periodo_id_filtro)
+        if nivel_filtro:
+            query = query.eq("nivel", nivel_filtro.upper())
+
+        response = query.order("nivel").order("letra").execute()
+
         # Formatear respuesta para el frontend
         secciones = []
         for s in response.data:
@@ -1784,10 +2158,16 @@ def listar_secciones():
             periodo_nombre = s["periodos_academicos"]["nombre"] if s.get("periodos_academicos") else "Desconocido"
             periodo_estado = s["periodos_academicos"]["estado"] if s.get("periodos_academicos") else "desconocido"
 
+            # Nombre legible: "Maternal - Sección A" → "Maternal A"
+            nivel_display = s["nivel"].title().replace("Er ", "er ").replace("Do ", "do ").replace("1Er", "1er").replace("2Do", "2do").replace("3Er", "3er")
+            letra_display = s["letra"].replace("SECCION ", "")
+            nombre_display = f"{nivel_display} {letra_display}".strip()
+
             secciones.append({
                 "id": s["id"],
                 "nivel": s["nivel"],
                 "letra": s["letra"],
+                "nombre": nombre_display,
                 "capacidad_maxima": s["capacidad_maxima"],
                 "periodo_id": s["periodo_id"],
                 "periodo_nombre": periodo_nombre,
@@ -2020,14 +2400,33 @@ def obtener_mi_clase():
     docente_id = request.current_user.id
     
     try:
-        # 1. Buscar la sección asignada a este docente
-        # Usamos la tabla puente 'docentes_secciones' que creamos anteriormente
-        res_doc_sec = supabase.table("docentes_secciones").select("seccion_id").eq("docente_id", docente_id).execute()
+        # 1. Buscar el período activo o en planificación más reciente
+        res_periodo = supabase.table("periodos_academicos") \
+            .select("id") \
+            .in_("estado", ["activo", "planificacion"]) \
+            .order("created_at", desc=True) \
+            .limit(1).execute()
         
-        if not res_doc_sec.data:
-            return jsonify({'success': False, 'message': 'No tienes ninguna sección asignada en este momento.'}), 404
+        seccion_id = None
+        
+        if res_periodo.data:
+            periodo_id = res_periodo.data[0]['id']
+            # Buscar sección asignada al docente en este período
+            res_doc_sec = supabase.table("docentes_secciones") \
+                .select("seccion_id, secciones!inner(periodo_id)") \
+                .eq("docente_id", docente_id) \
+                .eq("secciones.periodo_id", periodo_id) \
+                .limit(1).execute()
             
-        seccion_id = res_doc_sec.data[0]['seccion_id']
+            if res_doc_sec.data:
+                seccion_id = res_doc_sec.data[0]['seccion_id']
+                
+        if not seccion_id:
+            # Fallback a cualquier sección que tenga asignada
+            res_doc_sec = supabase.table("docentes_secciones").select("seccion_id").eq("docente_id", docente_id).execute()
+            if not res_doc_sec.data:
+                return jsonify({'success': False, 'message': 'No tienes ninguna sección asignada en este momento.'}), 404
+            seccion_id = res_doc_sec.data[0]['seccion_id']
         
         # 2. Obtener los detalles de esa sección (Nivel, Letra y Período)
         res_seccion = supabase.table("secciones").select("nivel, letra, periodo_id").eq("id", seccion_id).execute()
@@ -3703,6 +4102,236 @@ def descargar_boletin(hijo_id, momento):
 
 
 # =======================================================
+# MÓDULO: DESCARGA FICHA DE INSCRIPCIÓN (PDF)
+# =======================================================
+
+@app.route('/api/estudiantes/<int:hijo_id>/ficha/pdf', methods=['GET'])
+@require_auth
+def descargar_ficha_inscripcion(hijo_id):
+    """Genera y descarga la ficha de inscripción en formato PDF."""
+    try:
+        # 1. Obtener datos personales (hijos)
+        res_hijo = supabase.table("hijos").select("*").eq("id", hijo_id).single().execute()
+        if not res_hijo.data:
+            return jsonify({'success': False, 'message': 'Estudiante no encontrado'}), 404
+        hijo = res_hijo.data
+        
+        # 2. Obtener la inscripción más reciente
+        res_inscripcion = supabase.table("inscripciones").select("*").eq("hijo_id", hijo_id).order("created_at", desc=True).limit(1).execute()
+        inscripcion = res_inscripcion.data[0] if res_inscripcion.data else {}
+
+        # 3. Obtener Sección actual
+        res_asig = supabase.table("asignaciones_estudiantes") \
+            .select("seccion_id, secciones(nivel, letra)") \
+            .eq("hijo_id", hijo_id).eq("estado", "cursando").execute()
+        
+        seccion_nombre = "No asignada"
+        if res_asig.data:
+            sec = res_asig.data[0].get('secciones', {})
+            if sec:
+                seccion_nombre = f"{sec.get('nivel', '')} - {sec.get('letra', '')}".strip()
+
+        # Datos extraídos
+        nombre_alumno = f"{hijo.get('nombre', '')} {hijo.get('apellidos', '')}".strip()
+        cedula = hijo.get('cedula_escolar', 'S/N')
+        fecha_nac = hijo.get('fecha_nacimiento', '')
+        sexo = hijo.get('sexo', '')
+        
+        lugar_nac = inscripcion.get('lugar_nacimiento', '-') or '-'
+        dir_hab = inscripcion.get('direccion_habitacion', '-') or '-'
+        n_madre = inscripcion.get('nombre_madre', '-') or '-'
+        ci_madre = inscripcion.get('ci_madre', '-') or '-'
+        t_madre = inscripcion.get('telefono_madre', '-') or '-'
+        oc_madre = inscripcion.get('ocupacion_madre', '-') or '-'
+        
+        n_padre = inscripcion.get('nombre_padre', '-') or '-'
+        t_padre = inscripcion.get('telefono_padre', '-') or '-'
+        t_viv = inscripcion.get('tipo_vivienda', '-') or '-'
+        ten_viv = inscripcion.get('tenencia_vivienda', '-') or '-'
+        
+        fue_cesarea = "Sí" if inscripcion.get('fue_cesarea') else "No"
+        es_prematuro = "Sí" if inscripcion.get('es_prematuro') else "No"
+        es_alergico = "Sí" if inscripcion.get('es_alergico') else "No"
+        peso_nacer = str(inscripcion.get('peso_nacer', '-')) or '-'
+        talla_nacer = str(inscripcion.get('talla_nacer', '-')) or '-'
+        enf_cronica = inscripcion.get('enfermedad_cronica', '-') or '-'
+        med_fiebre = inscripcion.get('medicamento_fiebre', '-') or '-'
+        come_solo = "Sí" if inscripcion.get('come_solo') else "No"
+        hora_dormir = inscripcion.get('hora_dormir', '-') or '-'
+        
+        diag_list = inscripcion.get('diagnostico_inicial', [])
+        # Manejar caso de nulo o string en vez de array
+        if isinstance(diag_list, list):
+            diagnostico_str = ", ".join(diag_list) if diag_list else "-"
+        elif isinstance(diag_list, str):
+            diagnostico_str = diag_list
+        else:
+            diagnostico_str = "-"
+
+        # Cálculo de edad
+        edad_valor = "-"
+        fecha_nac_formateada = "-"
+        if fecha_nac:
+            try:
+                fecha_dt = datetime.strptime(fecha_nac, "%Y-%m-%d").date()
+                fecha_nac_formateada = fecha_dt.strftime("%d/%m/%Y")
+                hoy = date.today()
+                edad_valor = str(hoy.year - fecha_dt.year - ((hoy.month, hoy.day) < (fecha_dt.month, fecha_dt.day)))
+            except:
+                pass
+        
+        # 5. Generar PDF
+        pdf_buffer = io.BytesIO()
+        doc = SimpleDocTemplate(pdf_buffer, pagesize=portrait(letter), rightMargin=30, leftMargin=30, topMargin=15, bottomMargin=20)
+        elements = []
+        styles = getSampleStyleSheet()
+
+        section_title_style = ParagraphStyle(
+            name='SectionTitle', fontName='Helvetica-Bold', fontSize=10.5, 
+            textColor=colors.HexColor("#0F172A"), spaceBefore=8, spaceAfter=4,
+            borderPadding=3.5, backColor=colors.HexColor("#E2E8F0")
+        )
+        data_style = ParagraphStyle(name='DataStyle', fontName='Helvetica', fontSize=9, textColor=colors.HexColor("#1E293B"))
+        bold_style = ParagraphStyle(name='BoldStyle', fontName='Helvetica-Bold', fontSize=9, textColor=colors.HexColor("#0F172A"))
+
+        # Encabezado
+        logo_path = os.path.join(os.path.dirname(__file__), '..', 'img', 'cei.png')
+        if os.path.exists(logo_path):
+            logo = Image(logo_path, width=1.05*inch, height=1.05*inch)
+        else:
+            logo = Paragraph("")
+
+        header_text = f"""
+        <para align="center">
+            <font size="9" color="#475569"><b>MINISTERIO DEL PODER POPULAR PARA LA EDUCACIÓN</b></font><br/>
+            <font size="11" color="#1E293B"><b>C.E.I. "LA PARAGUA"</b></font><br/>
+            <font size="8" color="#64748B">MUNICIPIO ANGOSTURA DEL ORINOCO - CIUDAD BOLÍVAR - ESTADO BOLÍVAR</font><br/>
+            <font size="11.5" color="#2563EB"><b>FICHA DE INSCRIPCIÓN</b></font>
+        </para>
+        """
+        p_header = Paragraph(header_text, styles['Normal'])
+        t_header = Table([[logo, p_header, ""]], colWidths=[1.15*inch, 5.0*inch, 1.15*inch])
+        t_header.setStyle(TableStyle([
+            ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
+            ('ALIGN', (1,0), (1,0), 'CENTER'),
+        ]))
+        elements.append(t_header)
+        elements.append(Spacer(1, 10))
+        
+        # Helper function for tables
+        def create_data_table(data_matrix):
+            t = Table(data_matrix)
+            t.setStyle(TableStyle([
+                ('FONTNAME', (0,0), (-1,-1), 'Helvetica'),
+                ('FONTSIZE', (0,0), (-1,-1), 8.5),
+                ('TEXTCOLOR', (0,0), (-1,-1), colors.HexColor("#334155")),
+                ('BACKGROUND', (0,0), (-1,-1), colors.HexColor("#F8FAFC")),
+                ('BOX', (0,0), (-1,-1), 1, colors.HexColor("#E2E8F0")),
+                ('INNERGRID', (0,0), (-1,-1), 0.5, colors.HexColor("#E2E8F0")),
+                ('BOTTOMPADDING', (0,0), (-1,-1), 4),
+                ('TOPPADDING', (0,0), (-1,-1), 4),
+                ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
+            ]))
+            return t
+
+        # Sección 1: Datos del Estudiante
+        elements.append(Paragraph("Datos del Estudiante", section_title_style))
+        d_estudiante = [
+            [Paragraph("<b>Nombres:</b>", bold_style), Paragraph(hijo.get('nombre', ''), data_style), Paragraph("<b>Apellidos:</b>", bold_style), Paragraph(hijo.get('apellidos', ''), data_style)],
+            [Paragraph("<b>Cédula Escolar:</b>", bold_style), Paragraph(cedula, data_style), Paragraph("<b>Sexo:</b>", bold_style), Paragraph(sexo, data_style)],
+            [Paragraph("<b>Fecha Nacimiento:</b>", bold_style), Paragraph(fecha_nac_formateada, data_style), Paragraph("<b>Edad:</b>", bold_style), Paragraph(f"{edad_valor} años", data_style)],
+            [Paragraph("<b>Lugar de Nacimiento:</b>", bold_style), Paragraph(lugar_nac, data_style), Paragraph("<b>Sección:</b>", bold_style), Paragraph(seccion_nombre, data_style)]
+        ]
+        t1 = create_data_table(d_estudiante)
+        t1._argW[0] = 1.3*inch
+        t1._argW[1] = 2.4*inch
+        t1._argW[2] = 1.1*inch
+        t1._argW[3] = 2.4*inch
+        elements.append(t1)
+        elements.append(Spacer(1, 8))
+
+        # Sección 2: Datos Familiares y Vivienda
+        elements.append(Paragraph("Datos Familiares y de Vivienda", section_title_style))
+        d_familia = [
+            [Paragraph("<b>Nombre de la Madre:</b>", bold_style), Paragraph(n_madre, data_style), Paragraph("<b>C.I. Madre:</b>", bold_style), Paragraph(ci_madre, data_style)],
+            [Paragraph("<b>Teléfono Madre:</b>", bold_style), Paragraph(t_madre, data_style), Paragraph("<b>Ocupación:</b>", bold_style), Paragraph(oc_madre, data_style)],
+            [Paragraph("<b>Nombre del Padre:</b>", bold_style), Paragraph(n_padre, data_style), Paragraph("<b>Teléfono Padre:</b>", bold_style), Paragraph(t_padre, data_style)],
+            [Paragraph("<b>Dirección Habitación:</b>", bold_style), Paragraph(dir_hab, data_style), "", ""],
+            [Paragraph("<b>Tipo de Vivienda:</b>", bold_style), Paragraph(t_viv, data_style), Paragraph("<b>Tenencia:</b>", bold_style), Paragraph(ten_viv, data_style)],
+        ]
+        t2 = create_data_table(d_familia)
+        t2._argW[0] = 1.4*inch
+        t2._argW[1] = 2.3*inch
+        t2._argW[2] = 1.0*inch
+        t2._argW[3] = 2.5*inch
+        t2.setStyle(TableStyle([('SPAN', (1,3), (3,3))])) # Span direccion
+        elements.append(t2)
+        elements.append(Spacer(1, 8))
+
+        # Sección 3: Antecedentes de Salud y Nacimiento
+        elements.append(Paragraph("Antecedentes de Salud y Nacimiento", section_title_style))
+        d_salud = [
+            [Paragraph("<b>Fue Cesárea:</b>", bold_style), Paragraph(fue_cesarea, data_style), Paragraph("<b>Es Prematuro:</b>", bold_style), Paragraph(es_prematuro, data_style)],
+            [Paragraph("<b>Peso al Nacer:</b>", bold_style), Paragraph(peso_nacer, data_style), Paragraph("<b>Talla al Nacer:</b>", bold_style), Paragraph(talla_nacer, data_style)],
+            [Paragraph("<b>Es Alérgico:</b>", bold_style), Paragraph(es_alergico, data_style), Paragraph("<b>Enf. Crónica:</b>", bold_style), Paragraph(enf_cronica, data_style)],
+            [Paragraph("<b>Med. para Fiebre:</b>", bold_style), Paragraph(med_fiebre, data_style), "", ""]
+        ]
+        t3 = create_data_table(d_salud)
+        t3._argW[0] = 1.3*inch
+        t3._argW[1] = 2.3*inch
+        t3._argW[2] = 1.2*inch
+        t3._argW[3] = 2.4*inch
+        t3.setStyle(TableStyle([('SPAN', (1,3), (3,3))]))
+        elements.append(t3)
+        elements.append(Spacer(1, 8))
+
+        # Sección 4: Hábitos y Diagnóstico
+        elements.append(Paragraph("Hábitos y Diagnóstico", section_title_style))
+        d_habitos = [
+            [Paragraph("<b>Come Solo:</b>", bold_style), Paragraph(come_solo, data_style), Paragraph("<b>Hora de Dormir:</b>", bold_style), Paragraph(hora_dormir, data_style)],
+            [Paragraph("<b>Diagnóstico Inicial:</b>", bold_style), Paragraph(diagnostico_str, data_style), "", ""]
+        ]
+        t4 = create_data_table(d_habitos)
+        t4._argW[0] = 1.3*inch
+        t4._argW[1] = 2.3*inch
+        t4._argW[2] = 1.2*inch
+        t4._argW[3] = 2.4*inch
+        t4.setStyle(TableStyle([('SPAN', (1,1), (3,1))]))
+        elements.append(t4)
+        elements.append(Spacer(1, 30))
+
+        # Firmas
+        firmas_data = [
+            ["___________________________", "___________________________", "___________________________"],
+            ["Director(a)", "Sello", "Representante"]
+        ]
+        t_firmas = Table(firmas_data, colWidths=[2.4*inch, 2.4*inch, 2.4*inch])
+        t_firmas.setStyle(TableStyle([
+            ('ALIGN', (0,0), (-1,-1), 'CENTER'),
+            ('FONTNAME', (0,0), (-1,-1), 'Helvetica-Bold'),
+            ('FONTSIZE', (0,0), (-1,-1), 9.5),
+            ('TEXTCOLOR', (0,0), (-1,-1), colors.HexColor("#475569")),
+            ('TOPPADDING', (0,1), (-1,1), 4), 
+        ]))
+        elements.append(t_firmas)
+
+        doc.build(elements)
+        pdf_buffer.seek(0)
+        
+        nombre_descarga = f"Ficha_Inscripcion_{nombre_alumno.replace(' ', '_')}.pdf"
+        
+        return send_file(
+            pdf_buffer,
+            as_attachment=True,
+            download_name=nombre_descarga,
+            mimetype="application/pdf"
+        )
+    except Exception as e:
+        print(f"❌ Error al generar ficha: {e}")
+        return jsonify({'success': False, 'message': 'Error interno al generar la ficha en PDF.'}), 500
+
+
+# =======================================================
 # MÓDULO: PORTAL DE REPRESENTANTES
 # =======================================================
 
@@ -3917,6 +4546,351 @@ def obtener_comunicados():
         print(f"❌ Error al obtener comunicados: {e}")
         # Si la tabla no existe aún devolvemos lista vacía en lugar de un 500
         return jsonify({'success': True, 'comunicados': []}), 200
+
+
+# =======================================================
+# SISTEMA DE RESPALDO EN LA NUBE — GOOGLE DRIVE
+# =======================================================
+
+DRIVE_FOLDER_ID = os.getenv('GOOGLE_DRIVE_FOLDER_ID', '')
+ENVIRONMENT     = os.getenv('ENVIRONMENT', 'local')  # 'local' o 'production'
+
+def _get_drive_service():
+    """Construye y devuelve el cliente autenticado de Google Drive API."""
+    sa_json_str = os.getenv('GOOGLE_SERVICE_ACCOUNT_JSON', '')
+    if not sa_json_str:
+        raise ValueError("GOOGLE_SERVICE_ACCOUNT_JSON no está configurado en las variables de entorno.")
+
+    sa_info = json.loads(sa_json_str)
+    creds = service_account.Credentials.from_service_account_info(
+        sa_info,
+        scopes=['https://www.googleapis.com/auth/drive']
+    )
+    return googleapiclient.discovery.build('drive', 'v3', credentials=creds)
+
+
+def _run_pg_dump_to_bytes() -> bytes:
+    """
+    Ejecuta pg_dump apuntando a DATABASE_URL y devuelve el SQL como bytes.
+    Funciona en Linux (Render) usando pg_dump del sistema.
+    """
+    db_url = os.getenv('DATABASE_URL', '')
+    if not db_url:
+        raise ValueError("DATABASE_URL no está configurada.")
+
+    # pg_dump disponible en el PATH del sistema (Render tiene postgresql-client)
+    cmd = ['pg_dump', '--dbname', db_url, '--format=plain', '--no-owner', '--no-acl', '--encoding=UTF8']
+    result = subprocess.run(cmd, capture_output=True, timeout=300)
+
+    if result.returncode != 0:
+        raise RuntimeError(f"pg_dump falló: {result.stderr.decode('utf-8', errors='replace')}")
+
+    return result.stdout
+
+
+def _apply_drive_retention(service, folder_id: str, keep_daily: int = 7):
+    """
+    Aplica política de retención en Drive:
+    - Diarios: conserva los últimos 7
+    - Semanales: 1 por semana del último mes (4)
+    - Mensuales: 1 por mes del último año (12)
+    """
+    try:
+        results = service.files().list(
+            q=f"'{folder_id}' in parents and name contains 'cei_backup_' and trashed=false",
+            fields="files(id, name, createdTime)",
+            orderBy="createdTime desc",
+            pageSize=200
+        ).execute()
+        files = results.get('files', [])
+
+        from datetime import timezone
+        ahora = datetime.now(timezone.utc)
+        conservar = set()
+
+        # Diarios: 7 más recientes
+        for f in files[:keep_daily]:
+            conservar.add(f['id'])
+
+        # Semanales y mensuales
+        semanas_cubiertas = {}
+        meses_cubiertos = {}
+        for f in files:
+            fecha_str = f.get('createdTime', '')
+            if not fecha_str:
+                continue
+            fecha = datetime.fromisoformat(fecha_str.replace('Z', '+00:00'))
+            dias_atras = (ahora - fecha).days
+
+            if dias_atras <= 31:
+                semana = dias_atras // 7
+                if semana not in semanas_cubiertas:
+                    semanas_cubiertas[semana] = f['id']
+                    conservar.add(f['id'])
+
+            if dias_atras <= 366:
+                clave_mes = (fecha.year, fecha.month)
+                if clave_mes not in meses_cubiertos:
+                    meses_cubiertos[clave_mes] = f['id']
+                    conservar.add(f['id'])
+
+        # Eliminar los que no están en conservar
+        eliminados = 0
+        for f in files:
+            if f['id'] not in conservar:
+                service.files().delete(fileId=f['id']).execute()
+                print(f"🗑️  Drive retención: eliminado {f['name']}")
+                eliminados += 1
+
+        print(f"✅ Retención Drive: {len(conservar)} conservados, {eliminados} eliminados.")
+    except Exception as e:
+        print(f"⚠️  Error en retención Drive: {e}")
+
+
+def ejecutar_respaldo_drive(tipo: str = 'auto') -> dict:
+    """
+    Genera el respaldo de la BD y lo sube a Google Drive.
+    Devuelve un dict con el resultado para usarlo tanto en el scheduler como en el endpoint manual.
+    """
+    if not DRIVE_AVAILABLE:
+        return {'success': False, 'message': 'Bibliotecas de Google Drive no instaladas.'}
+
+    folder_id = DRIVE_FOLDER_ID
+    if not folder_id:
+        return {'success': False, 'message': 'GOOGLE_DRIVE_FOLDER_ID no está configurado.'}
+
+    print(f"☁️  Iniciando respaldo Drive ({tipo})...")
+    fecha_str = datetime.now().strftime('%Y-%m-%d_%H-%M')
+    nombre_archivo = f"cei_backup_{fecha_str}_{tipo}.sql.gz"
+
+    try:
+        # 1. Ejecutar pg_dump
+        sql_bytes = _run_pg_dump_to_bytes()
+        tamanio_sql_kb = round(len(sql_bytes) / 1024, 1)
+        print(f"   pg_dump OK: {tamanio_sql_kb} KB")
+
+        # 2. Comprimir con gzip (sin encriptar; el .gz es solo para ahorrar espacio)
+        gz_buffer = BytesIO()
+        with gzip.GzipFile(fileobj=gz_buffer, mode='wb') as gz:
+            gz.write(sql_bytes)
+        gz_buffer.seek(0)
+        tamanio_gz_kb = round(gz_buffer.getbuffer().nbytes / 1024, 1)
+        print(f"   Compresión OK: {tamanio_gz_kb} KB")
+
+        # 3. Subir a Drive
+        service = _get_drive_service()
+        file_metadata = {
+            'name': nombre_archivo,
+            'parents': [folder_id],
+            'description': f'Respaldo CEI La Paragua — {tipo} — {fecha_str}'
+        }
+        media = googleapiclient.http.MediaIoBaseUpload(
+            gz_buffer,
+            mimetype='application/gzip',
+            resumable=False
+        )
+        uploaded = service.files().create(
+            body=file_metadata,
+            media_body=media,
+            fields='id, name, size'
+        ).execute()
+        print(f"   ✅ Subido a Drive: {uploaded.get('name')} (ID: {uploaded.get('id')})")
+
+        # 4. Aplicar retención
+        _apply_drive_retention(service, folder_id)
+
+        return {
+            'success': True,
+            'archivo': nombre_archivo,
+            'tamanio_kb': tamanio_gz_kb,
+            'drive_id': uploaded.get('id'),
+            'timestamp': datetime.now().isoformat()
+        }
+
+    except Exception as e:
+        print(f"❌ Error en respaldo Drive: {e}")
+        traceback.print_exc()
+        return {'success': False, 'message': str(e)}
+
+
+# --- INICIALIZAR APScheduler (solo si las bibliotecas están disponibles) ---
+if DRIVE_AVAILABLE and DRIVE_FOLDER_ID:
+    _scheduler = BackgroundScheduler(timezone='America/Caracas')  # UTC-4 Venezuela
+    # Ejecutar a las 19:00 hora Venezuela todos los días
+    _scheduler.add_job(
+        func=ejecutar_respaldo_drive,
+        trigger=CronTrigger(hour=19, minute=0),
+        id='respaldo_drive_diario',
+        name='Respaldo Diario Google Drive',
+        replace_existing=True,
+        kwargs={'tipo': 'auto'}
+    )
+    _scheduler.start()
+    print("✅ APScheduler iniciado: respaldo Drive programado a las 19:00 VE cada día.")
+else:
+    _scheduler = None
+    if not DRIVE_FOLDER_ID:
+        print("ℹ️  GOOGLE_DRIVE_FOLDER_ID no configurado — scheduler de Drive desactivado.")
+
+
+# =======================================================
+# ENDPOINTS DE RESPALDO — ADMINISTRADOR
+# =======================================================
+
+def _verificar_admin():
+    """Helper: Verifica que el usuario actual sea administrador. Lanza excepción si no."""
+    user_id = request.current_user.id
+    perfil = supabase.table("usuarios").select("rol").eq("id", user_id).single().execute()
+    if not perfil.data or perfil.data.get("rol") != "administrador":
+        return False
+    return True
+
+
+@app.route('/api/admin/backup-manual', methods=['POST'])
+@require_auth
+def backup_manual():
+    """
+    Dispara un respaldo manual.
+    - En 'production' (Render): sube directamente a Google Drive.
+    - En 'local': ejecuta backup_db.ps1 vía PowerShell.
+    Requiere rol administrador.
+    """
+    if not _verificar_admin():
+        return jsonify({'success': False, 'message': 'Acción denegada. Solo administradores.'}), 403
+
+    entorno = os.getenv('ENVIRONMENT', 'local')
+
+    if entorno == 'production':
+        # ── RENDER: subir a Drive directamente
+        resultado = ejecutar_respaldo_drive(tipo='manual')
+        if resultado['success']:
+            return jsonify({
+                'success': True,
+                'message': '✅ Respaldo en Drive completado exitosamente.',
+                'archivo': resultado.get('archivo'),
+                'tamanio_kb': resultado.get('tamanio_kb'),
+                'timestamp': resultado.get('timestamp')
+            }), 200
+        else:
+            return jsonify({
+                'success': False,
+                'message': f"❌ Error al respaldar en Drive: {resultado.get('message')}"
+            }), 500
+
+    else:
+        # ── LOCAL: ejecutar el script PowerShell
+        ps1_path = os.path.join(ROOT_DIR, 'backup_db.ps1')
+        if not os.path.exists(ps1_path):
+            return jsonify({
+                'success': False,
+                'message': f'Script de respaldo no encontrado en: {ps1_path}'
+            }), 500
+
+        try:
+            result = subprocess.run(
+                ['powershell.exe', '-ExecutionPolicy', 'Bypass', '-File', ps1_path, '-Manual'],
+                capture_output=True,
+                text=True,
+                timeout=300
+            )
+            if result.returncode == 0:
+                # Buscar el archivo más reciente generado
+                backup_dir = os.getenv('BACKUP_DIR', r'C:\Respaldos_CEI')
+                archivos = []
+                if os.path.exists(backup_dir):
+                    archivos = sorted(
+                        [f for f in os.listdir(backup_dir) if f.endswith('.7z') and 'manual' in f],
+                        reverse=True
+                    )
+                return jsonify({
+                    'success': True,
+                    'message': '✅ Respaldo local completado y encriptado con AES-256.',
+                    'archivo': archivos[0] if archivos else None,
+                    'timestamp': datetime.now().isoformat()
+                }), 200
+            else:
+                return jsonify({
+                    'success': False,
+                    'message': f'El script falló. Revisa los logs en {os.getenv("BACKUP_DIR", "C:\\Respaldos_CEI")}\\backup_log.txt',
+                    'stderr': result.stderr[:500]
+                }), 500
+        except subprocess.TimeoutExpired:
+            return jsonify({'success': False, 'message': 'El respaldo tardó demasiado (timeout 5 min).'}), 500
+        except Exception as e:
+            return jsonify({'success': False, 'message': f'Error al ejecutar respaldo: {str(e)}'}), 500
+
+
+@app.route('/api/admin/backup-historial', methods=['GET'])
+@require_auth
+def backup_historial():
+    """
+    Devuelve el historial de respaldos:
+    - En 'production': lista archivos en la carpeta de Drive.
+    - En 'local': lista archivos .7z en C:\\Respaldos_CEI.
+    Requiere rol administrador.
+    """
+    if not _verificar_admin():
+        return jsonify({'success': False, 'message': 'Acción denegada. Solo administradores.'}), 403
+
+    entorno = os.getenv('ENVIRONMENT', 'local')
+    archivos = []
+
+    if entorno == 'production':
+        folder_id = DRIVE_FOLDER_ID
+        if not folder_id or not DRIVE_AVAILABLE:
+            return jsonify({'success': True, 'archivos': [], 'fuente': 'drive',
+                            'mensaje': 'Google Drive no configurado.'}), 200
+        try:
+            service = _get_drive_service()
+            results = service.files().list(
+                q=f"'{folder_id}' in parents and name contains 'cei_backup_' and trashed=false",
+                fields="files(id, name, createdTime, size)",
+                orderBy="createdTime desc",
+                pageSize=30
+            ).execute()
+            for f in results.get('files', []):
+                tipo = 'manual' if '_manual' in f['name'] else 'auto'
+                tamanio_kb = round(int(f.get('size', 0)) / 1024, 1)
+                archivos.append({
+                    'nombre':    f['name'],
+                    'fecha':     f.get('createdTime', ''),
+                    'tamanio':   f'{tamanio_kb} KB',
+                    'tipo':      tipo,
+                    'drive_id':  f['id']
+                })
+        except Exception as e:
+            return jsonify({'success': False, 'message': f'Error consultando Drive: {str(e)}'}), 500
+
+        return jsonify({'success': True, 'archivos': archivos, 'fuente': 'drive'}), 200
+
+    else:
+        # Local: listar archivos en BACKUP_DIR
+        backup_dir = os.getenv('BACKUP_DIR', r'C:\Respaldos_CEI')
+        if not os.path.exists(backup_dir):
+            return jsonify({'success': True, 'archivos': [], 'fuente': 'local',
+                            'mensaje': f'Carpeta {backup_dir} no encontrada. Ejecuta el primer respaldo.'}), 200
+
+        try:
+            for fname in sorted(os.listdir(backup_dir), reverse=True):
+                if fname.endswith('.7z') and fname.startswith('cei_backup_'):
+                    fpath = os.path.join(backup_dir, fname)
+                    stat  = os.stat(fpath)
+                    tipo  = 'manual' if '_manual' in fname else 'auto'
+                    fecha_mod = datetime.fromtimestamp(stat.st_mtime).isoformat()
+                    tamanio_mb = round(stat.st_size / (1024 * 1024), 2)
+                    archivos.append({
+                        'nombre':   fname,
+                        'fecha':    fecha_mod,
+                        'tamanio':  f'{tamanio_mb} MB',
+                        'tipo':     tipo,
+                        'encriptado': True
+                    })
+                    if len(archivos) >= 30:
+                        break
+        except Exception as e:
+            return jsonify({'success': False, 'message': f'Error listando respaldos locales: {str(e)}'}), 500
+
+        return jsonify({'success': True, 'archivos': archivos, 'fuente': 'local'}), 200
 
 
 # =======================================================
