@@ -4561,7 +4561,15 @@ def _get_drive_service():
     if not sa_json_str:
         raise ValueError("GOOGLE_SERVICE_ACCOUNT_JSON no está configurado en las variables de entorno.")
 
-    sa_info = json.loads(sa_json_str)
+    try:
+        # Se asegura de manejar si el usuario pegó el JSON con escapes incorrectos
+        sa_json_str = sa_json_str.replace('\n', '\\n') if '\n' in sa_json_str and '\\n' not in sa_json_str else sa_json_str
+        sa_info = json.loads(sa_json_str)
+    except json.JSONDecodeError as e:
+        print(f"❌ Error al decodificar GOOGLE_SERVICE_ACCOUNT_JSON: {e}")
+        print(f"   Contenido parcial recibido: {sa_json_str[:100]}...")
+        raise ValueError(f"El JSON de la Service Account es inválido. Por favor, vuelve a copiar y pegar todo el contenido del archivo JSON original en Render. Error exacto: {e}")
+
     creds = service_account.Credentials.from_service_account_info(
         sa_info,
         scopes=['https://www.googleapis.com/auth/drive']
@@ -4809,9 +4817,10 @@ def backup_manual():
                     'timestamp': datetime.now().isoformat()
                 }), 200
             else:
+                backup_dir = os.getenv('BACKUP_DIR', r'C:\Respaldos_CEI')
                 return jsonify({
                     'success': False,
-                    'message': f'El script falló. Revisa los logs en {os.getenv("BACKUP_DIR", "C:\\Respaldos_CEI")}\\backup_log.txt',
+                    'message': f'El script falló. Revisa los logs en {backup_dir}\\backup_log.txt',
                     'stderr': result.stderr[:500]
                 }), 500
         except subprocess.TimeoutExpired:
