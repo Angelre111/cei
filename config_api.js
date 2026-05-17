@@ -4,10 +4,11 @@
 // URL base de la API Flask
 // En desarrollo: http://127.0.0.1:5000
 // En producción: URL del servidor desplegado
-window.API_BASE_URL = 'http://127.0.0.1:5000';
-
-// Para pruebas con API mock (descomentar si se usa la API mock)
-// window.API_BASE_URL = 'http://127.0.0.1:5001';
+// Detecta automáticamente si estamos en local o en producción
+const _isLocal = window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost';
+window.API_BASE_URL = _isLocal
+    ? 'http://127.0.0.1:5000'
+    : 'https://ceilaparagua.onrender.com';
 
 console.log('API Base URL configurada:', window.API_BASE_URL);
 
