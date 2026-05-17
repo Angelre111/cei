@@ -4,8 +4,8 @@ const isLocal = window.location.protocol === 'file:' ||
     window.location.hostname === '127.0.0.1';
 
 window.API_BASE_URL = isLocal
-    ? 'http://127.0.0.1:5000'                     // ✅ Flask local (puerto 5000)
-    : 'https://cei-preescolar.onrender.com';      // ✅ Backend Flask en Render (Nueva URL)
+    ? 'http://127.0.0.1:5000'                       // ✅ Flask local (puerto 5000)
+    : 'https://ceilaparagua.onrender.com';          // ✅ Backend Flask en Render (Docker)
 
 const SUPABASE_URL = 'https://yfvupxrrvqfwafvozypn.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_VnDNWpwncQFFonAktaYOqw_zAXNMtg6';
