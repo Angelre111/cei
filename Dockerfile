@@ -1,12 +1,13 @@
 # Usar una imagen oficial de Python ligera
 FROM python:3.11-slim
 
-# Instalar LibreOffice, fuentes del sistema y limpiar la caché de apt para ahorrar espacio
+# Instalar LibreOffice, fuentes del sistema, cliente PostgreSQL (pg_dump) y limpiar la caché de apt
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libreoffice \
     libreoffice-writer \
     fonts-liberation \
     fonts-dejavu \
+    postgresql-client \
     && rm -rf /var/lib/apt/lists/*
 
 # Definir directorio de trabajo en el contenedor
