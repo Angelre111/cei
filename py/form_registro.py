@@ -2551,10 +2551,61 @@ def obtener_ficha_estudiante(hijo_id):
         return jsonify({'success': False, 'message': 'Error al cargar la ficha del estudiante.'}), 500
 
 
+# =======================================================
+# HELPER: CONVERSIÓN DOCX → PDF CON LIBREOFFICE HEADLESS
+# =======================================================
+
+def _convertir_docx_a_pdf(docx_bytes: bytes) -> bytes:
+    """
+    Convierte un DOCX (en memoria) a PDF usando LibreOffice headless.
+    Detecta automáticamente el SO: funciona en Linux (Render) y Windows (local).
+    """
+    import platform
+    import subprocess as _sp
+    import tempfile as _tmp
+
+    # Ruta del binario: se puede sobreescribir con la variable de entorno LIBREOFFICE_PATH
+    lo_env = os.getenv("LIBREOFFICE_PATH")
+    if lo_env:
+        lo_bin = lo_env
+    elif platform.system() == "Windows":
+        lo_bin = r"C:\Program Files\LibreOffice\program\soffice.exe"
+    else:
+        lo_bin = "libreoffice"
+
+    with _tmp.TemporaryDirectory() as tmp_dir:
+        # 1. Escribir el DOCX en disco temporal
+        docx_path = os.path.join(tmp_dir, "constancia_tmp.docx")
+        with open(docx_path, "wb") as f:
+            f.write(docx_bytes)
+
+        # 2. Invocar LibreOffice en modo sin cabeza
+        resultado = _sp.run(
+            [lo_bin, "--headless", "--convert-to", "pdf", "--outdir", tmp_dir, docx_path],
+            capture_output=True,
+            text=True,
+            timeout=60
+        )
+
+        if resultado.returncode != 0:
+            raise RuntimeError(
+                f"LibreOffice no pudo convertir el archivo. "
+                f"stdout={resultado.stdout} stderr={resultado.stderr}"
+            )
+
+        # 3. Leer el PDF resultante
+        pdf_path = os.path.join(tmp_dir, "constancia_tmp.pdf")
+        if not os.path.exists(pdf_path):
+            raise FileNotFoundError("LibreOffice no generó el archivo PDF esperado.")
+
+        with open(pdf_path, "rb") as f:
+            return f.read()
+
+
 @app.route('/api/estudiantes/<int:hijo_id>/constancia/<tipo>', methods=['GET'])
 @require_auth
-def descargar_constancia_word(hijo_id, tipo):
-    """Genera un documento Word reemplazando las llaves {{}} de la plantilla."""
+def descargar_constancia_pdf(hijo_id, tipo):
+    """Rellena la plantilla .docx con docxtpl y la entrega como PDF via LibreOffice headless."""
     try:
         # 1. Obtener datos del niño
         res_hijo = supabase.table("hijos").select("*").eq("id", hijo_id).single().execute()
@@ -2616,23 +2667,30 @@ def descargar_constancia_word(hijo_id, tipo):
         doc = DocxTemplate(plantilla_path)
         doc.render(context)
 
-        # 7. Guardar en memoria y enviar al usuario
-        file_stream = io.BytesIO()
-        doc.save(file_stream)
-        file_stream.seek(0)
+        # 7. Guardar el DOCX relleno en memoria
+        docx_buffer = io.BytesIO()
+        doc.save(docx_buffer)
+        docx_bytes = docx_buffer.getvalue()
 
-        nombre_archivo = f"Constancia_{tipo.capitalize()}_{hijo.get('nombre', 'Estudiante')}.docx"
-        
+        # 8. Convertir a PDF con LibreOffice headless
+        print(f"🔄 Convirtiendo constancia '{tipo}' a PDF con LibreOffice...")
+        pdf_bytes = _convertir_docx_a_pdf(docx_bytes)
+        print(f"✅ PDF generado correctamente ({len(pdf_bytes)} bytes).")
+
+        # 9. Enviar el PDF al usuario
+        pdf_stream = io.BytesIO(pdf_bytes)
+        nombre_archivo = f"Constancia_{tipo.capitalize()}_{hijo.get('nombre', 'Estudiante')}.pdf"
+
         return send_file(
-            file_stream, 
-            as_attachment=True, 
+            pdf_stream,
+            as_attachment=True,
             download_name=nombre_archivo,
-            mimetype='application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+            mimetype='application/pdf'
         )
 
     except Exception as e:
-        print(f"❌ Error al generar Word: {e}")
-        return jsonify({'success': False, 'message': 'Error interno al generar el documento.'}), 500
+        print(f"❌ Error al generar constancia PDF: {e}")
+        return jsonify({'success': False, 'message': f'Error interno al generar el documento: {str(e)}'}), 500
 
 
 @app.route('/api/estudiantes/<int:hijo_id>/ficha', methods=['PUT'])

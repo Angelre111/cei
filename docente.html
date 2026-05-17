@@ -1895,7 +1895,7 @@
 
                 if (res.ok) {
                     // Extraer el nombre del archivo de los headers o poner uno por defecto
-                    let filename = `Constancia_${tipoConstancia}.docx`;
+                    let filename = `Constancia_${tipoConstancia}.pdf`;
                     const disposition = res.headers.get('Content-Disposition');
                     if (disposition && disposition.indexOf('attachment') !== -1) {
                         const filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
@@ -1918,7 +1918,7 @@
 
                     Swal.fire({
                         title: '¡Descargado!',
-                        text: 'El documento Word está listo.',
+                        text: 'El documento PDF está listo.',
                         icon: 'success',
                         confirmButtonColor: '#EC4899',
                         customClass: { popup: 'rounded-3xl' }
