@@ -5025,11 +5025,19 @@ def restaurar_respaldo(file_id):
 
         # 3. Extraer contenido .sql.gz (los archivos de Drive no tienen contraseña)
         try:
-            sql_content = gzip.decompress(fh.read()).decode('utf-8')
+            raw_sql = gzip.decompress(fh.read()).decode('utf-8')
         except OSError:
             # Fallback por si el archivo no está comprimido en gzip
             fh.seek(0)
-            sql_content = fh.read().decode('utf-8')
+            raw_sql = fh.read().decode('utf-8')
+
+        # Filtrar comandos meta de psql (como \restrict inyectado por el pooler de Supabase)
+        # ya que psycopg2 no soporta meta-comandos de psql.
+        sql_lines = []
+        for line in raw_sql.splitlines():
+            if not line.startswith('\\'):
+                sql_lines.append(line)
+        sql_content = '\n'.join(sql_lines)
 
         # 4. Ejecutar SQL en Supabase
         db_url = os.getenv("DATABASE_URL")
