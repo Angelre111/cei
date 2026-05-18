@@ -178,7 +178,7 @@ async function restaurarRespaldo(fileId, fileName) {
     });
 
     try {
-        const res = await fetchWithAuth(\`\${API_BASE_URL}/api/admin/restaurar-respaldo/\${fileId}\`, {
+        const res = await fetchWithAuth(`${API_BASE_URL}/api/admin/restaurar-respaldo/${fileId}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' }
         });
