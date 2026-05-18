@@ -5019,36 +5019,13 @@ def restaurar_respaldo(file_id):
             status, done = downloader.next_chunk()
         fh.seek(0)
 
-        backup_pwd = os.getenv("BACKUP_PASSWORD")
-        if not backup_pwd:
-            return jsonify({'success': False, 'message': 'BACKUP_PASSWORD no configurado en el servidor.'}), 500
-
-        # 3. Guardar temporalmente para py7zr y extraer .sql
-        import tempfile
-        sql_content = None
-        with tempfile.NamedTemporaryFile(delete=False, suffix=".7z") as temp_7z:
-            temp_7z.write(fh.read())
-            temp_7z_path = temp_7z.name
-
+        # 3. Extraer contenido .sql.gz (los archivos de Drive no tienen contraseña)
         try:
-            with tempfile.TemporaryDirectory() as temp_dir:
-                try:
-                    with py7zr.SevenZipFile(temp_7z_path, mode='r', password=backup_pwd) as archive:
-                        archive.extractall(path=temp_dir)
-                except py7zr.exceptions.PasswordRequired:
-                    return jsonify({'success': False, 'message': 'Contraseña de respaldo incorrecta.'}), 500
-                except py7zr.exceptions.Bad7zFile:
-                    return jsonify({'success': False, 'message': 'El archivo descargado no es un .7z válido.'}), 500
-
-                # Buscar el archivo .sql extraído
-                sql_files = [f for f in os.listdir(temp_dir) if f.endswith('.sql')]
-                if not sql_files:
-                    return jsonify({'success': False, 'message': 'El archivo .7z no contiene ningún archivo .sql.'}), 500
-
-                with open(os.path.join(temp_dir, sql_files[0]), 'r', encoding='utf-8') as f:
-                    sql_content = f.read()
-        finally:
-            os.unlink(temp_7z_path)
+            sql_content = gzip.decompress(fh.read()).decode('utf-8')
+        except OSError:
+            # Fallback por si el archivo no está comprimido en gzip
+            fh.seek(0)
+            sql_content = fh.read().decode('utf-8')
 
         # 4. Ejecutar SQL en Supabase
         db_url = os.getenv("DATABASE_URL")
