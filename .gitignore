@@ -6,3 +6,6 @@ node_modules/
 dist/
 apren
 .aider*
+oauth_credentials.json
+obtener_token_drive.py
+

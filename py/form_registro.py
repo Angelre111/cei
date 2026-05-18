@@ -43,6 +43,8 @@ try:
     import googleapiclient.discovery
     import googleapiclient.http
     from google.oauth2 import service_account
+    from google.oauth2.credentials import Credentials
+    from google.auth.transport.requests import Request as GoogleRequest
     DRIVE_AVAILABLE = True
 except ImportError:
     DRIVE_AVAILABLE = False
@@ -4614,24 +4616,54 @@ DRIVE_FOLDER_ID = os.getenv('GOOGLE_DRIVE_FOLDER_ID', '')
 ENVIRONMENT     = os.getenv('ENVIRONMENT', 'local')  # 'local' o 'production'
 
 def _get_drive_service():
-    """Construye y devuelve el cliente autenticado de Google Drive API."""
+    """
+    Construye y devuelve el cliente autenticado de Google Drive API.
+    Prioridad:
+      1. OAuth2 con Refresh Token (GOOGLE_OAUTH_REFRESH_TOKEN) — para cuentas personales.
+         Los archivos se suben usando la cuota del dueño de la carpeta.
+      2. Service Account JSON (GOOGLE_SERVICE_ACCOUNT_JSON) — solo funciona con Shared Drives.
+    """
+    _SCOPES = ['https://www.googleapis.com/auth/drive']
+
+    # ── OPCIÓN 1: OAuth2 con Refresh Token (recomendado para Drive personal) ──
+    oauth_client_id     = os.getenv('GOOGLE_OAUTH_CLIENT_ID', '')
+    oauth_client_secret = os.getenv('GOOGLE_OAUTH_CLIENT_SECRET', '')
+    oauth_refresh_token = os.getenv('GOOGLE_OAUTH_REFRESH_TOKEN', '')
+
+    if oauth_client_id and oauth_client_secret and oauth_refresh_token:
+        print("🔑 Drive: usando OAuth2 con Refresh Token (cuenta personal)")
+        creds = Credentials(
+            token=None,
+            refresh_token=oauth_refresh_token,
+            token_uri='https://oauth2.googleapis.com/token',
+            client_id=oauth_client_id,
+            client_secret=oauth_client_secret,
+            scopes=_SCOPES
+        )
+        # Forzar refresco inmediato para validar las credenciales
+        creds.refresh(GoogleRequest())
+        return googleapiclient.discovery.build('drive', 'v3', credentials=creds)
+
+    # ── OPCIÓN 2: Service Account (solo si no hay OAuth2) ──
     sa_json_str = os.getenv('GOOGLE_SERVICE_ACCOUNT_JSON', '')
     if not sa_json_str:
-        raise ValueError("GOOGLE_SERVICE_ACCOUNT_JSON no está configurado en las variables de entorno.")
+        raise ValueError(
+            "No hay credenciales de Google Drive configuradas. "
+            "Agrega GOOGLE_OAUTH_CLIENT_ID, GOOGLE_OAUTH_CLIENT_SECRET y "
+            "GOOGLE_OAUTH_REFRESH_TOKEN en las variables de entorno de Render."
+        )
 
     try:
-        # Se asegura de manejar si el usuario pegó el JSON con escapes incorrectos
-        sa_json_str = sa_json_str.replace('\n', '\\n') if '\n' in sa_json_str and '\\n' not in sa_json_str else sa_json_str
+        # Normalizar posibles escapes incorrectos del JSON
+        sa_json_str = sa_json_str.strip().strip("'\"")
+        if '\\n' in sa_json_str and '\n' not in sa_json_str:
+            sa_json_str = sa_json_str.replace('\\n', '\n')
         sa_info = json.loads(sa_json_str)
     except json.JSONDecodeError as e:
-        print(f"❌ Error al decodificar GOOGLE_SERVICE_ACCOUNT_JSON: {e}")
-        print(f"   Contenido parcial recibido: {sa_json_str[:100]}...")
-        raise ValueError(f"El JSON de la Service Account es inválido. Por favor, vuelve a copiar y pegar todo el contenido del archivo JSON original en Render. Error exacto: {e}")
+        raise ValueError(f"GOOGLE_SERVICE_ACCOUNT_JSON es inválido: {e}")
 
-    creds = service_account.Credentials.from_service_account_info(
-        sa_info,
-        scopes=['https://www.googleapis.com/auth/drive']
-    )
+    print("🔑 Drive: usando Service Account")
+    creds = service_account.Credentials.from_service_account_info(sa_info, scopes=_SCOPES)
     return googleapiclient.discovery.build('drive', 'v3', credentials=creds)
 
 
