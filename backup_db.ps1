@@ -123,7 +123,7 @@ if (Test-Path $archFile) {
 Log "Iniciando pg_dump..."
 try {
     $env:PGPASSWORD = ""
-    $pgDumpArgs = @("--dbname=$DATABASE_URL", "--format=plain", "--no-owner", "--no-acl", "--encoding=UTF8", "--inserts", "--on-conflict-do-nothing", "--file=$sqlFile")
+    $pgDumpArgs = @("--dbname=$DATABASE_URL", "--format=plain", "--no-owner", "--no-acl", "--encoding=UTF8", "--inserts", "--on-conflict-do-nothing", "--data-only", "--file=$sqlFile")
     $pgDumpOutput = & $PGDUMP_PATH $pgDumpArgs 2>&1
 
     if ($LASTEXITCODE -ne 0) {

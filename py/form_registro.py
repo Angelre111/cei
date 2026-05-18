@@ -4682,7 +4682,7 @@ def _run_pg_dump_to_bytes() -> bytes:
     cmd = [
         'pg_dump', '--dbname', db_url, 
         '--format=plain', '--no-owner', '--no-acl', '--encoding=UTF8',
-        '--inserts', '--on-conflict-do-nothing'
+        '--inserts', '--on-conflict-do-nothing', '--data-only'
     ]
     result = subprocess.run(cmd, capture_output=True, timeout=300)
 
