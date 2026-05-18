@@ -4679,7 +4679,11 @@ def _run_pg_dump_to_bytes() -> bytes:
         raise ValueError("DATABASE_URL no está configurada.")
 
     # pg_dump disponible en el PATH del sistema (Render tiene postgresql-client)
-    cmd = ['pg_dump', '--dbname', db_url, '--format=plain', '--no-owner', '--no-acl', '--encoding=UTF8']
+    cmd = [
+        'pg_dump', '--dbname', db_url, 
+        '--format=plain', '--no-owner', '--no-acl', '--encoding=UTF8',
+        '--inserts', '--on-conflict-do-nothing'
+    ]
     result = subprocess.run(cmd, capture_output=True, timeout=300)
 
     if result.returncode != 0:
