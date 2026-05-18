@@ -37,6 +37,8 @@ import json
 import gzip
 import shutil
 from io import BytesIO
+import psycopg2
+import py7zr
 try:
     from apscheduler.schedulers.background import BackgroundScheduler
     from apscheduler.triggers.cron import CronTrigger
@@ -4990,6 +4992,89 @@ def backup_historial():
             return jsonify({'success': False, 'message': f'Error listando respaldos locales: {str(e)}'}), 500
 
         return jsonify({'success': True, 'archivos': archivos, 'fuente': 'local'}), 200
+
+@app.route('/api/admin/restaurar-respaldo/<file_id>', methods=['POST'])
+@require_auth
+def restaurar_respaldo(file_id):
+    """
+    Descarga el archivo de respaldo desde Google Drive (.7z), 
+    lo extrae en memoria/temp usando BACKUP_PASSWORD,
+    y lo ejecuta en la base de datos Supabase usando psycopg2.
+    """
+    if not _verificar_admin():
+        return jsonify({'success': False, 'message': 'Acción denegada. Solo administradores.'}), 403
+
+    try:
+        # 1. Obtener servicio de Drive
+        service = _get_drive_service()
+        if not service:
+            return jsonify({'success': False, 'message': 'Google Drive no está disponible.'}), 500
+
+        # 2. Descargar archivo
+        request_download = service.files().get_media(fileId=file_id)
+        fh = BytesIO()
+        downloader = googleapiclient.http.MediaIoBaseDownload(fh, request_download)
+        done = False
+        while done is False:
+            status, done = downloader.next_chunk()
+        fh.seek(0)
+
+        backup_pwd = os.getenv("BACKUP_PASSWORD")
+        if not backup_pwd:
+            return jsonify({'success': False, 'message': 'BACKUP_PASSWORD no configurado en el servidor.'}), 500
+
+        # 3. Guardar temporalmente para py7zr y extraer .sql
+        import tempfile
+        sql_content = None
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".7z") as temp_7z:
+            temp_7z.write(fh.read())
+            temp_7z_path = temp_7z.name
+
+        try:
+            with tempfile.TemporaryDirectory() as temp_dir:
+                try:
+                    with py7zr.SevenZipFile(temp_7z_path, mode='r', password=backup_pwd) as archive:
+                        archive.extractall(path=temp_dir)
+                except py7zr.exceptions.PasswordRequired:
+                    return jsonify({'success': False, 'message': 'Contraseña de respaldo incorrecta.'}), 500
+                except py7zr.exceptions.Bad7zFile:
+                    return jsonify({'success': False, 'message': 'El archivo descargado no es un .7z válido.'}), 500
+
+                # Buscar el archivo .sql extraído
+                sql_files = [f for f in os.listdir(temp_dir) if f.endswith('.sql')]
+                if not sql_files:
+                    return jsonify({'success': False, 'message': 'El archivo .7z no contiene ningún archivo .sql.'}), 500
+
+                with open(os.path.join(temp_dir, sql_files[0]), 'r', encoding='utf-8') as f:
+                    sql_content = f.read()
+        finally:
+            os.unlink(temp_7z_path)
+
+        # 4. Ejecutar SQL en Supabase
+        db_url = os.getenv("DATABASE_URL")
+        if not db_url:
+            return jsonify({'success': False, 'message': 'DATABASE_URL no configurado.'}), 500
+
+        # Nos conectamos y ejecutamos
+        conn = psycopg2.connect(db_url)
+        conn.autocommit = False
+        try:
+            with conn.cursor() as cur:
+                # Al estar formateado con --inserts y --on-conflict-do-nothing, 
+                # la ejecución de sql_content es segura
+                cur.execute(sql_content)
+            conn.commit()
+        except Exception as db_err:
+            conn.rollback()
+            return jsonify({'success': False, 'message': f'Error en base de datos: {db_err}'}), 500
+        finally:
+            conn.close()
+
+        return jsonify({'success': True, 'message': 'Base de datos restaurada exitosamente. Los datos faltantes han sido recuperados.'}), 200
+
+    except Exception as e:
+        print(f"Error restaurando respaldo: {e}")
+        return jsonify({'success': False, 'message': f'Error interno: {str(e)}'}), 500
 
 
 # =======================================================

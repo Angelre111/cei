@@ -48,7 +48,7 @@ async function cargarHistorialRespaldos() {
 
     tbody.innerHTML = `
         <tr>
-            <td colspan="5" class="px-6 py-8 text-center text-slate-400 text-sm">
+            <td colspan="6" class="px-6 py-8 text-center text-slate-400 text-sm">
                 <div class="flex items-center justify-center gap-2">
                     <div class="w-4 h-4 border-2 border-blue-300 border-t-blue-600 rounded-full animate-spin"></div>
                     Cargando historial...
@@ -99,7 +99,7 @@ async function cargarHistorialRespaldos() {
             const msg = data.mensaje || 'No hay respaldos registrados. Ejecuta el primer respaldo.';
             tbody.innerHTML = `
                 <tr>
-                    <td colspan="5" class="px-6 py-10 text-center text-slate-400 text-sm">${msg}</td>
+                    <td colspan="6" class="px-6 py-10 text-center text-slate-400 text-sm">${msg}</td>
                 </tr>`;
             return;
         }
@@ -127,6 +127,13 @@ async function cargarHistorialRespaldos() {
                 <td class="px-5 py-3.5 text-[13px] text-slate-500">${arch.tamanio}</td>
                 <td class="px-5 py-3.5">${tipoBadge}</td>
                 <td class="px-5 py-3.5">${encryptBadge}</td>
+                <td class="px-5 py-3.5 text-right">
+                    ${data.fuente === 'drive' ? 
+                        `<button onclick="restaurarRespaldo('${arch.drive_id}', '${arch.nombre}')" class="px-3 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-700 rounded-xl font-bold text-xs transition-colors flex items-center justify-center gap-1 ml-auto">
+                            <i class="ph-bold ph-arrows-counter-clockwise"></i> Restaurar
+                        </button>` 
+                        : '<span class="text-[10px] text-slate-400">Solo Local</span>'}
+                </td>
             </tr>`;
         }).join('');
 
@@ -134,10 +141,67 @@ async function cargarHistorialRespaldos() {
         console.error('Error cargando historial:', err);
         tbody.innerHTML = `
             <tr>
-                <td colspan="5" class="px-6 py-8 text-center text-red-400 text-sm">
+                <td colspan="6" class="px-6 py-8 text-center text-red-400 text-sm">
                     Error al cargar historial: ${err.message}
                 </td>
             </tr>`;
+    }
+}
+
+// ─── Restaurar Respaldo (A prueba de Directores) ──────────
+async function restaurarRespaldo(fileId, fileName) {
+    const confirm = await Swal.fire({
+        title: '¿Restaurar este punto?',
+        html: `
+            <p class="text-slate-600 text-sm mb-2">Vas a restaurar el archivo <strong>${fileName}</strong>.</p>
+            <div class="p-3 bg-amber-50 rounded-xl text-xs text-amber-800 font-medium text-left border border-amber-200">
+                ⚠️ <strong>Aviso:</strong> Esta acción recuperará datos que hayan sido eliminados por accidente sin alterar la información que existe actualmente en el sistema.
+            </div>`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#f59e0b',
+        cancelButtonColor: '#94a3b8',
+        confirmButtonText: '🔄 Sí, Restaurar',
+        cancelButtonText: 'Cancelar',
+        borderRadius: '1.5rem'
+    });
+
+    if (!confirm.isConfirmed) return;
+
+    Swal.fire({
+        title: 'Restaurando...',
+        html: 'Este proceso puede tardar unos segundos. Por favor, no cierres esta ventana.',
+        allowOutsideClick: false,
+        didOpen: () => {
+            Swal.showLoading();
+        }
+    });
+
+    try {
+        const res = await fetchWithAuth(\`\${API_BASE_URL}/api/admin/restaurar-respaldo/\${fileId}\`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        });
+        const data = await res.json();
+
+        if (data.success) {
+            Swal.fire({
+                icon: 'success',
+                title: '¡Restauración Exitosa!',
+                text: data.message,
+                confirmButtonColor: '#10b981',
+                confirmButtonText: 'Aceptar'
+            });
+        } else {
+            throw new Error(data.message || 'Error desconocido');
+        }
+    } catch (err) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Error en Restauración',
+            text: err.message || 'No se pudo completar la restauración.',
+            confirmButtonColor: '#ef4444'
+        });
     }
 }
 
