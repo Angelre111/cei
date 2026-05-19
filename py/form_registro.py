@@ -1950,10 +1950,12 @@ class PeriodoSchema(BaseModel):
     fecha_fin: str      # formato YYYY-MM-DD
     estado: Optional[str] = 'planificacion'
 
-def _verificar_admin(user_id: str):
+def _verificar_admin(user_id: str = None):
     """Helper: retorna True si el usuario es administrador, False si no."""
+    if not user_id:
+        user_id = request.current_user.id
     perfil = supabase.table("usuarios").select("rol").eq("id", user_id).single().execute()
-    return perfil.data and perfil.data.get("rol") == "administrador"
+    return bool(perfil.data and perfil.data.get("rol") == "administrador")
 
 def _verificar_admin_o_docente(user_id: str):
     """Helper: retorna True si el usuario es administrador o docente, False si no."""
@@ -2244,6 +2246,72 @@ def crear_seccion():
         if "unique" in err.lower() or "llave duplicada" in err.lower():
              return jsonify({'success': False, 'message': 'Ya existe esta sección para el período seleccionado.'}), 409
         return jsonify({'success': False, 'message': 'Error interno al crear la sección.'}), 500
+
+
+@app.route('/api/secciones/<seccion_id>', methods=['PUT'])
+@require_auth
+def actualizar_seccion(seccion_id):
+    if not _verificar_admin(request.current_user.id):
+        return jsonify({'success': False, 'message': 'Solo administradores.'}), 403
+
+    try:
+        datos = SeccionSchema(**request.get_json())
+    except ValidationError as e:
+        return jsonify({'success': False, 'message': f'Datos inválidos: {e}'}), 400
+
+    if datos.nivel not in NIVELES_PERMITIDOS:
+        return jsonify({'success': False, 'message': f'Nivel inválido. Permitidos: {NIVELES_PERMITIDOS}'}), 400
+    if datos.letra not in LETRAS_PERMITIDAS:
+        return jsonify({'success': False, 'message': f'Letra inválida. Permitidos: {LETRAS_PERMITIDAS}'}), 400
+
+    try:
+        # Verificar si la sección existe
+        seccion_existente = supabase.table("secciones").select("id").eq("id", seccion_id).execute()
+        if not seccion_existente.data:
+            return jsonify({'success': False, 'message': 'Sección no encontrada.'}), 404
+
+        # Verificar si existe el período
+        periodo = supabase.table("periodos_academicos").select("id").eq("id", datos.periodo_id).single().execute()
+        if not periodo.data:
+            return jsonify({'success': False, 'message': 'Período académico no encontrado.'}), 404
+
+        # 1. Actualizar la sección
+        datos_actualizacion = {
+            "periodo_id": datos.periodo_id,
+            "nivel": datos.nivel,
+            "letra": datos.letra,
+            "capacidad_maxima": datos.capacidad_maxima
+        }
+        supabase.table("secciones").update(datos_actualizacion).eq("id", seccion_id).execute()
+
+        # 2. Actualizar docentes_secciones (borrar y re-insertar)
+        supabase.table("docentes_secciones").delete().eq("seccion_id", seccion_id).execute()
+
+        if datos.docentes_ids:
+            docentes_unicos = list(set([d for d in datos.docentes_ids if d]))
+            insert_docentes = []
+            for d_id in docentes_unicos:
+                insert_docentes.append({
+                    "seccion_id": seccion_id,
+                    "docente_id": d_id,
+                    "rol_en_aula": "Titular"
+                })
+            
+            if insert_docentes:
+                try:
+                    supabase.table("docentes_secciones").insert(insert_docentes).execute()
+                except Exception as e:
+                    print(f"Advertencia al actualizar docentes: {e}")
+                    return jsonify({'success': True, 'message': 'Sección actualizada, pero hubo un problema asignando algunos docentes.'}), 200
+
+        return jsonify({'success': True, 'message': 'Sección actualizada exitosamente.'}), 200
+
+    except Exception as e:
+        err = str(e)
+        print(f"❌ Error actualizar_seccion: {err}")
+        if "unique" in err.lower() or "llave duplicada" in err.lower():
+             return jsonify({'success': False, 'message': 'Ya existe esta sección para el período seleccionado.'}), 409
+        return jsonify({'success': False, 'message': 'Error interno al actualizar la sección.'}), 500
 
 
 @app.route('/api/secciones/<seccion_id>', methods=['DELETE'])
@@ -4842,13 +4910,7 @@ else:
 # ENDPOINTS DE RESPALDO — ADMINISTRADOR
 # =======================================================
 
-def _verificar_admin():
-    """Helper: Verifica que el usuario actual sea administrador. Lanza excepción si no."""
-    user_id = request.current_user.id
-    perfil = supabase.table("usuarios").select("rol").eq("id", user_id).single().execute()
-    if not perfil.data or perfil.data.get("rol") != "administrador":
-        return False
-    return True
+# _verificar_admin ya está definido arriba con parámetro opcional.
 
 
 @app.route('/api/admin/backup-manual', methods=['POST'])

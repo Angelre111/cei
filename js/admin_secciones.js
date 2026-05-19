@@ -14,6 +14,19 @@ let currentTabSecciones = 'activo';
 function abrirModalCrearSeccion() {
     const modal = document.getElementById('modal-crear-seccion');
     const content = document.getElementById('modal-crear-seccion-content');
+    const titulo = document.querySelector('#modal-crear-seccion h3');
+
+    // Configurar título y botón
+    if (titulo) {
+        titulo.innerHTML = `
+            <i class="ph-bold ph-chalkboard-teacher text-amber-600 text-3xl"></i>
+            Nueva Sección
+        `;
+    }
+    const btnGuardar = document.getElementById('btn-guardar-seccion');
+    if (btnGuardar) {
+        btnGuardar.innerHTML = `<i class="ph-bold ph-floppy-disk-back"></i> Guardar Sección`;
+    }
 
     // Resetear form
     document.getElementById('seccion-id').value = '';
@@ -55,6 +68,58 @@ function cerrarModalCrearSeccion() {
     }, 300);
 }
 
+function abrirModalEditarSeccion(id) {
+    const seccion = seccionesCache.find(s => s.id === id);
+    if (!seccion) return;
+
+    // Cargar selects primero (por seguridad)
+    cargarSelectsSecciones().then(() => {
+        const modal = document.getElementById('modal-crear-seccion');
+        const content = document.getElementById('modal-crear-seccion-content');
+        const titulo = document.querySelector('#modal-crear-seccion h3');
+
+        // Configurar título y botón
+        if (titulo) {
+            titulo.innerHTML = `
+                <i class="ph-bold ph-pencil text-amber-600 text-3xl"></i>
+                Editar Sección
+            `;
+        }
+        const btnGuardar = document.getElementById('btn-guardar-seccion');
+        if (btnGuardar) {
+            btnGuardar.innerHTML = `<i class="ph-bold ph-floppy-disk-back"></i> Actualizar Sección`;
+        }
+
+        // Cargar datos en los inputs
+        document.getElementById('seccion-id').value = seccion.id;
+        document.getElementById('seccion-periodo').value = seccion.periodo_id;
+        document.getElementById('seccion-nivel').value = seccion.nivel;
+        document.getElementById('seccion-letra').value = seccion.letra;
+        document.getElementById('seccion-capacidad').value = seccion.capacidad_maxima;
+
+        // Cargar docentes
+        const container = document.getElementById('seccion-docentes-container');
+        container.innerHTML = '';
+
+        if (seccion.docentes && seccion.docentes.length > 0) {
+            seccion.docentes.forEach(docente => {
+                agregarSelectDocente(docente.id);
+            });
+        } else {
+            agregarSelectDocente();
+        }
+
+        // Mostrar modal
+        modal.style.display = 'flex';
+        modal.classList.remove('hidden');
+        setTimeout(() => {
+            modal.classList.remove('opacity-0');
+            content.classList.remove('scale-95');
+            content.classList.add('scale-100');
+        }, 10);
+    });
+}
+
 document.addEventListener('click', (e) => {
     const modal = document.getElementById('modal-crear-seccion');
     if (modal && !modal.classList.contains('hidden') && e.target === modal) {
@@ -76,13 +141,13 @@ document.addEventListener('keydown', (e) => {
 // MANEJO DE MÚLTIPLES DOCENTES
 // =============================================================
 
-function agregarSelectDocente() {
+function agregarSelectDocente(selectedValue = '') {
     const container = document.getElementById('seccion-docentes-container');
     const div = document.createElement('div');
     div.className = 'flex items-center gap-2 animate-fade-in';
 
     const options = '<option value="">Sin asignar (Opcional)</option>' +
-        docentesCache.map(d => `<option value="${d.id}">${d.nombres} ${d.apellidos}</option>`).join('');
+        docentesCache.map(d => `<option value="${d.id}" ${d.id === selectedValue ? 'selected' : ''}>${d.nombres} ${d.apellidos}</option>`).join('');
 
     div.innerHTML = `
         <select class="seccion-docente-select w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-400 focus:border-blue-400 outline-none transition-all bg-gray-50 focus:bg-white text-sm">
@@ -223,10 +288,16 @@ function renderTablaSecciones(secciones, tbody) {
             <td class="px-6 py-4 text-gray-500 text-sm">${s.capacidad_maxima}</td>
             <td class="px-6 py-4 text-gray-700 text-sm">${docName}</td>
             <td class="px-6 py-4 text-right">
-                <button onclick="eliminarSeccion('${s.id}', '${s.nivel} - ${s.letra}')"
-                    class="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition shadow-sm" title="Eliminar">
-                    <i class="ph-bold ph-trash text-lg"></i>
-                </button>
+                <div class="flex items-center justify-end gap-2">
+                    <button onclick="abrirModalEditarSeccion('${s.id}')"
+                        class="p-2 text-gray-400 hover:text-amber-500 hover:bg-amber-50 rounded-xl transition shadow-sm" title="Editar">
+                        <i class="ph-bold ph-pencil text-lg"></i>
+                    </button>
+                    <button onclick="eliminarSeccion('${s.id}', '${s.nivel} - ${s.letra}')"
+                        class="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition shadow-sm" title="Eliminar">
+                        <i class="ph-bold ph-trash text-lg"></i>
+                    </button>
+                </div>
             </td>
         </tr>`;
     }).join('');
@@ -237,6 +308,7 @@ function renderTablaSecciones(secciones, tbody) {
 // =============================================================
 
 async function guardarSeccion() {
+    const seccionId = document.getElementById('seccion-id').value;
     const periodoId = document.getElementById('seccion-periodo').value;
     const nivel = document.getElementById('seccion-nivel').value;
     const letra = document.getElementById('seccion-letra').value;
@@ -255,7 +327,8 @@ async function guardarSeccion() {
 
     const btn = document.getElementById('btn-guardar-seccion');
     btn.disabled = true;
-    btn.textContent = 'Guardando...';
+    const originalText = btn.textContent;
+    btn.textContent = seccionId ? 'Actualizando...' : 'Guardando...';
 
     const payload = {
         periodo_id: periodoId,
@@ -265,9 +338,12 @@ async function guardarSeccion() {
         docentes_ids: docentesIds
     };
 
+    const url = seccionId ? `${API_BASE}/api/secciones/${seccionId}` : `${API_BASE}/api/secciones`;
+    const method = seccionId ? 'PUT' : 'POST';
+
     try {
-        const res = await fetchWithAuth(`${API_BASE}/api/secciones`, {
-            method: 'POST',
+        const res = await fetchWithAuth(url, {
+            method: method,
             body: JSON.stringify(payload)
         });
         const data = await res.json();
@@ -279,7 +355,7 @@ async function guardarSeccion() {
 
         Swal.fire({
             icon: 'success',
-            title: '¡Sección Registrada!',
+            title: seccionId ? '¡Sección Actualizada!' : '¡Sección Registrada!',
             text: data.message,
             confirmButtonColor: '#2563eb',
             timer: 2500
@@ -289,7 +365,7 @@ async function guardarSeccion() {
         Swal.fire('Error', e.message, 'error');
     } finally {
         btn.disabled = false;
-        btn.textContent = 'Guardar Sección';
+        btn.textContent = originalText;
     }
 }
 
