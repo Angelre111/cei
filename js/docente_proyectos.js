@@ -54,9 +54,13 @@ window.filtrarProyectos = function(estado) {
         tabActivos.classList.remove('shadow-sm');
     }
     
-    // Limpiamos la vista del proyecto cada vez que cambiamos de pestaña
-    document.getElementById('proyecto-empty-state').classList.remove('hidden');
-    document.getElementById('proyecto-content').classList.add('hidden');
+    // Limpiamos la vista del proyecto cada vez que cambiamos de pestaña si existen los elementos
+    const emptyState = document.getElementById('proyecto-empty-state');
+    if (emptyState) emptyState.classList.remove('hidden');
+
+    const projectContent = document.getElementById('proyecto-content');
+    if (projectContent) projectContent.classList.add('hidden');
+
     proyectoSeleccionadoId = null;
 
     cargarProyectosAPI();
@@ -119,30 +123,55 @@ function renderizarListaProyectos(lista) {
     container.innerHTML = '';
     
     lista.forEach(proyecto => {
-        const esSeleccionado = proyectoSeleccionadoId === proyecto.id;
-        // Colores según selección o estado actual
-        const bgColor = esSeleccionado ? "bg-purple-50 border-purple-200" : "bg-white border-gray-100 hover:border-purple-300";
-        const iconColor = esSeleccionado ? "bg-purple-500 text-white" : "bg-purple-100 text-purple-600";
+        const esActivo = estadoFiltroActual === 'activo';
+        
+        // Configuración de colores dinámica
+        const themeColor = esActivo ? 'purple' : 'slate';
+        const iconClass = esActivo ? 'ph-folder-open' : 'ph-archive';
+        const badgeText = esActivo ? 'En Curso' : 'Finalizado';
         
         const div = document.createElement('div');
-        div.className = `flex gap-3 p-3 rounded-xl border cursor-pointer transition-all shadow-sm group ${bgColor}`;
+        // Estructura principal de la tarjeta
+        div.className = `bg-white rounded-[2rem] p-6 border border-${themeColor}-50 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-xl hover:shadow-${themeColor}-200/40 hover:-translate-y-1 transition-all duration-300 cursor-pointer group flex flex-col relative overflow-hidden h-full`;
         
         // Formatear Fecha (createdAt) a formato corto.
         const fechaObj = new Date(proyecto.created_at);
-        const fechaTxt = `${fechaObj.getDate()}/${fechaObj.getMonth() + 1}/${fechaObj.getFullYear()}`;
+        const fechaTxt = `${fechaObj.getDate().toString().padStart(2, '0')}/${(fechaObj.getMonth() + 1).toString().padStart(2, '0')}/${fechaObj.getFullYear()}`;
         
         div.innerHTML = `
-            <div class="w-10 h-10 rounded-lg flex items-center justify-center font-bold text-lg flex-shrink-0 transition-colors ${iconColor}">
-                ${proyecto.momento_pedagogico}
-            </div>
-            <div class="flex-1 min-w-0 flex flex-col justify-center">
-                <h4 class="text-sm font-bold text-gray-800 truncate" title="${proyecto.nombre}">${proyecto.nombre}</h4>
-                <div class="flex items-center gap-2 mt-0.5">
-                    <span class="text-[10px] font-bold text-gray-400"><i class="ph-fill ph-calendar-blank"></i> Creado: ${fechaTxt}</span>
+            <!-- Decoración de fondo -->
+            <div class="absolute -right-8 -top-8 w-32 h-32 bg-gradient-to-br from-${themeColor}-100/60 to-${themeColor}-50/10 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-700 pointer-events-none"></div>
+
+            <div class="flex justify-between items-start mb-5 relative z-10">
+                <div class="flex flex-col gap-2">
+                    <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-${themeColor}-50 to-${themeColor}-100 flex items-center justify-center text-${themeColor}-600 shadow-inner group-hover:scale-110 transition-transform duration-300 shrink-0 border border-white">
+                        <i class="ph-duotone ${iconClass} text-3xl"></i>
+                    </div>
+                </div>
+                <div class="flex flex-col items-end gap-1.5">
+                    <span class="px-3 py-1 bg-${themeColor}-50 text-${themeColor}-700 text-[10px] font-black uppercase tracking-widest rounded-lg border border-${themeColor}-100 shadow-sm">
+                        Momento ${proyecto.momento_pedagogico}
+                    </span>
+                    ${!esActivo ? `<span class="px-2 py-0.5 bg-slate-100 text-slate-500 text-[9px] font-bold uppercase rounded flex items-center gap-1"><i class="ph-fill ph-lock"></i> Cerrado</span>` : ''}
                 </div>
             </div>
-            <div class="flex items-center text-gray-300 ${esSeleccionado ? 'text-purple-400' : 'group-hover:text-purple-500'}">
-                <i class="ph-bold ph-caret-right"></i>
+
+            <div class="mb-6 relative z-10 flex-1">
+                <h4 class="text-[17px] font-black text-slate-800 leading-snug group-hover:text-${themeColor}-600 transition-colors line-clamp-3" title="${proyecto.nombre}">
+                    ${proyecto.nombre}
+                </h4>
+            </div>
+
+            <div class="flex items-center justify-between border-t border-slate-100 pt-5 mt-auto relative z-10">
+                <div class="flex items-center gap-2 text-slate-400">
+                    <div class="w-7 h-7 rounded-full bg-slate-50 flex items-center justify-center">
+                        <i class="ph-fill ph-calendar-blank text-sm"></i>
+                    </div>
+                    <span class="text-xs font-bold text-slate-500">${fechaTxt}</span>
+                </div>
+                <div class="w-9 h-9 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 group-hover:bg-${themeColor}-500 group-hover:text-white group-hover:shadow-lg group-hover:shadow-${themeColor}-200 transition-all">
+                    <i class="ph-bold ph-arrow-right text-lg"></i>
+                </div>
             </div>
         `;
         
@@ -272,9 +301,16 @@ async function crearNuevoProyecto() {
 }
 
 async function cerrarProyecto(proyectoId) {
+    let mensajeConfirmacion = 'Los docentes ya no podrán seguir evaluando indicadores en este proyecto de forma activa. Pasará al historial.';
+    
+    // Verificar si el proyecto tiene indicadores asociados
+    if (typeof indicadoresCargadas !== 'undefined' && indicadoresCargadas.length === 0) {
+        mensajeConfirmacion = 'Este proyecto NO tiene indicadores registrados. ¿Estás seguro de que quieres cerrarlo?';
+    }
+
     Swal.fire({
         title: '¿Cerrar Proyecto?',
-        text: 'Los docentes ya no podrán seguir evaluando indicadores en este proyecto de forma activa. Pasará al historial.',
+        text: mensajeConfirmacion,
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#a855f7',

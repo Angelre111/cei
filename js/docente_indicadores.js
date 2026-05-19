@@ -101,10 +101,15 @@ function renderizarIndicadores(estadoProyecto) {
         else if(area.includes('ambiente')) colorBadge = 'bg-emerald-50 text-emerald-600 border border-emerald-100';
         else if(area.includes('comunicaci')) colorBadge = 'bg-purple-50 text-purple-600 border border-purple-100';
 
-        const btnBorrar = estadoProyecto === 'activo' ? `
-            <button onclick="eliminarIndicador('${ind.id}')" class="absolute top-3 right-3 text-slate-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity">
-                <i class="ph-fill ph-trash text-lg"></i>
-            </button>
+        const botonesAccion = estadoProyecto === 'activo' ? `
+            <div class="absolute top-3 right-3 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                <button onclick="abrirModalEditarIndicador('${ind.id}')" class="text-slate-300 hover:text-yellow-500" title="Editar Indicador">
+                    <i class="ph-fill ph-pencil-simple text-lg"></i>
+                </button>
+                <button onclick="eliminarIndicador('${ind.id}')" class="text-slate-300 hover:text-red-500" title="Eliminar Indicador">
+                    <i class="ph-fill ph-trash text-lg"></i>
+                </button>
+            </div>
         ` : '';
 
         htmlModal += `
@@ -112,8 +117,8 @@ function renderizarIndicadores(estadoProyecto) {
                 <span class="inline-block px-2 py-1 rounded-md text-[9px] font-black uppercase tracking-wider mb-2 ${colorBadge}">
                     ${ind.area_aprendizaje}
                 </span>
-                <p class="text-sm font-medium text-slate-700 leading-snug pr-6">${ind.descripcion}</p>
-                ${btnBorrar}
+                <p class="text-sm font-medium text-slate-700 leading-snug pr-12">${ind.descripcion}</p>
+                ${botonesAccion}
             </div>
         `;
     });

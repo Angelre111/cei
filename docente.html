@@ -768,84 +768,26 @@
                             </button>
                         </div>
 
-                        <div class="flex flex-col lg:flex-row gap-6 flex-1 min-h-0">
-
-                            <div class="w-full lg:w-1/3 flex flex-col gap-4">
-                                <div class="flex p-1 bg-gray-100 rounded-xl flex-shrink-0">
+                        <div class="flex flex-col gap-6 flex-1 min-h-0">
+                            
+                            <div class="flex justify-between items-center flex-shrink-0">
+                                <div class="flex p-1 bg-gray-100 rounded-xl w-64">
                                     <button onclick="filtrarProyectos('activos')" id="tab-proyectos-activos"
                                         class="flex-1 py-2 text-sm font-bold rounded-lg shadow-sm bg-white text-purple-600 transition-all">Activos</button>
                                     <button onclick="filtrarProyectos('cerrados')" id="tab-proyectos-cerrados"
                                         class="flex-1 py-2 text-sm font-bold rounded-lg text-gray-500 hover:text-gray-700 transition-all">Historial</button>
                                 </div>
+                            </div>
 
-                                <div class="flex-1 overflow-y-auto bg-gray-50/50 rounded-2xl border border-gray-100 p-3 space-y-3"
-                                    id="lista-proyectos-container">
-                                    <div class="text-center py-10 px-4">
+                            <div class="flex-1 overflow-y-auto bg-gray-50/50 rounded-2xl border border-gray-100 p-6" id="lista-proyectos-wrapper">
+                                <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4" id="lista-proyectos-container">
+                                    <div class="col-span-full text-center py-10 px-4">
                                         <i class="ph-duotone ph-folder-open text-4xl text-gray-300 mb-2"></i>
                                         <p class="text-sm font-bold text-gray-400">Cargando proyectos...</p>
                                     </div>
                                 </div>
                             </div>
 
-                            <div class="w-full lg:w-2/3 bg-gray-50/50 rounded-2xl border border-gray-100 p-6 flex flex-col h-full relative overflow-hidden"
-                                id="detalle-proyecto-container">
-
-                                <div id="proyecto-empty-state"
-                                    class="absolute inset-0 flex flex-col items-center justify-center bg-gray-50/80 z-10">
-                                    <div
-                                        class="w-20 h-20 bg-white rounded-full flex items-center justify-center shadow-sm border border-gray-100 mb-4">
-                                        <i class="ph-duotone ph-cursor-click text-4xl text-purple-300"></i>
-                                    </div>
-                                    <h3 class="text-lg font-bold text-gray-700">Selecciona un proyecto</h3>
-                                    <p class="text-sm text-gray-500 mt-1 text-center max-w-sm">Haz clic en un proyecto
-                                        de la lista para ver o agregar sus indicadores de evaluación.</p>
-                                </div>
-
-                                <div id="proyecto-content" class="hidden flex-col h-full fade-in">
-                                    <div class="flex justify-between items-start mb-6 flex-shrink-0">
-                                        <div>
-                                            <span id="detalle-momento-badge"
-                                                class="inline-block px-3 py-1 bg-purple-100 text-purple-700 text-[10px] font-black uppercase tracking-widest rounded-lg mb-2">Momento
-                                                1</span>
-                                            <h3 id="detalle-proyecto-nombre"
-                                                class="text-2xl font-black text-gray-800 leading-tight">Nombre del
-                                                Proyecto</h3>
-                                        </div>
-                                        <button id="btn-cerrar-proyecto"
-                                            class="px-4 py-2 bg-white border border-gray-200 text-gray-600 hover:text-red-600 hover:bg-red-50 hover:border-red-200 rounded-xl text-xs font-bold transition-colors shadow-sm flex items-center gap-2">
-                                            <i class="ph-bold ph-lock-key"></i> Cerrar Proyecto
-                                        </button>
-                                    </div>
-
-                                    <div class="bg-white p-4 rounded-2xl border border-purple-100 shadow-sm mb-6 flex-shrink-0"
-                                        id="form-agregar-indicador">
-                                        <h4 class="text-xs font-bold text-purple-500 uppercase tracking-widest mb-3"><i
-                                                class="ph-fill ph-plus-circle"></i> Nuevo Indicador</h4>
-                                        <div class="flex flex-col sm:flex-row gap-3">
-                                            <select id="nuevo-indicador-area"
-                                                class="sm:w-1/3 px-3 py-2.5 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-purple-300 bg-gray-50">
-                                                <option value="" disabled selected>Selecciona el Área...</option>
-                                                <option value="Formación Personal y Social">Formación Personal y Social
-                                                </option>
-                                                <option value="Relación entre los Componentes del Ambiente">Relación con
-                                                    el Ambiente</option>
-                                                <option value="Comunicación y Representación">Comunicación y Repres.
-                                                </option>
-                                            </select>
-                                            <input type="text" id="nuevo-indicador-texto"
-                                                placeholder="Ej: Reconoce sus pertenencias..."
-                                                class="flex-1 px-4 py-2.5 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-purple-300">
-                                            <button id="btn-guardar-indicador"
-                                                class="px-6 py-2.5 bg-purple-500 text-white rounded-xl font-bold hover:bg-purple-600 transition-colors shadow-sm whitespace-nowrap">
-                                                Añadir
-                                            </button>
-                                        </div>
-                                    </div>
-
-                                    <div class="flex-1 overflow-y-auto pr-2 space-y-6" id="lista-indicadores-areas">
-                                    </div>
-                                </div>
-                            </div>
                         </div>
                     </div>
                 </section>
@@ -1805,6 +1747,22 @@
                     </h3>
                     <div class="bg-slate-50/50 p-5 rounded-2xl border border-slate-100 text-sm text-slate-600 leading-relaxed" id="proyecto-detalle-diagnostico">
                         Cargando diagnóstico...
+                    </div>
+                </div>
+
+                <div class="bg-purple-50 p-5 rounded-2xl border border-purple-100 shadow-sm" id="form-agregar-indicador">
+                    <h4 class="text-xs font-bold text-purple-600 uppercase tracking-widest mb-3"><i class="ph-fill ph-plus-circle"></i> Nuevo Indicador</h4>
+                    <div class="flex flex-col sm:flex-row gap-3">
+                        <select id="nuevo-indicador-area" class="sm:w-1/3 px-3 py-2.5 border border-purple-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-purple-300 bg-white">
+                            <option value="" disabled selected>Selecciona el Área...</option>
+                            <option value="Formación Personal y Social">Formación Personal y Social</option>
+                            <option value="Relación entre los Componentes del Ambiente">Relación con el Ambiente</option>
+                            <option value="Comunicación y Representación">Comunicación y Repres.</option>
+                        </select>
+                        <input type="text" id="nuevo-indicador-texto" placeholder="Ej: Reconoce sus pertenencias..." class="flex-1 px-4 py-2.5 border border-purple-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-purple-300">
+                        <button id="btn-guardar-indicador" class="px-6 py-2.5 bg-purple-500 text-white rounded-xl font-bold hover:bg-purple-600 transition-colors shadow-sm whitespace-nowrap">
+                            Añadir
+                        </button>
                     </div>
                 </div>
 
