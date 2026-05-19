@@ -4681,6 +4681,7 @@ def _run_pg_dump_to_bytes() -> bytes:
     # pg_dump disponible en el PATH del sistema (Render tiene postgresql-client)
     cmd = [
         'pg_dump', '--dbname', db_url, 
+        '-n', 'public', '-T', 'schema_migrations', '-T', 'supabase_migrations',
         '--format=plain', '--no-owner', '--no-acl', '--encoding=UTF8',
         '--inserts', '--on-conflict-do-nothing', '--data-only'
     ]
