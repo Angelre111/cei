@@ -647,22 +647,27 @@
                 <!-- SECCIÓN: RESPALDO DE DATOS -->
                 <!-- ============================================ -->
                 <section id="section-respaldo" class="page-section hidden fade-in">
-                    <div class="bg-white/95 backdrop-blur-xl p-6 md:p-10 rounded-[2.5rem] shadow-xl border border-white">
+                    <div
+                        class="bg-white/95 backdrop-blur-xl p-6 md:p-10 rounded-[2.5rem] shadow-xl border border-white">
 
                         <!-- Header -->
                         <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
                             <div class="flex items-center gap-4">
-                                <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-blue-200 transform -rotate-6">
+                                <div
+                                    class="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-blue-200 transform -rotate-6">
                                     <i class="ph-bold ph-database text-3xl text-white"></i>
                                 </div>
                                 <div>
                                     <h2 class="text-3xl font-black text-gray-800 tracking-tight">Respaldo de Datos</h2>
-                                    <p class="text-gray-500 font-medium mt-1">Protección y recuperación ante desastres (DRP)</p>
+                                    <p class="text-gray-500 font-medium mt-1">Protección y recuperación ante desastres
+                                        (DRP)</p>
                                 </div>
                             </div>
-                            <div class="flex items-center gap-2 px-4 py-2 bg-slate-50 rounded-2xl border border-slate-100 text-sm text-slate-500 font-semibold">
+                            <div
+                                class="flex items-center gap-2 px-4 py-2 bg-slate-50 rounded-2xl border border-slate-100 text-sm text-slate-500 font-semibold">
                                 <i class="ph-fill ph-clock text-slate-400"></i>
-                                Hora actual: <span id="respaldo-hora-actual" class="font-mono font-black text-slate-700">--:--:--</span>
+                                Hora actual: <span id="respaldo-hora-actual"
+                                    class="font-mono font-black text-slate-700">--:--:--</span>
                             </div>
                         </div>
 
@@ -670,13 +675,17 @@
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-8">
 
                             <!-- Estado: Respaldo automático -->
-                            <div class="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-3xl p-6 border border-blue-100 shadow-sm flex flex-col gap-3">
+                            <div
+                                class="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-3xl p-6 border border-blue-100 shadow-sm flex flex-col gap-3">
                                 <div class="flex items-center justify-between">
-                                    <p class="text-[11px] font-black uppercase tracking-widest text-blue-500">Respaldo Automático</p>
+                                    <p class="text-[11px] font-black uppercase tracking-widest text-blue-500">Respaldo
+                                        Automático</p>
                                     <div class="flex items-center gap-1.5">
                                         <span class="relative flex h-2.5 w-2.5">
-                                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                                            <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+                                            <span
+                                                class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                                            <span
+                                                class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
                                         </span>
                                         <span class="text-xs font-bold text-emerald-600">Activo</span>
                                     </div>
@@ -685,47 +694,60 @@
                                     <i class="ph-fill ph-clock text-3xl text-blue-400"></i>
                                     <div>
                                         <p class="text-2xl font-black text-slate-800">7:00 PM</p>
-                                        <p class="text-xs font-bold text-slate-400">Hora Venezuela (UTC-4) · Todos los días</p>
+                                        <p class="text-xs font-bold text-slate-400">Hora Venezuela (UTC-4) · Todos los
+                                            días</p>
                                     </div>
                                 </div>
-                                <p class="text-xs text-slate-500 mt-1">Si la PC está apagada, el respaldo local corre al encenderse.</p>
+
                             </div>
 
                             <!-- Estado: Último respaldo -->
-                            <div class="bg-gradient-to-br from-emerald-50 to-teal-50 rounded-3xl p-6 border border-emerald-100 shadow-sm flex flex-col gap-3">
-                                <p class="text-[11px] font-black uppercase tracking-widest text-emerald-600">Último Respaldo</p>
+                            <div
+                                class="bg-gradient-to-br from-emerald-50 to-teal-50 rounded-3xl p-6 border border-emerald-100 shadow-sm flex flex-col gap-3">
+                                <p class="text-[11px] font-black uppercase tracking-widest text-emerald-600">Último
+                                    Respaldo</p>
                                 <div class="flex items-start gap-2">
                                     <i class="ph-fill ph-check-circle text-3xl text-emerald-400 mt-0.5"></i>
                                     <div class="min-w-0">
-                                        <p class="text-sm font-black text-slate-800 truncate" id="respaldo-ultimo-fecha">Cargando...</p>
-                                        <p class="text-xs text-slate-400 font-mono truncate" id="respaldo-ultimo-nombre">—</p>
+                                        <p class="text-sm font-black text-slate-800 truncate"
+                                            id="respaldo-ultimo-fecha">Cargando...</p>
+                                        <p class="text-xs text-slate-400 font-mono truncate"
+                                            id="respaldo-ultimo-nombre">—</p>
                                     </div>
                                 </div>
                                 <div class="flex items-center gap-2">
                                     <i class="ph-fill ph-file-archive text-slate-400"></i>
                                     <span class="text-sm font-bold text-slate-600" id="respaldo-ultimo-tam">—</span>
-                                    <span class="ml-auto px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 text-[10px] font-black border border-emerald-200" id="respaldo-fuente-label">Cargando...</span>
+                                    <span
+                                        class="ml-auto px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 text-[10px] font-black border border-emerald-200"
+                                        id="respaldo-fuente-label">Cargando...</span>
                                 </div>
                             </div>
 
                             <!-- Estado: Política de retención -->
-                            <div class="bg-gradient-to-br from-purple-50 to-pink-50 rounded-3xl p-6 border border-purple-100 shadow-sm flex flex-col gap-3">
-                                <p class="text-[11px] font-black uppercase tracking-widest text-purple-500">Política de Retención</p>
+                            <div
+                                class="bg-gradient-to-br from-purple-50 to-pink-50 rounded-3xl p-6 border border-purple-100 shadow-sm flex flex-col gap-3">
+                                <p class="text-[11px] font-black uppercase tracking-widest text-purple-500">Política de
+                                    Retención</p>
                                 <div class="space-y-2 text-sm">
                                     <div class="flex justify-between items-center">
-                                        <span class="text-slate-500 font-medium flex items-center gap-1.5"><i class="ph-fill ph-calendar text-purple-300"></i>Diarios</span>
+                                        <span class="text-slate-500 font-medium flex items-center gap-1.5"><i
+                                                class="ph-fill ph-calendar text-purple-300"></i>Diarios</span>
                                         <span class="font-black text-slate-700">Últimos 7</span>
                                     </div>
                                     <div class="flex justify-between items-center">
-                                        <span class="text-slate-500 font-medium flex items-center gap-1.5"><i class="ph-fill ph-calendar-dots text-purple-300"></i>Semanales</span>
+                                        <span class="text-slate-500 font-medium flex items-center gap-1.5"><i
+                                                class="ph-fill ph-calendar-dots text-purple-300"></i>Semanales</span>
                                         <span class="font-black text-slate-700">4 semanas</span>
                                     </div>
                                     <div class="flex justify-between items-center">
-                                        <span class="text-slate-500 font-medium flex items-center gap-1.5"><i class="ph-fill ph-calendar-blank text-purple-300"></i>Mensuales</span>
+                                        <span class="text-slate-500 font-medium flex items-center gap-1.5"><i
+                                                class="ph-fill ph-calendar-blank text-purple-300"></i>Mensuales</span>
                                         <span class="font-black text-slate-700">12 meses</span>
                                     </div>
                                     <div class="flex justify-between items-center">
-                                        <span class="text-slate-500 font-medium flex items-center gap-1.5"><i class="ph-fill ph-archive text-purple-300"></i>Anuales (cierre)</span>
+                                        <span class="text-slate-500 font-medium flex items-center gap-1.5"><i
+                                                class="ph-fill ph-archive text-purple-300"></i>Anuales (cierre)</span>
                                         <span class="font-black text-slate-700">10 años</span>
                                     </div>
                                 </div>
@@ -751,12 +773,14 @@
                             <div class="flex items-center justify-between mb-4">
                                 <div class="flex items-center gap-2">
                                     <h3 class="text-base font-black text-slate-700">Historial de Respaldos</h3>
-                                    <span id="respaldo-contador" class="px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-600 text-xs font-black border border-blue-100">—</span>
+                                    <span id="respaldo-contador"
+                                        class="px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-600 text-xs font-black border border-blue-100">—</span>
                                 </div>
                             </div>
                             <div class="overflow-x-auto rounded-2xl border border-slate-100 shadow-sm bg-white">
                                 <table class="w-full text-left border-collapse">
-                                    <thead class="bg-slate-50 text-slate-500 uppercase text-[10px] font-black tracking-widest">
+                                    <thead
+                                        class="bg-slate-50 text-slate-500 uppercase text-[10px] font-black tracking-widest">
                                         <tr>
                                             <th class="px-5 py-3.5 border-b border-slate-100">Fecha</th>
                                             <th class="px-5 py-3.5 border-b border-slate-100">Archivo</th>
@@ -767,33 +791,15 @@
                                         </tr>
                                     </thead>
                                     <tbody id="respaldo-historial-body" class="divide-y divide-slate-100 text-sm">
-                                        <tr><td colspan="5" class="px-6 py-8 text-center text-slate-400 text-sm">Navega a esta sección para cargar el historial.</td></tr>
+                                        <tr>
+                                            <td colspan="5" class="px-6 py-8 text-center text-slate-400 text-sm">Navega
+                                                a esta sección para cargar el historial.</td>
+                                        </tr>
                                     </tbody>
                                 </table>
                             </div>
                         </div>
 
-                        <!-- Guía de recuperación (colapsable) -->
-                        <details class="group">
-                            <summary class="flex items-center justify-between cursor-pointer px-5 py-4 bg-amber-50 rounded-2xl border border-amber-100 hover:bg-amber-100/60 transition-colors list-none">
-                                <div class="flex items-center gap-3">
-                                    <i class="ph-fill ph-life-preserver text-xl text-amber-500"></i>
-                                    <span class="font-black text-amber-800 text-sm">📋 Guía de Recuperación ante Desastres</span>
-                                </div>
-                                <i class="ph-bold ph-caret-down text-amber-400 group-open:rotate-180 transition-transform duration-200"></i>
-                            </summary>
-                            <div class="mt-3 p-5 bg-amber-50/50 rounded-2xl border border-amber-100 text-sm text-slate-600 space-y-3">
-                                <p class="font-bold text-slate-700">Pasos para restaurar la base de datos:</p>
-                                <ol class="space-y-2 list-none">
-                                    <li class="flex gap-3"><span class="w-6 h-6 rounded-full bg-amber-200 text-amber-800 font-black text-xs flex items-center justify-center flex-shrink-0">1</span><span>Abre la carpeta <code class="bg-amber-100 px-1 rounded">C:\Respaldos_CEI\</code> o Google Drive → carpeta <code class="bg-amber-100 px-1 rounded">CEI_Backups</code></span></li>
-                                    <li class="flex gap-3"><span class="w-6 h-6 rounded-full bg-amber-200 text-amber-800 font-black text-xs flex items-center justify-center flex-shrink-0">2</span><span>Copia el archivo <code class="bg-amber-100 px-1 rounded">.7z</code> más reciente a tu escritorio</span></li>
-                                    <li class="flex gap-3"><span class="w-6 h-6 rounded-full bg-amber-200 text-amber-800 font-black text-xs flex items-center justify-center flex-shrink-0">3</span><span>Clic derecho → <strong>7-Zip → Extraer aquí</strong> → ingresa la contraseña maestra → obtienes el <code class="bg-amber-100 px-1 rounded">.sql</code></span></li>
-                                    <li class="flex gap-3"><span class="w-6 h-6 rounded-full bg-amber-200 text-amber-800 font-black text-xs flex items-center justify-center flex-shrink-0">4</span><span>Ve al <strong>Panel de Supabase → SQL Editor</strong> → pega y ejecuta el contenido del <code class="bg-amber-100 px-1 rounded">.sql</code></span></li>
-                                    <li class="flex gap-3"><span class="w-6 h-6 rounded-full bg-amber-200 text-amber-800 font-black text-xs flex items-center justify-center flex-shrink-0">5</span><span>Verifica las tablas: <code class="bg-amber-100 px-1 rounded">usuarios</code>, <code class="bg-amber-100 px-1 rounded">inscripciones</code>, <code class="bg-amber-100 px-1 rounded">asignaciones_estudiantes</code></span></li>
-                                    <li class="flex gap-3"><span class="w-6 h-6 rounded-full bg-amber-200 text-amber-800 font-black text-xs flex items-center justify-center flex-shrink-0">💡</span><span class="text-amber-700">Los archivos <code class="bg-amber-100 px-1 rounded">.sql.gz</code> de Drive se descomprimen con <strong>7-Zip</strong> o <strong>WinRAR</strong> (no tienen contraseña).</span></li>
-                                </ol>
-                            </div>
-                        </details>
 
                     </div>
                 </section>
@@ -1178,263 +1184,299 @@
                 <!-- SECCIÓN: PROMOCIÓN DE ALUMNOS (V2) -->
                 <!-- ============================================ -->
                 <section id="section-promocion" class="page-section hidden fade-in">
-                  <div class="bg-white/95 backdrop-blur-xl p-6 md:p-10 rounded-[2.5rem] shadow-xl border border-white min-h-[85vh]">
+                    <div
+                        class="bg-white/95 backdrop-blur-xl p-6 md:p-10 rounded-[2.5rem] shadow-xl border border-white min-h-[85vh]">
 
-                    <!-- Encabezado -->
-                    <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
-                      <div class="flex items-center gap-4">
-                        <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center shadow-lg shadow-emerald-200 transform -rotate-6">
-                          <i class="ph-bold ph-arrows-counter-clockwise text-3xl text-white"></i>
-                        </div>
-                        <div>
-                          <h2 class="text-3xl font-black text-gray-800 tracking-tight">Promoción de Alumnos</h2>
-                          <p class="text-gray-500 font-medium mt-1">Procesa un aula a la vez: elige, revisa y confirma.</p>
-                        </div>
-                      </div>
-                    </div>
-
-                    <!-- ── PASO 1: Filtros en cascada ────────────────────────── -->
-                    <div class="bg-emerald-50/40 border border-emerald-100 rounded-3xl p-6 mb-8">
-                      <p class="text-[10px] font-black text-emerald-700 uppercase tracking-widest mb-4 flex items-center gap-2">
-                        <i class="ph-fill ph-funnel text-emerald-500"></i> Paso 1 — Selecciona el contexto de trabajo
-                      </p>
-                      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-
-                        <!-- Período Origen -->
-                        <div>
-                          <label class="text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-1.5 flex items-center gap-1.5">
-                            <i class="ph-fill ph-calendar text-gray-400"></i> Período de Origen
-                          </label>
-                          <select id="prom-periodo-origen"
-                            class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-4 focus:ring-emerald-50 focus:border-emerald-400 outline-none text-sm font-bold bg-white transition-all shadow-sm">
-                            <option value="">Seleccionar período...</option>
-                          </select>
-                          <p class="text-[10px] text-gray-400 mt-1 italic">Año lectivo donde están inscritos.</p>
-                        </div>
-
-                        <!-- Sección / Aula Origen -->
-                        <div>
-                          <label class="text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-1.5 flex items-center gap-1.5">
-                            <i class="ph-fill ph-chalkboard text-gray-400"></i> Sección / Aula Actual
-                          </label>
-                          <select id="prom-seccion-origen" disabled
-                            class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-4 focus:ring-emerald-50 focus:border-emerald-400 outline-none text-sm font-bold bg-gray-100 text-gray-400 transition-all shadow-sm disabled:cursor-not-allowed">
-                            <option value="">— Primero elige un período —</option>
-                          </select>
-                          <p class="text-[10px] text-gray-400 mt-1 italic">Aula específica a procesar.</p>
-                        </div>
-
-                        <!-- Período Destino -->
-                        <div>
-                          <label class="text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-1.5 flex items-center gap-1.5">
-                            <i class="ph-fill ph-calendar-star text-emerald-500"></i> Período Destino
-                          </label>
-                          <select id="prom-periodo-destino"
-                            class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-4 focus:ring-emerald-50 focus:border-emerald-400 outline-none text-sm font-bold bg-white transition-all shadow-sm">
-                            <option value="">Seleccionar período destino...</option>
-                          </select>
-                          <p class="text-[10px] text-emerald-600/70 mt-1 italic font-medium">Año lectivo al que pasarán los alumnos.</p>
-                        </div>
-                      </div>
-                    </div>
-
-                    <!-- ── PASO 2: Tabla de alumnos (se muestra solo si los 3 filtros están) ── -->
-                    <div id="prom-tabla-container" class="hidden">
-
-                      <!-- Control masivo -->
-                      <div id="prom-bulk-control" class="hidden mb-4 p-4 bg-blue-50 border border-blue-100 rounded-2xl flex flex-col sm:flex-row items-center gap-3">
-                        <i class="ph-fill ph-lightning text-blue-500 text-lg flex-shrink-0"></i>
-                        <span class="text-sm font-bold text-blue-700">Mover todos los <span class="text-emerald-700">Promovidos</span> a la sección:</span>
-                        <select id="prom-bulk-seccion"
-                          class="flex-1 max-w-xs px-3 py-2 border border-blue-200 rounded-xl focus:ring-2 focus:ring-blue-200 outline-none text-sm font-bold bg-white text-gray-700">
-                          <option value="">Cargando secciones destino...</option>
-                        </select>
-                        <button onclick="aplicarSeccionMasiva()" id="btn-bulk-apply"
-                          class="px-5 py-2 bg-blue-600 text-white rounded-xl text-sm font-bold hover:bg-blue-700 transition-all shadow-md flex items-center gap-2 whitespace-nowrap">
-                          <i class="ph-bold ph-lightning"></i> Aplicar a todos
-                        </button>
-                      </div>
-
-                      <!-- Cabecera de tabla + contadores -->
-                      <div class="p-4 bg-gray-50/50 rounded-t-3xl border-x border-t border-gray-100 flex flex-col md:flex-row md:items-center justify-between gap-3">
-                        <div class="flex items-center gap-3 flex-wrap">
-                          <div class="px-3 py-1.5 bg-white rounded-lg border border-gray-200 shadow-sm text-xs font-bold text-gray-600 flex items-center gap-2">
-                            <i class="ph-fill ph-student text-emerald-500"></i>
-                            <span id="prom-count-total">0 Alumnos</span>
-                          </div>
-                          <div class="px-3 py-1.5 bg-emerald-50 rounded-lg border border-emerald-100 text-xs font-bold text-emerald-700 flex items-center gap-1.5">
-                            <span class="w-2 h-2 rounded-full bg-emerald-500 inline-block"></span>
-                            <span id="prom-count-promover">0</span> Promueven
-                          </div>
-                          <div class="px-3 py-1.5 bg-amber-50 rounded-lg border border-amber-100 text-xs font-bold text-amber-700 flex items-center gap-1.5">
-                            <span class="w-2 h-2 rounded-full bg-amber-400 inline-block"></span>
-                            <span id="prom-count-repetir">0</span> Repiten
-                          </div>
-                          <div class="px-3 py-1.5 bg-red-50 rounded-lg border border-red-100 text-xs font-bold text-red-700 flex items-center gap-1.5">
-                            <span class="w-2 h-2 rounded-full bg-red-400 inline-block"></span>
-                            <span id="prom-count-retirar">0</span> Retiran
-                          </div>
-                        </div>
-                        <button onclick="abrirModalRevision()" id="btn-iniciar-promocion" disabled
-                          class="w-full md:w-auto px-8 py-3 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-black rounded-xl shadow-lg shadow-emerald-200 hover:from-emerald-600 hover:to-emerald-700 transition-all flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed">
-                          <i class="ph-bold ph-arrows-clockwise text-lg"></i>
-                          Revisar y Confirmar
-                        </button>
-                      </div>
-
-                      <!-- Tabla -->
-                      <div class="overflow-x-auto border-x border-b border-gray-100 bg-white rounded-b-3xl shadow-sm">
-                        <table class="w-full text-left border-collapse" id="prom-table">
-                          <thead class="bg-gray-50/50 text-gray-500 uppercase text-[10px] font-black tracking-widest sticky top-0 z-10">
-                            <tr>
-                              <th class="px-5 py-4">Estudiante</th>
-                              <th class="px-4 py-4 text-center w-40">Acción a tomar</th>
-                              <th class="px-4 py-4 text-center w-52">Asignación Destino</th>
-                            </tr>
-                          </thead>
-                          <tbody id="prom-table-body" class="divide-y divide-gray-100 text-sm">
-                            <tr>
-                              <td colspan="3" class="px-6 py-16 text-center">
-                                <div class="flex flex-col items-center gap-3 text-gray-400">
-                                  <i class="ph ph-user-list text-5xl opacity-20"></i>
-                                  <p class="font-medium italic">Selecciona los 3 filtros para listar alumnos</p>
+                        <!-- Encabezado -->
+                        <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
+                            <div class="flex items-center gap-4">
+                                <div
+                                    class="w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center shadow-lg shadow-emerald-200 transform -rotate-6">
+                                    <i class="ph-bold ph-arrows-counter-clockwise text-3xl text-white"></i>
                                 </div>
-                              </td>
-                            </tr>
-                          </tbody>
-                        </table>
-                      </div>
-
-                      <!-- Nota informativa -->
-                      <div class="mt-4 p-4 bg-gray-50/80 rounded-2xl border border-gray-100 text-xs text-gray-500 flex items-start gap-2">
-                        <i class="ph-fill ph-info text-emerald-400 mt-0.5 flex-shrink-0"></i>
-                        <span>Los alumnos de <strong>3er Grupo</strong> marcados como "Promover" serán egresados automáticamente. Una vez confirmada el aula, la tabla se vacía para procesar la siguiente.</span>
-                      </div>
-                    </div>
-
-                    <!-- Estado vacío mientras no se seleccionan los 3 filtros -->
-                    <div id="prom-empty-state" class="flex flex-col items-center justify-center py-20 text-center">
-                      <div class="relative w-24 h-24 mb-6">
-                        <div class="absolute inset-0 bg-emerald-100 rounded-full animate-ping opacity-20"></div>
-                        <div class="absolute inset-0 bg-emerald-50 rounded-full flex items-center justify-center border border-emerald-100 shadow-inner">
-                          <i class="ph-duotone ph-graduation-cap text-5xl text-emerald-400"></i>
+                                <div>
+                                    <h2 class="text-3xl font-black text-gray-800 tracking-tight">Promoción de Alumnos
+                                    </h2>
+                                    <p class="text-gray-500 font-medium mt-1">Procesa un aula a la vez: elige, revisa y
+                                        confirma.</p>
+                                </div>
+                            </div>
                         </div>
-                      </div>
-                      <h3 class="text-xl font-black text-gray-700 mb-2">Panel de Promoción por Aula</h3>
-                      <p class="text-gray-400 text-sm max-w-sm font-medium">Selecciona el <strong>Período de Origen</strong>, luego el <strong>Aula</strong> y finalmente el <strong>Período Destino</strong> para comenzar.</p>
-                    </div>
 
-                  </div>
+                        <!-- ── PASO 1: Filtros en cascada ────────────────────────── -->
+                        <div class="bg-emerald-50/40 border border-emerald-100 rounded-3xl p-6 mb-8">
+                            <p
+                                class="text-[10px] font-black text-emerald-700 uppercase tracking-widest mb-4 flex items-center gap-2">
+                                <i class="ph-fill ph-funnel text-emerald-500"></i> Paso 1 — Selecciona el contexto de
+                                trabajo
+                            </p>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+
+                                <!-- Período Origen -->
+                                <div>
+                                    <label
+                                        class="text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-1.5 flex items-center gap-1.5">
+                                        <i class="ph-fill ph-calendar text-gray-400"></i> Período de Origen
+                                    </label>
+                                    <select id="prom-periodo-origen"
+                                        class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-4 focus:ring-emerald-50 focus:border-emerald-400 outline-none text-sm font-bold bg-white transition-all shadow-sm">
+                                        <option value="">Seleccionar período...</option>
+                                    </select>
+                                    <p class="text-[10px] text-gray-400 mt-1 italic">Año lectivo donde están inscritos.
+                                    </p>
+                                </div>
+
+                                <!-- Sección / Aula Origen -->
+                                <div>
+                                    <label
+                                        class="text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-1.5 flex items-center gap-1.5">
+                                        <i class="ph-fill ph-chalkboard text-gray-400"></i> Sección / Aula Actual
+                                    </label>
+                                    <select id="prom-seccion-origen" disabled
+                                        class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-4 focus:ring-emerald-50 focus:border-emerald-400 outline-none text-sm font-bold bg-gray-100 text-gray-400 transition-all shadow-sm disabled:cursor-not-allowed">
+                                        <option value="">— Primero elige un período —</option>
+                                    </select>
+                                    <p class="text-[10px] text-gray-400 mt-1 italic">Aula específica a procesar.</p>
+                                </div>
+
+                                <!-- Período Destino -->
+                                <div>
+                                    <label
+                                        class="text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-1.5 flex items-center gap-1.5">
+                                        <i class="ph-fill ph-calendar-star text-emerald-500"></i> Período Destino
+                                    </label>
+                                    <select id="prom-periodo-destino"
+                                        class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-4 focus:ring-emerald-50 focus:border-emerald-400 outline-none text-sm font-bold bg-white transition-all shadow-sm">
+                                        <option value="">Seleccionar período destino...</option>
+                                    </select>
+                                    <p class="text-[10px] text-emerald-600/70 mt-1 italic font-medium">Año lectivo al
+                                        que pasarán los alumnos.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- ── PASO 2: Tabla de alumnos (se muestra solo si los 3 filtros están) ── -->
+                        <div id="prom-tabla-container" class="hidden">
+
+                            <!-- Control masivo -->
+                            <div id="prom-bulk-control"
+                                class="hidden mb-4 p-4 bg-blue-50 border border-blue-100 rounded-2xl flex flex-col sm:flex-row items-center gap-3">
+                                <i class="ph-fill ph-lightning text-blue-500 text-lg flex-shrink-0"></i>
+                                <span class="text-sm font-bold text-blue-700">Mover todos los <span
+                                        class="text-emerald-700">Promovidos</span> a la sección:</span>
+                                <select id="prom-bulk-seccion"
+                                    class="flex-1 max-w-xs px-3 py-2 border border-blue-200 rounded-xl focus:ring-2 focus:ring-blue-200 outline-none text-sm font-bold bg-white text-gray-700">
+                                    <option value="">Cargando secciones destino...</option>
+                                </select>
+                                <button onclick="aplicarSeccionMasiva()" id="btn-bulk-apply"
+                                    class="px-5 py-2 bg-blue-600 text-white rounded-xl text-sm font-bold hover:bg-blue-700 transition-all shadow-md flex items-center gap-2 whitespace-nowrap">
+                                    <i class="ph-bold ph-lightning"></i> Aplicar a todos
+                                </button>
+                            </div>
+
+                            <!-- Cabecera de tabla + contadores -->
+                            <div
+                                class="p-4 bg-gray-50/50 rounded-t-3xl border-x border-t border-gray-100 flex flex-col md:flex-row md:items-center justify-between gap-3">
+                                <div class="flex items-center gap-3 flex-wrap">
+                                    <div
+                                        class="px-3 py-1.5 bg-white rounded-lg border border-gray-200 shadow-sm text-xs font-bold text-gray-600 flex items-center gap-2">
+                                        <i class="ph-fill ph-student text-emerald-500"></i>
+                                        <span id="prom-count-total">0 Alumnos</span>
+                                    </div>
+                                    <div
+                                        class="px-3 py-1.5 bg-emerald-50 rounded-lg border border-emerald-100 text-xs font-bold text-emerald-700 flex items-center gap-1.5">
+                                        <span class="w-2 h-2 rounded-full bg-emerald-500 inline-block"></span>
+                                        <span id="prom-count-promover">0</span> Promueven
+                                    </div>
+                                    <div
+                                        class="px-3 py-1.5 bg-amber-50 rounded-lg border border-amber-100 text-xs font-bold text-amber-700 flex items-center gap-1.5">
+                                        <span class="w-2 h-2 rounded-full bg-amber-400 inline-block"></span>
+                                        <span id="prom-count-repetir">0</span> Repiten
+                                    </div>
+                                    <div
+                                        class="px-3 py-1.5 bg-red-50 rounded-lg border border-red-100 text-xs font-bold text-red-700 flex items-center gap-1.5">
+                                        <span class="w-2 h-2 rounded-full bg-red-400 inline-block"></span>
+                                        <span id="prom-count-retirar">0</span> Retiran
+                                    </div>
+                                </div>
+                                <button onclick="abrirModalRevision()" id="btn-iniciar-promocion" disabled
+                                    class="w-full md:w-auto px-8 py-3 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-black rounded-xl shadow-lg shadow-emerald-200 hover:from-emerald-600 hover:to-emerald-700 transition-all flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed">
+                                    <i class="ph-bold ph-arrows-clockwise text-lg"></i>
+                                    Revisar y Confirmar
+                                </button>
+                            </div>
+
+                            <!-- Tabla -->
+                            <div
+                                class="overflow-x-auto border-x border-b border-gray-100 bg-white rounded-b-3xl shadow-sm">
+                                <table class="w-full text-left border-collapse" id="prom-table">
+                                    <thead
+                                        class="bg-gray-50/50 text-gray-500 uppercase text-[10px] font-black tracking-widest sticky top-0 z-10">
+                                        <tr>
+                                            <th class="px-5 py-4">Estudiante</th>
+                                            <th class="px-4 py-4 text-center w-40">Acción a tomar</th>
+                                            <th class="px-4 py-4 text-center w-52">Asignación Destino</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="prom-table-body" class="divide-y divide-gray-100 text-sm">
+                                        <tr>
+                                            <td colspan="3" class="px-6 py-16 text-center">
+                                                <div class="flex flex-col items-center gap-3 text-gray-400">
+                                                    <i class="ph ph-user-list text-5xl opacity-20"></i>
+                                                    <p class="font-medium italic">Selecciona los 3 filtros para listar
+                                                        alumnos</p>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <!-- Nota informativa -->
+                            <div
+                                class="mt-4 p-4 bg-gray-50/80 rounded-2xl border border-gray-100 text-xs text-gray-500 flex items-start gap-2">
+                                <i class="ph-fill ph-info text-emerald-400 mt-0.5 flex-shrink-0"></i>
+                                <span>Los alumnos de <strong>3er Grupo</strong> marcados como "Promover" serán egresados
+                                    automáticamente. Una vez confirmada el aula, la tabla se vacía para procesar la
+                                    siguiente.</span>
+                            </div>
+                        </div>
+
+                        <!-- Estado vacío mientras no se seleccionan los 3 filtros -->
+                        <div id="prom-empty-state" class="flex flex-col items-center justify-center py-20 text-center">
+                            <div class="relative w-24 h-24 mb-6">
+                                <div class="absolute inset-0 bg-emerald-100 rounded-full animate-ping opacity-20"></div>
+                                <div
+                                    class="absolute inset-0 bg-emerald-50 rounded-full flex items-center justify-center border border-emerald-100 shadow-inner">
+                                    <i class="ph-duotone ph-graduation-cap text-5xl text-emerald-400"></i>
+                                </div>
+                            </div>
+                            <h3 class="text-xl font-black text-gray-700 mb-2">Panel de Promoción por Aula</h3>
+                            <p class="text-gray-400 text-sm max-w-sm font-medium">Selecciona el <strong>Período de
+                                    Origen</strong>, luego el <strong>Aula</strong> y finalmente el <strong>Período
+                                    Destino</strong> para comenzar.</p>
+                        </div>
+
+                    </div>
                 </section>
 
                 <!-- ============================================ -->
                 <!-- MODAL DE REVISIÓN DE PROMOCIÓN -->
                 <!-- ============================================ -->
                 <div id="modal-revision-promocion"
-                  class="fixed inset-0 bg-slate-900/50 z-[100] hidden flex items-center justify-center backdrop-blur-sm transition-opacity opacity-0"
-                  style="transition: opacity 0.3s ease;">
-                  <div id="modal-revision-content"
-                    class="bg-white rounded-[2rem] shadow-2xl w-full max-w-2xl mx-4 max-h-[90vh] flex flex-col overflow-hidden transform scale-95 transition-transform duration-300 border border-white/50">
+                    class="fixed inset-0 bg-slate-900/50 z-[100] hidden flex items-center justify-center backdrop-blur-sm transition-opacity opacity-0"
+                    style="transition: opacity 0.3s ease;">
+                    <div id="modal-revision-content"
+                        class="bg-white rounded-[2rem] shadow-2xl w-full max-w-2xl mx-4 max-h-[90vh] flex flex-col overflow-hidden transform scale-95 transition-transform duration-300 border border-white/50">
 
-                    <!-- Header del modal -->
-                    <div class="px-8 py-6 border-b border-emerald-100 flex justify-between items-center bg-emerald-50/50 flex-shrink-0">
-                      <div>
-                        <h3 class="font-extrabold text-gray-800 text-xl flex items-center gap-3">
-                          <i class="ph-bold ph-shield-check text-emerald-600 text-3xl"></i>
-                          Resumen de Promoción
-                        </h3>
-                        <p class="text-sm font-bold text-emerald-700 mt-1" id="modal-revision-subtitulo">Revisando aula...</p>
-                      </div>
-                      <button onclick="cerrarModalRevision()"
-                        class="text-gray-400 hover:text-red-500 transition-colors p-2 hover:bg-white rounded-xl focus:outline-none">
-                        <i class="ph-bold ph-x text-2xl"></i>
-                      </button>
+                        <!-- Header del modal -->
+                        <div
+                            class="px-8 py-6 border-b border-emerald-100 flex justify-between items-center bg-emerald-50/50 flex-shrink-0">
+                            <div>
+                                <h3 class="font-extrabold text-gray-800 text-xl flex items-center gap-3">
+                                    <i class="ph-bold ph-shield-check text-emerald-600 text-3xl"></i>
+                                    Resumen de Promoción
+                                </h3>
+                                <p class="text-sm font-bold text-emerald-700 mt-1" id="modal-revision-subtitulo">
+                                    Revisando aula...</p>
+                            </div>
+                            <button onclick="cerrarModalRevision()"
+                                class="text-gray-400 hover:text-red-500 transition-colors p-2 hover:bg-white rounded-xl focus:outline-none">
+                                <i class="ph-bold ph-x text-2xl"></i>
+                            </button>
+                        </div>
+
+                        <!-- Cuerpo del modal -->
+                        <div class="p-8 overflow-y-auto flex-1">
+
+                            <!-- Tarjetas de resumen -->
+                            <div class="grid grid-cols-3 gap-4 mb-8">
+                                <div class="bg-emerald-50 rounded-2xl p-4 text-center border border-emerald-100">
+                                    <div class="text-3xl font-black text-emerald-600 mb-1" id="modal-n-promover">0</div>
+                                    <p class="text-[11px] font-bold text-emerald-600 uppercase tracking-widest">
+                                        Promueven</p>
+                                </div>
+                                <div class="bg-amber-50 rounded-2xl p-4 text-center border border-amber-100">
+                                    <div class="text-3xl font-black text-amber-600 mb-1" id="modal-n-repetir">0</div>
+                                    <p class="text-[11px] font-bold text-amber-600 uppercase tracking-widest">Repiten
+                                    </p>
+                                </div>
+                                <div class="bg-red-50 rounded-2xl p-4 text-center border border-red-100">
+                                    <div class="text-3xl font-black text-red-500 mb-1" id="modal-n-retirar">0</div>
+                                    <p class="text-[11px] font-bold text-red-500 uppercase tracking-widest">Se Retiran
+                                    </p>
+                                </div>
+                            </div>
+
+                            <!-- Lista de excepciones -->
+                            <div>
+                                <h4 class="text-sm font-black text-gray-700 mb-3 flex items-center gap-2">
+                                    <i class="ph-fill ph-warning-circle text-amber-500"></i>
+                                    Atención — Excepciones al flujo normal
+                                </h4>
+                                <div id="modal-excepciones-lista" class="space-y-2">
+                                    <!-- Se llena dinámicamente -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Botones del modal -->
+                        <div
+                            class="px-8 py-5 border-t border-gray-100 bg-gray-50/50 flex flex-col sm:flex-row justify-end gap-3 flex-shrink-0">
+                            <button onclick="cerrarModalRevision()"
+                                class="px-7 py-3 text-gray-600 font-bold hover:bg-gray-100 rounded-2xl transition-all text-sm border border-gray-200 flex items-center justify-center gap-2">
+                                <i class="ph-bold ph-pencil"></i> Cancelar / Volver a editar
+                            </button>
+                            <button id="btn-confirmar-promocion" onclick="confirmarYProcesar()"
+                                class="px-7 py-3 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white rounded-2xl font-extrabold hover:from-emerald-600 hover:to-emerald-700 transition shadow-xl shadow-emerald-200 flex items-center justify-center gap-2 text-sm transform active:scale-95">
+                                <i class="ph-bold ph-check-circle text-xl"></i> Confirmar y Procesar Aula
+                            </button>
+                        </div>
                     </div>
-
-                    <!-- Cuerpo del modal -->
-                    <div class="p-8 overflow-y-auto flex-1">
-
-                      <!-- Tarjetas de resumen -->
-                      <div class="grid grid-cols-3 gap-4 mb-8">
-                        <div class="bg-emerald-50 rounded-2xl p-4 text-center border border-emerald-100">
-                          <div class="text-3xl font-black text-emerald-600 mb-1" id="modal-n-promover">0</div>
-                          <p class="text-[11px] font-bold text-emerald-600 uppercase tracking-widest">Promueven</p>
-                        </div>
-                        <div class="bg-amber-50 rounded-2xl p-4 text-center border border-amber-100">
-                          <div class="text-3xl font-black text-amber-600 mb-1" id="modal-n-repetir">0</div>
-                          <p class="text-[11px] font-bold text-amber-600 uppercase tracking-widest">Repiten</p>
-                        </div>
-                        <div class="bg-red-50 rounded-2xl p-4 text-center border border-red-100">
-                          <div class="text-3xl font-black text-red-500 mb-1" id="modal-n-retirar">0</div>
-                          <p class="text-[11px] font-bold text-red-500 uppercase tracking-widest">Se Retiran</p>
-                        </div>
-                      </div>
-
-                      <!-- Lista de excepciones -->
-                      <div>
-                        <h4 class="text-sm font-black text-gray-700 mb-3 flex items-center gap-2">
-                          <i class="ph-fill ph-warning-circle text-amber-500"></i>
-                          Atención — Excepciones al flujo normal
-                        </h4>
-                        <div id="modal-excepciones-lista" class="space-y-2">
-                          <!-- Se llena dinámicamente -->
-                        </div>
-                      </div>
-                    </div>
-
-                    <!-- Botones del modal -->
-                    <div class="px-8 py-5 border-t border-gray-100 bg-gray-50/50 flex flex-col sm:flex-row justify-end gap-3 flex-shrink-0">
-                      <button onclick="cerrarModalRevision()"
-                        class="px-7 py-3 text-gray-600 font-bold hover:bg-gray-100 rounded-2xl transition-all text-sm border border-gray-200 flex items-center justify-center gap-2">
-                        <i class="ph-bold ph-pencil"></i> Cancelar / Volver a editar
-                      </button>
-                      <button id="btn-confirmar-promocion" onclick="confirmarYProcesar()"
-                        class="px-7 py-3 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white rounded-2xl font-extrabold hover:from-emerald-600 hover:to-emerald-700 transition shadow-xl shadow-emerald-200 flex items-center justify-center gap-2 text-sm transform active:scale-95">
-                        <i class="ph-bold ph-check-circle text-xl"></i> Confirmar y Procesar Aula
-                      </button>
-                    </div>
-                  </div>
                 </div>
 
                 <!-- ============================================ -->
                 <!-- MODAL DE RESULTADOS DE PROMOCIÓN -->
                 <!-- ============================================ -->
                 <div id="modal-resultados-promocion"
-                  class="fixed inset-0 bg-slate-900/50 z-[100] hidden flex items-center justify-center backdrop-blur-sm transition-opacity opacity-0"
-                  style="transition: opacity 0.3s ease;">
-                  <div id="modal-resultados-content"
-                    class="bg-white rounded-[2rem] shadow-2xl w-full max-w-2xl mx-4 max-h-[90vh] flex flex-col overflow-hidden transform scale-95 transition-transform duration-300 border border-white/50">
+                    class="fixed inset-0 bg-slate-900/50 z-[100] hidden flex items-center justify-center backdrop-blur-sm transition-opacity opacity-0"
+                    style="transition: opacity 0.3s ease;">
+                    <div id="modal-resultados-content"
+                        class="bg-white rounded-[2rem] shadow-2xl w-full max-w-2xl mx-4 max-h-[90vh] flex flex-col overflow-hidden transform scale-95 transition-transform duration-300 border border-white/50">
 
-                    <!-- Header del modal -->
-                    <div id="modal-resultados-header" class="px-8 py-6 border-b border-gray-100 flex justify-between items-center bg-gray-50 flex-shrink-0">
-                      <div>
-                        <h3 id="modal-resultados-titulo" class="font-extrabold text-gray-800 text-xl flex items-center gap-3">
-                          <i id="modal-resultados-icon" class="ph-bold ph-info text-gray-600 text-3xl"></i>
-                          <span>Resultados de Promoción</span>
-                        </h3>
-                        <p class="text-sm font-bold text-gray-500 mt-1" id="modal-resultados-subtitulo">Resumen del procesamiento</p>
-                      </div>
-                      <button onclick="cerrarModalResultados()"
-                        class="text-gray-400 hover:text-gray-600 transition-colors p-2 hover:bg-gray-200 rounded-xl focus:outline-none">
-                        <i class="ph-bold ph-x text-2xl"></i>
-                      </button>
-                    </div>
+                        <!-- Header del modal -->
+                        <div id="modal-resultados-header"
+                            class="px-8 py-6 border-b border-gray-100 flex justify-between items-center bg-gray-50 flex-shrink-0">
+                            <div>
+                                <h3 id="modal-resultados-titulo"
+                                    class="font-extrabold text-gray-800 text-xl flex items-center gap-3">
+                                    <i id="modal-resultados-icon" class="ph-bold ph-info text-gray-600 text-3xl"></i>
+                                    <span>Resultados de Promoción</span>
+                                </h3>
+                                <p class="text-sm font-bold text-gray-500 mt-1" id="modal-resultados-subtitulo">Resumen
+                                    del procesamiento</p>
+                            </div>
+                            <button onclick="cerrarModalResultados()"
+                                class="text-gray-400 hover:text-gray-600 transition-colors p-2 hover:bg-gray-200 rounded-xl focus:outline-none">
+                                <i class="ph-bold ph-x text-2xl"></i>
+                            </button>
+                        </div>
 
-                    <!-- Cuerpo del modal -->
-                    <div class="p-8 overflow-y-auto flex-1 bg-gray-50/30">
-                      <div id="modal-resultados-lista" class="space-y-3">
-                        <!-- Se llena dinámicamente -->
-                      </div>
-                    </div>
+                        <!-- Cuerpo del modal -->
+                        <div class="p-8 overflow-y-auto flex-1 bg-gray-50/30">
+                            <div id="modal-resultados-lista" class="space-y-3">
+                                <!-- Se llena dinámicamente -->
+                            </div>
+                        </div>
 
-                    <!-- Botones del modal -->
-                    <div class="px-8 py-5 border-t border-gray-100 bg-white flex justify-end flex-shrink-0">
-                      <button onclick="cerrarModalResultados()"
-                        class="px-7 py-3 bg-gray-800 text-white rounded-2xl font-extrabold hover:bg-gray-900 transition shadow-xl flex items-center justify-center gap-2 text-sm transform active:scale-95">
-                        <i class="ph-bold ph-check"></i> Entendido
-                      </button>
+                        <!-- Botones del modal -->
+                        <div class="px-8 py-5 border-t border-gray-100 bg-white flex justify-end flex-shrink-0">
+                            <button onclick="cerrarModalResultados()"
+                                class="px-7 py-3 bg-gray-800 text-white rounded-2xl font-extrabold hover:bg-gray-900 transition shadow-xl flex items-center justify-center gap-2 text-sm transform active:scale-95">
+                                <i class="ph-bold ph-check"></i> Entendido
+                            </button>
+                        </div>
                     </div>
-                  </div>
                 </div>
 
 
@@ -1708,7 +1750,7 @@
         // ============================================
         // DESCARGAR CONSTANCIA WORD DESDE PYTHON
         // ============================================
-        
+
         async function generarFichaPDF(hijoId) {
             if (!hijoId) {
                 Swal.fire('Error', 'No se ha cargado un ID de estudiante válido', 'error');
@@ -3752,18 +3794,19 @@
                                 </div>
                             </div>
 
-                            <div
-                                class="bg-purple-50/30 rounded-[2rem] p-6 border border-purple-100/50 shadow-sm">
+                            <div class="bg-purple-50/30 rounded-[2rem] p-6 border border-purple-100/50 shadow-sm">
                                 <h4
                                     class="text-[11px] font-black text-purple-600 uppercase tracking-[0.2em] mb-5 text-center flex items-center justify-center gap-2">
-                                    <i class="ph-bold ph-folder-open text-base text-purple-500"></i> Gestión de Documentos
+                                    <i class="ph-bold ph-folder-open text-base text-purple-500"></i> Gestión de
+                                    Documentos
                                 </h4>
                                 <div class="flex flex-col gap-3">
                                     <button type="button"
                                         onclick="generarFichaPDF(document.getElementById('ficha-hijo-id').value)"
                                         class="w-full px-4 py-3 bg-emerald-50/60 text-emerald-800 rounded-2xl hover:bg-emerald-100/80 border border-emerald-100 hover:border-emerald-200 font-extrabold text-xs transition-all flex items-center justify-between group shadow-sm shadow-emerald-50/50">
                                         <span class="flex items-center gap-2.5"><i
-                                                class="ph-bold ph-file-pdf text-xl text-emerald-500"></i> FICHA INSCRIPCIÓN (PDF)</span>
+                                                class="ph-bold ph-file-pdf text-xl text-emerald-500"></i> FICHA
+                                            INSCRIPCIÓN (PDF)</span>
                                         <i
                                             class="ph-bold ph-arrow-circle-down-right text-emerald-600 opacity-0 group-hover:opacity-100 transition-all text-base"></i>
                                     </button>
