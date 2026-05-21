@@ -1311,14 +1311,17 @@ def obtener_matricula():
         seccion_id_filtro = request.args.get('seccion_id')
 
         if not seccion_id_filtro:
-            periodo_res = supabase.table("periodos_academicos") \
-                .select("id") \
-                .in_("estado", ["activo", "planificacion"]) \
-                .order("created_at", desc=True) \
-                .limit(1).execute()
+            periodo_res = supabase.table("periodos_academicos").select("id").eq("estado", "activo").execute()
+            periodo_actual_id = None
             
-            if periodo_res.data:
+            if periodo_res.data and len(periodo_res.data) > 0:
                 periodo_actual_id = periodo_res.data[0]['id']
+            else:
+                planificacion_res = supabase.table("periodos_academicos").select("id").eq("estado", "planificacion").order("created_at", desc=True).limit(1).execute()
+                if planificacion_res.data and len(planificacion_res.data) > 0:
+                    periodo_actual_id = planificacion_res.data[0]['id']
+            
+            if periodo_actual_id:
                 query = supabase.table("asignaciones_estudiantes") \
                     .select("*, secciones!inner(periodo_id)") \
                     .eq("estado", "cursando") \
@@ -5112,8 +5115,22 @@ def restaurar_respaldo(file_id):
         conn.autocommit = False
         try:
             with conn.cursor() as cur:
-                # Al estar formateado con --inserts y --on-conflict-do-nothing, 
-                # la ejecución de sql_content es segura
+                # 1. Analizar dinámicamente las tablas que se van a restaurar en el SQL
+                import re
+                table_matches = re.findall(r'INSERT\s+INTO\s+([^\s\(]+)', sql_content, re.IGNORECASE)
+                tables_to_clean = sorted(list(set(table_matches)))
+                
+                if tables_to_clean:
+                    # Excluir la tabla 'usuarios' para no cerrar sesiones de administrador
+                    # ni eliminar cuentas de usuarios nuevas
+                    tables_to_truncate = [t for t in tables_to_clean if 'usuarios' not in t.lower()]
+                    
+                    if tables_to_truncate:
+                        truncate_query = f"TRUNCATE {', '.join(tables_to_truncate)} CASCADE;"
+                        print(f"🔄 Limpiando tablas de datos antes de restaurar: {truncate_query}")
+                        cur.execute(truncate_query)
+                
+                # 2. Ejecutar el contenido del respaldo SQL
                 cur.execute(sql_content)
             conn.commit()
         except Exception as db_err:
