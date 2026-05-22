@@ -333,6 +333,29 @@
         // ============================================
         // FLUJO DE RECUPERACIÓN DE CONTRASEÑA (Estilo Cashea)
         // ============================================
+        // Función auxiliar: renderiza el bloque CAPTCHA según el tipo de respuesta del servidor
+        function _renderCaptchaBlock(data) {
+            if (data.imagen_base64) {
+                // NIVEL 1 — Imagen PNG con ruido (Pillow instalado en el servidor)
+                return `
+                    <div class="flex justify-center mb-2">
+                        <img id="captcha-img"
+                             src="${data.imagen_base64}"
+                             alt="Desafío de seguridad visual"
+                             style="border-radius:12px;border:1px solid #f3e8ff;box-shadow:0 2px 8px rgba(236,72,153,.08);max-width:100%;height:auto;">
+                    </div>
+                    <div class="text-center mb-3">
+                        <button type="button" id="btn-regenerar-captcha"
+                            style="font-size:.75rem;color:#EC4899;background:none;border:none;cursor:pointer;text-decoration:underline;">
+                            🔄 No puedo leerlo, generar otro
+                        </button>
+                    </div>`;
+            } else {
+                // NIVEL 0 — Fallback texto plano (Pillow no instalado)
+                return `<p class="text-xl font-black text-gray-800 mb-3">${data.pregunta}</p>`;
+            }
+        }
+
         async function iniciarRecuperacion(e) {
             e.preventDefault();
 
@@ -348,7 +371,7 @@
                 return;
             }
 
-            // 2. Modal combinado: Email + Puzzle CAPTCHA
+            // 2. Modal combinado: Email + CAPTCHA visual
             const { value: formValues } = await Swal.fire({
                 title: 'Recuperar contraseña',
                 html: `
@@ -363,7 +386,7 @@
                             <p class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">
                                 <i class="ph-bold ph-shield-check mr-1 text-pink-400"></i> Verificación de seguridad
                             </p>
-                            <p class="text-xl font-black text-gray-800 mb-3">${captchaData.pregunta}</p>
+                            <div id="captcha-container">${_renderCaptchaBlock(captchaData)}</div>
                             <input type="number" id="swal-captcha"
                                 class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-4 focus:ring-pink-100 focus:border-pink-400 outline-none transition-all text-base"
                                 placeholder="Tu respuesta...">
@@ -382,6 +405,35 @@
                     cancelButton: 'w-full py-3.5 bg-gray-100 hover:bg-gray-200 text-gray-600 font-bold rounded-xl m-0 transition-colors'
                 },
                 buttonsStyling: false,
+                didOpen: () => {
+                    // Botón para regenerar el CAPTCHA sin cerrar el modal
+                    const btnRegen = document.getElementById('btn-regenerar-captcha');
+                    if (btnRegen) {
+                        btnRegen.addEventListener('click', async () => {
+                            btnRegen.disabled = true;
+                            btnRegen.textContent = 'Generando...';
+                            try {
+                                const res = await fetch(`${API_BASE_URL}/api/captcha`);
+                                const newData = await res.json();
+                                // Actualizar ID en memoria para enviarlo al backend
+                                captchaData.id = newData.id;
+                                // Actualizar la imagen o texto in-place
+                                document.getElementById('captcha-container').innerHTML = _renderCaptchaBlock(newData);
+                                // Re-enlazar el evento al nuevo botón
+                                const newBtn = document.getElementById('btn-regenerar-captcha');
+                                if (newBtn) {
+                                    newBtn.addEventListener('click', arguments.callee.bind(null));
+                                }
+                                // Limpiar la respuesta anterior
+                                const inputCaptcha = document.getElementById('swal-captcha');
+                                if (inputCaptcha) inputCaptcha.value = '';
+                            } catch(err) {
+                                btnRegen.disabled = false;
+                                btnRegen.textContent = '🔄 No puedo leerlo, generar otro';
+                            }
+                        });
+                    }
+                },
                 preConfirm: () => {
                     const email = document.getElementById('swal-email').value.trim();
                     const respuesta = document.getElementById('swal-captcha').value.trim();

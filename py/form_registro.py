@@ -2,6 +2,7 @@
 # SISTEMA DE GESTIÓN ESCOLAR (API BACKEND)
 # =======================================================
 import os
+import sys
 import traceback
 import threading
 import tempfile
@@ -14,8 +15,24 @@ from typing import Optional, List
 from datetime import datetime, date, timedelta
 from functools import wraps
 
+# Asegurar encoding UTF-8 para evitar UnicodeEncodeError en Windows
+if hasattr(sys.stdout, 'reconfigure'):
+    sys.stdout.reconfigure(encoding='utf-8')
+if hasattr(sys.stderr, 'reconfigure'):
+    sys.stderr.reconfigure(encoding='utf-8')
+
 # --- LIBRERÍAS DE TERCEROS ---
 import io
+import base64
+import math
+
+# Pillow — para generación de imagen CAPTCHA Nivel 1
+try:
+    from PIL import Image as PILImage, ImageDraw, ImageFont, ImageFilter
+    PILLOW_AVAILABLE = True
+except ImportError:
+    PILLOW_AVAILABLE = False
+    print("⚠️  Pillow no instalado. El CAPTCHA se servirá como texto plano (Nivel 0).")
 from docxtpl import DocxTemplate
 from flask import Flask, request, jsonify, send_from_directory, session, send_file
 from flask_cors import CORS
@@ -118,7 +135,10 @@ def _limpiar_captchas_expirados():
 @app.route('/api/captcha', methods=['GET'])
 @limiter.limit("20 per minute")  # Evitar flooding de generación
 def generar_captcha():
-    """Genera un desafío matemático simple. La respuesta vive solo en el servidor."""
+    """Genera un desafío matemático. La respuesta vive solo en el servidor.
+    Nivel 1: Devuelve la pregunta como imagen PNG con ruido y distorsión (requiere Pillow).
+    Nivel 0 (fallback): Devuelve la pregunta como texto plano si Pillow no está disponible.
+    """
     _limpiar_captchas_expirados()
 
     operadores = [
@@ -151,6 +171,89 @@ def generar_captcha():
             'expiry': expiry
         }
 
+    # ── NIVEL 1: Imagen PNG con ruido y distorsión ──────────────────────────────
+    if PILLOW_AVAILABLE:
+        img_width, img_height = 320, 90
+
+        # Fondo con degradado suave (colores pastel acordes al estilo rosa del sistema)
+        img = PILImage.new('RGB', (img_width, img_height), color=(255, 255, 255))
+        draw = ImageDraw.Draw(img)
+
+        # 1. Ruido de fondo: píxeles aleatorios dispersos
+        for _ in range(400):
+            x = random.randint(0, img_width - 1)
+            y = random.randint(0, img_height - 1)
+            r = random.randint(180, 230)
+            g = random.randint(180, 230)
+            b_val = random.randint(200, 240)
+            draw.point((x, y), fill=(r, g, b_val))
+
+        # 2. Líneas diagonales aleatorias superpuestas
+        for _ in range(5):
+            x1 = random.randint(0, img_width)
+            y1 = random.randint(0, img_height)
+            x2 = random.randint(0, img_width)
+            y2 = random.randint(0, img_height)
+            color_linea = (
+                random.randint(180, 220),
+                random.randint(140, 190),
+                random.randint(180, 220)
+            )
+            draw.line([(x1, y1), (x2, y2)], fill=color_linea, width=random.randint(1, 2))
+
+        # 3. Texto de la pregunta con fuente del sistema (con fallback a default)
+        font_size = random.randint(24, 30)
+        try:
+            # Intentar fuente truetype del sistema
+            font = ImageFont.truetype("arial.ttf", font_size)
+        except (IOError, OSError):
+            try:
+                font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", font_size)
+            except (IOError, OSError):
+                font = ImageFont.load_default()
+
+        # Renderizar cada carácter con ligera rotación individual
+        # usando imagen temporal para componer
+        text = f"{a} {simbolo} {b} = ?"
+        char_width = font_size - 4
+        total_width = len(text) * char_width
+        x_cursor = max(15, (img_width - total_width) // 2)
+        y_base = (img_height // 2) - (font_size // 2) - 5
+
+        for char in text:
+            # Crear mini-imagen para el carácter
+            char_img = PILImage.new('RGBA', (font_size + 10, font_size + 20), (255, 255, 255, 0))
+            char_draw = ImageDraw.Draw(char_img)
+            char_draw.text((5, 5), char, font=font, fill=(80, 30, 80, 255))
+
+            # Rotar ligeramente (±8 grados)
+            angle = random.uniform(-8, 8)
+            char_img = char_img.rotate(angle, expand=True, resample=PILImage.BICUBIC)
+
+            # Pegar en la imagen principal con transparencia
+            y_offset = random.randint(-5, 5)
+            img.paste(char_img, (x_cursor, y_base + y_offset), char_img)
+            x_cursor += font_size - 4
+
+            # Salir si nos pasamos del ancho
+            if x_cursor > img_width - 10:
+                break
+
+        # 4. Aplicar leve desenfoque para suavizar el ruido
+        img = img.filter(ImageFilter.GaussianBlur(radius=0.5))
+
+        # 5. Codificar a PNG → base64
+        buffer = io.BytesIO()
+        img.save(buffer, format='PNG')
+        buffer.seek(0)
+        img_b64 = "data:image/png;base64," + base64.b64encode(buffer.getvalue()).decode('utf-8')
+
+        return jsonify({
+            'id': captcha_id,
+            'imagen_base64': img_b64
+        }), 200
+
+    # ── NIVEL 0 (fallback): texto plano si Pillow no está instalado ─────────────
     return jsonify({'id': captcha_id, 'pregunta': pregunta}), 200
 
 
