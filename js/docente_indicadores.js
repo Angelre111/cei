@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Llamada desde docente_proyectos.js cuando se selecciona un proyecto
 window.cargarIndicadoresDeProyecto = async function(proyectoId, estadoProyecto) {
-    const container = document.getElementById('lista-indicadores-areas');
+    const container = document.getElementById('proyecto-indicadores-lista');
     
     if (!proyectoId || !container) return;
 
@@ -30,7 +30,7 @@ window.cargarIndicadoresDeProyecto = async function(proyectoId, estadoProyecto) 
         if(formAgregar) formAgregar.classList.remove('hidden');
     }
 
-    container.innerHTML = `<div class="text-center py-10"><i class="ph-spinner animate-spin text-3xl text-purple-300"></i></div>`;
+    container.innerHTML = `<div class="text-center py-10 col-span-full"><i class="ph-spinner animate-spin text-3xl text-purple-300"></i></div>`;
     
     try {
         const token = localStorage.getItem('auth_token');
@@ -73,10 +73,7 @@ window.cerrarModalVerProyecto = function() {
 }
 
 function renderizarIndicadores(estadoProyecto) {
-    // 1. Renderizado para el panel lateral (clásico - OPCIONAL mantenerlo)
-    const containerPanel = document.getElementById('lista-indicadores-areas');
-    
-    // 2. Renderizado para el Modal Premium (Nuevo)
+    // Renderizado para el Modal Premium (Nuevo)
     const containerModal = document.getElementById('proyecto-indicadores-lista');
     const conteoBadge = document.getElementById('proyecto-detalle-conteo');
     
