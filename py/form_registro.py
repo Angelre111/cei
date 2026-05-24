@@ -4288,7 +4288,7 @@ def obtener_evaluacion(hijo_id, momento):
             'success': True,
             'message': 'Evaluación obtenida.',
             'data': {
-                'boletin_id': boletin_id,
+                'boleta_id': boletin_id,
                 'recomendacion_docente': boletin.get('recomendaciones_docente', ''), # kept as _docente for the frontend JS to map properly
                 'logrados': logrados
             }
@@ -4647,7 +4647,7 @@ def descargar_boletin(hijo_id, momento):
         """
         p_header = Paragraph(header_text, styles['Normal'])
         
-        t_header = Table([[logo, p_header, ""]], colWidths=[1.15*inch, 5.0*inch, 1.15*inch])
+        t_header = Table([[logo, p_header, ""]], colWidths=[80, 392, 80])
         t_header.setStyle(TableStyle([
             ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
             ('ALIGN', (1,0), (1,0), 'CENTER'),
@@ -4662,7 +4662,7 @@ def descargar_boletin(hijo_id, momento):
             ["Docente(s):", docentes_str, "Representante:", representante_nombre],
             ["Grupo/Nivel:", grupo_estudiante, "Sección:", f'"{seccion_estudiante}"']
         ]
-        meta_table = Table(meta_data, colWidths=[0.9*inch, 2.95*inch, 0.9*inch, 2.55*inch])
+        meta_table = Table(meta_data, colWidths=[70, 216, 70, 196])
         meta_table.setStyle(TableStyle([
             ('FONTNAME', (0,0), (-1,-1), 'Helvetica'),
             ('FONTSIZE', (0,0), (-1,-1), 8.5),
@@ -4717,7 +4717,8 @@ def descargar_boletin(hijo_id, momento):
         
         recom_text = recomendacion if recomendacion.strip() else "Sin recomendaciones registradas para este momento."
         
-        t_recom = Table([[Paragraph(recom_text, recom_style)]], colWidths=[7.3*inch])
+        t_recom = Table([[Paragraph(recom_text, recom_style)]], colWidths=[545])
+        t_recom.hAlign = 'CENTER'
         t_recom.setStyle(TableStyle([
             ('BACKGROUND', (0,0), (-1,-1), colors.HexColor("#DBEAFE")), 
             ('BOX', (0,0), (-1,-1), 1, colors.HexColor("#BFDBFE")), 
@@ -4732,7 +4733,7 @@ def descargar_boletin(hijo_id, momento):
             ["___________________________", "___________________________", "___________________________"],
             ["Director(a)", "Sello", "Docente"]
         ]
-        t_firmas = Table(firmas_data, colWidths=[2.4*inch, 2.4*inch, 2.4*inch])
+        t_firmas = Table(firmas_data, colWidths=[184, 184, 184])
         t_firmas.setStyle(TableStyle([
             ('ALIGN', (0,0), (-1,-1), 'CENTER'),
             ('FONTNAME', (0,0), (-1,-1), 'Helvetica-Bold'),

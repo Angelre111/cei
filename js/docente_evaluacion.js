@@ -154,7 +154,7 @@ async function fetchEvaluacionEstudiante(hijoId, momento) {
 
 function renderizarPanelPremium() {
     // Si tiene boleta, mostrar btn descargar
-    if (currentEvalData.boleta_id) {
+    if (currentEvalData.boleta_id || currentEvalData.boletin_id) {
         document.getElementById('btn-descargar-boletin').classList.remove('hidden');
     } else {
         document.getElementById('btn-descargar-boletin').classList.add('hidden');
