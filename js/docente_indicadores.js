@@ -99,7 +99,7 @@ function renderizarIndicadores(estadoProyecto) {
         else if(area.includes('comunicaci')) colorBadge = 'bg-purple-50 text-purple-600 border border-purple-100';
 
         const botonesAccion = estadoProyecto === 'activo' ? `
-            <div class="absolute top-3 right-3 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+            <div class="absolute top-3 right-3 flex gap-2">
                 <button onclick="abrirModalEditarIndicador('${ind.id}')" class="text-slate-300 hover:text-yellow-500" title="Editar Indicador">
                     <i class="ph-fill ph-pencil-simple text-lg"></i>
                 </button>

@@ -129,7 +129,7 @@ function renderizarRecomendaciones() {
                 <span class="inline-block px-2 py-1 bg-indigo-50 text-indigo-700 text-[10px] font-black uppercase tracking-wider rounded mb-1">${rec.titulo}</span>
                 <p class="text-sm text-gray-600 font-medium truncate">${rec.texto}</p>
             </div>
-            <div class="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+            <div class="flex gap-1">
                 <button onclick="editarRecomendacionUI('${rec.id}')" class="p-1.5 text-gray-400 hover:text-blue-500 bg-gray-50 hover:bg-blue-50 rounded-lg transition-colors" title="Editar"><i class="ph-bold ph-pencil-simple text-sm"></i></button>
                 <button onclick="eliminarRecomendacion('${rec.id}')" class="p-1.5 text-gray-400 hover:text-red-500 bg-gray-50 hover:bg-red-50 rounded-lg transition-colors" title="Eliminar"><i class="ph-bold ph-trash text-sm"></i></button>
             </div>
