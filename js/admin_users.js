@@ -536,10 +536,10 @@ async function confirmarEliminar(userId, nombreCompleto) {
         if (response.ok && data.success) {
             await Swal.fire({
                 icon: 'success',
-                title: 'Usuario eliminado',
+                title: data.soft_deleted ? 'Usuario desactivado' : 'Usuario eliminado',
                 text: data.message,
                 confirmButtonColor: '#7c3aed',
-                timer: 2500,
+                timer: data.soft_deleted ? 4000 : 2500,
                 timerProgressBar: true
             });
             await cargarYRenderizarUsuarios(); // Recargar tabla

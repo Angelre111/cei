@@ -338,6 +338,52 @@ supabase_auth: Client = create_client(SUPABASE_URL, SUPABASE_ANON_KEY or SUPABAS
 
 
 # =======================================================
+# TABLA DE ARCHIVO DE USUARIOS ELIMINADOS
+# =======================================================
+def _ensure_usuarios_archivo_table():
+    """
+    Crea la tabla 'usuarios_archivo' si no existe.
+    Esta tabla actúa como log permanente de docentes eliminados físicamente.
+    Sobrevive a cualquier restauración de respaldo (no forma parte del ciclo
+    de pg_dump/restore normal del sistema).
+    Se ejecuta al iniciar el servidor (idempotente).
+    """
+    db_url = os.getenv('DATABASE_URL')
+    if not db_url:
+        print("⚠️  _ensure_usuarios_archivo_table: DATABASE_URL no configurado, omitiendo.")
+        return
+    try:
+        conn = psycopg2.connect(db_url)
+        conn.autocommit = True
+        with conn.cursor() as cur:
+            cur.execute("""
+                CREATE TABLE IF NOT EXISTS public.usuarios_archivo (
+                    id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                    usuario_id      UUID NOT NULL,
+                    email           TEXT NOT NULL,
+                    nombres         TEXT,
+                    apellidos       TEXT,
+                    rol             TEXT DEFAULT 'docente',
+                    cedula          TEXT,
+                    telefono        TEXT,
+                    motivo_borrado  TEXT DEFAULT 'hard_delete_sin_registros',
+                    eliminado_por   UUID,
+                    datos_extra     JSONB DEFAULT '{}',
+                    archivado_en    TIMESTAMPTZ DEFAULT NOW()
+                );
+            """)
+        conn.close()
+        print("✅ Tabla 'usuarios_archivo' verificada/creada.")
+    except Exception as e:
+        print(f"⚠️  No se pudo crear 'usuarios_archivo': {e}")
+
+try:
+    _ensure_usuarios_archivo_table()
+except Exception:
+    pass
+
+
+# =======================================================
 # MODELOS DE DATOS (SCHEMAS)
 # =======================================================
 
@@ -711,6 +757,19 @@ def crear_personal():
         return jsonify({'success': False, 'message': 'Rol inválido. Debe ser "administrador" o "docente".'}), 400
 
     try:
+        # ---> NUEVO: Límite de 4 administradores <---
+        if rol_front == 'administrador':
+            res_admins = supabase.table("usuarios") \
+                .select("id", count="exact") \
+                .eq("rol", "administrador") \
+                .neq("estado", "inactivo") \
+                .execute()
+            if res_admins.count is not None and res_admins.count >= 4:
+                return jsonify({
+                    'success': False,
+                    'message': 'No se pueden registrar más de 4 administradores en el sistema.'
+                }), 400
+
         # 1. Verificar si el correo ya está registrado en auth o en la tabla usuarios
         existing_user = supabase.table("usuarios").select("id").eq("email", email).execute()
         if existing_user.data:
@@ -1015,6 +1074,33 @@ def editar_usuario(user_id):
     if solicitante_id == user_id and ('rol' in datos_update or 'estado' in datos_update):
         return jsonify({'success': False, 'message': 'No puedes cambiar tu propio rol ni estado.'}), 400
 
+    # ---> NUEVO: Límite de 4 administradores al editar/activar <---
+    if datos_update.get('rol') == 'administrador' or datos_update.get('estado') in ['activo', 'pendiente', 'invitado']:
+        try:
+            user_current = supabase.table("usuarios").select("rol, estado").eq("id", user_id).single().execute()
+            if user_current.data:
+                current_rol = user_current.data.get("rol")
+                current_estado = user_current.data.get("estado")
+                new_rol = datos_update.get('rol', current_rol)
+                new_estado = datos_update.get('estado', current_estado)
+                
+                was_non_inactive_admin = (current_rol == 'administrador' and current_estado != 'inactivo')
+                will_be_non_inactive_admin = (new_rol == 'administrador' and new_estado != 'inactivo')
+                
+                if will_be_non_inactive_admin and not was_non_inactive_admin:
+                    res_admins = supabase.table("usuarios") \
+                        .select("id", count="exact") \
+                        .eq("rol", "administrador") \
+                        .neq("estado", "inactivo") \
+                        .execute()
+                    if res_admins.count is not None and res_admins.count >= 4:
+                        return jsonify({
+                            'success': False,
+                            'message': 'No se puede activar o asignar el rol de Administrador porque ya existen 4 administradores activos en el sistema.'
+                        }), 400
+        except Exception as e:
+            print(f"⚠️ Error al verificar cantidad de administradores al editar: {e}")
+
     if not datos_update:
         return jsonify({'success': False, 'message': 'No hay campos válidos para actualizar.'}), 400
 
@@ -1068,17 +1154,280 @@ def eliminar_usuario(user_id):
         return jsonify({'success': False, 'message': 'Acción denegada. Solo administradores.'}), 403
 
     try:
-        # 1. Eliminar de la tabla pública primero
-        supabase.table("usuarios").delete().eq("id", user_id).execute()
+        # Obtener los datos del usuario a eliminar
+        user_to_delete = supabase.table("usuarios").select("rol").eq("id", user_id).single().execute()
+        if not user_to_delete.data:
+            return jsonify({'success': False, 'message': 'Usuario no encontrado.'}), 404
+        
+        rol = user_to_delete.data.get("rol")
 
-        # 2. Eliminar de Supabase Auth (requiere service_role)
-        supabase.auth.admin.delete_user(user_id)
+        if rol == 'docente':
+            # 1. Obtener secciones del docente
+            sec_res = supabase.table("docentes_secciones").select("seccion_id").eq("docente_id", user_id).execute()
+            secciones_ids = [s['seccion_id'] for s in sec_res.data] if sec_res.data else []
 
-        return jsonify({'success': True, 'message': 'Usuario eliminado del sistema correctamente.'}), 200
+            has_records = False
+            if secciones_ids:
+                # 2. Verificar registros en asignaciones_estudiantes
+                alumnos = supabase.table("asignaciones_estudiantes") \
+                    .select("id", count="exact") \
+                    .in_("seccion_id", secciones_ids) \
+                    .limit(1) \
+                    .execute()
+                if alumnos.count and alumnos.count > 0:
+                    has_records = True
+
+                # 3. Verificar registros en asistencias
+                if not has_records:
+                    asistencias = supabase.table("asistencias") \
+                        .select("id", count="exact") \
+                        .in_("seccion_id", secciones_ids) \
+                        .limit(1) \
+                        .execute()
+                    if asistencias.count and asistencias.count > 0:
+                        has_records = True
+
+                # 4. Verificar registros en proyectos_aprendizaje
+                if not has_records:
+                    proyectos = supabase.table("proyectos_aprendizaje") \
+                        .select("id", count="exact") \
+                        .in_("seccion_id", secciones_ids) \
+                        .limit(1) \
+                        .execute()
+                    if proyectos.count and proyectos.count > 0:
+                        has_records = True
+
+                # 5. Verificar registros en banco_recomendaciones
+                if not has_records:
+                    recom = supabase.table("banco_recomendaciones") \
+                        .select("id", count="exact") \
+                        .in_("seccion_id", secciones_ids) \
+                        .limit(1) \
+                        .execute()
+                    if recom.count and recom.count > 0:
+                        has_records = True
+
+            if has_records:
+                # SOFT DELETE: cambiar estado a 'inactivo'
+                supabase.table("usuarios").update({"estado": "inactivo"}).eq("id", user_id).execute()
+                return jsonify({
+                    'success': True,
+                    'soft_deleted': True,
+                    'message': 'El docente tiene registros asociados en sus secciones y fue desactivado (soft-delete) para preservar el historial.'
+                }), 200
+
+            else:
+                # HARD DELETE docente (sin registros):
+
+                # ── PASO 0: Archivar datos del docente antes de eliminarlo ──
+                # Esto permite reactivarlo si se restaura un respaldo que contenía sus datos.
+                try:
+                    usuario_snap = supabase.table("usuarios").select("*").eq("id", user_id).single().execute()
+                    perfil_snap  = supabase.table("perfiles_personal").select("*").eq("usuario_id", user_id).maybe_single().execute()
+
+                    datos_usuario = usuario_snap.data or {}
+                    datos_perfil  = perfil_snap.data  or {}
+
+                    supabase.table("usuarios_archivo").insert({
+                        "usuario_id":     user_id,
+                        "email":          datos_usuario.get("email", ""),
+                        "nombres":        datos_usuario.get("nombres", ""),
+                        "apellidos":      datos_usuario.get("apellidos", ""),
+                        "rol":            "docente",
+                        "cedula":         datos_usuario.get("cedula", ""),
+                        "telefono":       datos_usuario.get("telefono", ""),
+                        "motivo_borrado": "hard_delete_sin_registros",
+                        "eliminado_por":  solicitante_id,
+                        "datos_extra":    datos_perfil
+                    }).execute()
+                    print(f"📦 Docente {user_id} archivado en 'usuarios_archivo' antes del hard-delete.")
+                except Exception as arch_err:
+                    # El archivo falló pero no bloqueamos el borrado
+                    print(f"⚠️  No se pudo archivar el docente {user_id}: {arch_err}")
+
+                # ── PASO 1: Borrar registros relacionados ──
+                supabase.table("docentes_secciones").delete().eq("docente_id", user_id).execute()
+                supabase.table("perfiles_personal").delete().eq("usuario_id", user_id).execute()
+                supabase.table("usuarios").delete().eq("id", user_id).execute()
+                # ── PASO 2: Eliminar de Supabase Auth ──
+                supabase.auth.admin.delete_user(user_id)
+                return jsonify({
+                    'success': True,
+                    'soft_deleted': False,
+                    'message': 'Docente sin registros eliminado del sistema correctamente.'
+                }), 200
+
+        else:
+            # HARD DELETE para otros roles (administrador, representante, etc.)
+            # Intentar borrar de perfiles_personal (si es admin)
+            supabase.table("perfiles_personal").delete().eq("usuario_id", user_id).execute()
+            # Borrar de usuarios
+            supabase.table("usuarios").delete().eq("id", user_id).execute()
+            # Eliminar de Supabase Auth
+            supabase.auth.admin.delete_user(user_id)
+            return jsonify({
+                'success': True,
+                'soft_deleted': False,
+                'message': 'Usuario eliminado del sistema correctamente.'
+            }), 200
 
     except Exception as e:
         print(f"❌ Error al eliminar usuario: {e}")
         return jsonify({'success': False, 'message': 'Error al eliminar el usuario.'}), 500
+
+
+# =======================================================
+# RECUPERACIÓN DE EMERGENCIA — DOCENTES ARCHIVADOS
+# =======================================================
+
+@app.route('/api/admin/docentes-archivados', methods=['GET'])
+@require_auth
+def listar_docentes_archivados():
+    """
+    Retorna la lista de docentes que fueron eliminados físicamente (Hard Delete)
+    y tienen un snapshot en 'usuarios_archivo'.
+    Solo administradores pueden acceder.
+    """
+    if not _verificar_admin():
+        return jsonify({'success': False, 'message': 'Acción denegada. Solo administradores.'}), 403
+
+    try:
+        res = supabase.table("usuarios_archivo") \
+            .select("*") \
+            .order("archivado_en", desc=True) \
+            .execute()
+        return jsonify({'success': True, 'archivados': res.data or []}), 200
+    except Exception as e:
+        print(f"❌ Error listando docentes archivados: {e}")
+        return jsonify({'success': False, 'message': 'Error al obtener docentes archivados.'}), 500
+
+
+@app.route('/api/admin/reactivar-docente/<archivo_id>', methods=['POST'])
+@require_auth
+def reactivar_docente_archivado(archivo_id):
+    """
+    Reactiva un docente archivado tras una restauración de respaldo.
+    Proceso:
+      1. Lee el snapshot de 'usuarios_archivo'.
+      2. Verifica que el user_id no existe en Supabase Auth (fue borrado).
+      3. Verifica que el user_id SÍ existe en public.usuarios (recuperado por restauración).
+      4. Crea una nueva cuenta Auth con el email archivado.
+      5. Actualiza public.usuarios con el nuevo auth UUID.
+      6. Envía un email de reset de contraseña al docente.
+    Solo administradores pueden acceder.
+    """
+    if not _verificar_admin():
+        return jsonify({'success': False, 'message': 'Acción denegada. Solo administradores.'}), 403
+
+    try:
+        # 1. Leer el snapshot
+        snap_res = supabase.table("usuarios_archivo").select("*").eq("id", archivo_id).single().execute()
+        if not snap_res.data:
+            return jsonify({'success': False, 'message': 'Registro de archivo no encontrado.'}), 404
+
+        snap = snap_res.data
+        old_user_id = snap['usuario_id']
+        email       = snap['email']
+        nombres     = snap.get('nombres', '')
+        apellidos   = snap.get('apellidos', '')
+
+        if not email:
+            return jsonify({'success': False, 'message': 'El registro archivado no tiene email. No se puede reactivar automáticamente.'}), 400
+
+        # 2. Verificar si el usuario aún existe en Supabase Auth
+        auth_still_exists = False
+        try:
+            existing_auth = supabase.auth.admin.get_user_by_id(old_user_id)
+            if existing_auth and existing_auth.user:
+                auth_still_exists = True
+        except Exception:
+            auth_still_exists = False
+
+        # 3. Verificar si el user_id existe en public.usuarios (post-restauración)
+        pub_res = supabase.table("usuarios").select("id, estado").eq("id", old_user_id).maybe_single().execute()
+        pub_exists = bool(pub_res.data)
+
+        if auth_still_exists:
+            # El usuario de Auth no fue eliminado (quizás ya fue reactivado antes o no fue hard-deleted)
+            if pub_exists:
+                # Solo reactivar el estado si estaba inactivo
+                supabase.table("usuarios").update({"estado": "activo"}).eq("id", old_user_id).execute()
+                return jsonify({
+                    'success': True,
+                    'message': f'El docente {nombres} {apellidos} ya tenía cuenta de acceso activa. Su estado fue reactivado a "activo".'
+                }), 200
+            else:
+                return jsonify({
+                    'success': False,
+                    'message': f'El docente tiene cuenta de acceso, pero no se encontró su fila en la base de datos. Por favor restaura el respaldo primero.'
+                }), 409
+
+        # Auth fue eliminado — necesitamos crear una nueva cuenta
+        if not pub_exists:
+            return jsonify({
+                'success': False,
+                'message': f'No se encontró la fila de {nombres} {apellidos} en la base de datos. Restaura el respaldo antes de reactivar.'
+            }), 409
+
+        # 4. Crear nueva cuenta Auth con contraseña temporal aleatoria
+        import secrets as _secrets
+        temp_password = _secrets.token_urlsafe(16)
+
+        new_auth_response = supabase.auth.admin.create_user({
+            'email':          email,
+            'password':       temp_password,
+            'email_confirm':  True,
+            'user_metadata':  {'nombres': nombres, 'apellidos': apellidos}
+        })
+
+        if not new_auth_response or not new_auth_response.user:
+            return jsonify({'success': False, 'message': 'No se pudo crear la nueva cuenta de acceso en Supabase Auth.'}), 500
+
+        new_auth_id = str(new_auth_response.user.id)
+
+        # 5. Actualizar public.usuarios: reemplazar el UUID viejo por el nuevo de Auth
+        #    (Necesitamos insertar la fila con el nuevo ID, porque PKs en Supabase Auth no son editables)
+        #    Estrategia: obtener fila completa → eliminarla → reinsertarla con nuevo id
+        old_row_res = supabase.table("usuarios").select("*").eq("id", old_user_id).single().execute()
+        old_row = old_row_res.data
+
+        # Eliminar fila con UUID viejo
+        supabase.table("usuarios").delete().eq("id", old_user_id).execute()
+
+        # Reinsertar con nuevo UUID de Auth
+        new_row = {**old_row, "id": new_auth_id, "estado": "activo"}
+        supabase.table("usuarios").insert(new_row).execute()
+
+        # Actualizar FK en perfiles_personal si existe
+        try:
+            supabase.table("perfiles_personal").update({"usuario_id": new_auth_id}).eq("usuario_id", old_user_id).execute()
+        except Exception:
+            pass  # Puede no existir, no es crítico
+
+        # 6. Enviar email de reset de contraseña
+        try:
+            supabase.auth.admin.generate_link({
+                'type':  'recovery',
+                'email': email
+            })
+        except Exception as reset_err:
+            print(f"⚠️  No se pudo generar el link de recuperación: {reset_err}")
+            # No es crítico — el admin puede dispararlo desde el panel de Supabase
+
+        # 7. Eliminar el registro del archivo (ya fue reactivado)
+        supabase.table("usuarios_archivo").delete().eq("id", archivo_id).execute()
+
+        print(f"✅ Docente {email} reactivado con nuevo auth_id={new_auth_id}")
+        return jsonify({
+            'success': True,
+            'message': f'¡Docente {nombres} {apellidos} reactivado exitosamente! Se ha enviado un correo de restablecimiento de contraseña a {email}.'
+        }), 200
+
+    except Exception as e:
+        print(f"❌ Error reactivando docente {archivo_id}: {e}")
+        import traceback as _tb
+        print(_tb.format_exc())
+        return jsonify({'success': False, 'message': f'Error interno al reactivar: {str(e)}'}), 500
 
 
 # =======================================================
@@ -1175,18 +1524,7 @@ def admin_registrar_estudiante():
         rep_id = current_user.id
 
     # ── Período académico activo ──────────────────────────────────────────────
-    periodo_id = None
-    try:
-        p_res = supabase.table("periodos_academicos").select("id").eq("estado", "activo").execute()
-        if p_res.data:
-            periodo_id = p_res.data[0]['id']
-        else:
-            p_res2 = supabase.table("periodos_academicos").select("id").eq("estado", "planificacion") \
-                        .order("created_at", desc=True).limit(1).execute()
-            if p_res2.data:
-                periodo_id = p_res2.data[0]['id']
-    except Exception as e:
-        print(f"⚠️ No se pudo obtener período: {e}")
+    periodo_id = _obtener_periodo_inteligente()
 
     # ── Generar cédula escolar ────────────────────────────────────────────────
     try:
@@ -1344,17 +1682,8 @@ def buscar_estudiante_cedula(cedula):
 def obtener_secciones_disponibles():
     """Obtiene las secciones vinculadas al período escolar actual."""
     try:
-        # 1. Buscar el período activo o en planificación
-        periodo_res = supabase.table("periodos_academicos").select("id").eq("estado", "activo").execute()
-        periodo_id = None
-        
-        if periodo_res.data and len(periodo_res.data) > 0:
-            periodo_id = periodo_res.data[0]['id']
-        else:
-            planificacion_res = supabase.table("periodos_academicos").select("id").eq("estado", "planificacion").order("created_at", desc=True).limit(1).execute()
-            if planificacion_res.data and len(planificacion_res.data) > 0:
-                periodo_id = planificacion_res.data[0]['id']
-                
+        # 1. Buscar el período activo o en planificación de forma inteligente
+        periodo_id = _obtener_periodo_inteligente()
         if not periodo_id:
             return jsonify({'success': False, 'message': 'No hay un período escolar habilitado para cargar secciones.'}), 404
             
@@ -1414,16 +1743,7 @@ def obtener_matricula():
         seccion_id_filtro = request.args.get('seccion_id')
 
         if not seccion_id_filtro:
-            periodo_res = supabase.table("periodos_academicos").select("id").eq("estado", "activo").execute()
-            periodo_actual_id = None
-            
-            if periodo_res.data and len(periodo_res.data) > 0:
-                periodo_actual_id = periodo_res.data[0]['id']
-            else:
-                planificacion_res = supabase.table("periodos_academicos").select("id").eq("estado", "planificacion").order("created_at", desc=True).limit(1).execute()
-                if planificacion_res.data and len(planificacion_res.data) > 0:
-                    periodo_actual_id = planificacion_res.data[0]['id']
-            
+            periodo_actual_id = _obtener_periodo_inteligente()
             if periodo_actual_id:
                 query = supabase.table("asignaciones_estudiantes") \
                     .select("*, secciones!inner(periodo_id)") \
@@ -1880,33 +2200,12 @@ def inscribir_estudiante():
              return jsonify({"error": "Ya has completado una ficha de inscripción previamente."}), 409
 
         # 3. BÚSQUEDA INTELIGENTE DEL PERÍODO ACADÉMICO
-        # Prioridad 1: Buscar estrictamente el año escolar 'activo'
-        periodo_res = supabase.table("periodos_academicos") \
-            .select("id") \
-            .eq("estado", "activo") \
-            .execute()
-            
-        periodo_id = None
-        
-        if periodo_res.data and len(periodo_res.data) > 0:
-            # Si hay uno activo, usamos ese sin dudarlo
-            periodo_id = periodo_res.data[0]['id']
-        else:
-            # Prioridad 2: Si NO hay activo, buscamos el de 'planificacion' más reciente
-            planificacion_res = supabase.table("periodos_academicos") \
-                .select("id") \
-                .eq("estado", "planificacion") \
-                .order("created_at", desc=True) \
-                .limit(1) \
-                .execute()
-                
-            if planificacion_res.data and len(planificacion_res.data) > 0:
-                periodo_id = planificacion_res.data[0]['id']
-            else:
-                # Prioridad 3 (Seguridad): Si no hay ni activo ni en planificación, bloqueamos la inscripción
-                return jsonify({
-                    "error": "El proceso de inscripciones está cerrado. No hay un período escolar habilitado en este momento."
-                }), 403
+        periodo_id = _obtener_periodo_inteligente()
+        if not periodo_id:
+            # Prioridad 3 (Seguridad): Si no hay ni activo ni en planificación, bloqueamos la inscripción
+            return jsonify({
+                "error": "El proceso de inscripciones está cerrado. No hay un período escolar habilitado en este momento."
+            }), 403
 
         # --- GENERADOR AUTOMÁTICO DE CÉDULA ESCOLAR ---
         # Regla: [Correlativo] + [Año Nacimiento (2 dígitos)] + [Cédula Representante]
@@ -2069,6 +2368,35 @@ def _verificar_admin_o_docente(user_id: str):
     return perfil.data and perfil.data.get("rol") in ["administrador", "docente"]
 
 
+def _obtener_periodo_inteligente():
+    """
+    Retorna el ID del período activo si existe.
+    Si no hay ninguno activo, retorna el de planificación más reciente.
+    Si no hay ninguno de los dos, retorna None.
+    """
+    try:
+        # Prioridad 1: Activo
+        res = supabase.table("periodos_academicos") \
+            .select("id") \
+            .eq("estado", "activo") \
+            .execute()
+        if res.data and len(res.data) > 0:
+            return res.data[0]['id']
+            
+        # Prioridad 2: Planificación más reciente
+        res = supabase.table("periodos_academicos") \
+            .select("id") \
+            .eq("estado", "planificacion") \
+            .order("created_at", desc=True) \
+            .limit(1) \
+            .execute()
+        if res.data and len(res.data) > 0:
+            return res.data[0]['id']
+    except Exception as e:
+        print(f"❌ Error en _obtener_periodo_inteligente: {e}")
+    return None
+
+
 @app.route('/api/periodos', methods=['GET'])
 @require_auth
 def listar_periodos():
@@ -2192,12 +2520,12 @@ def actualizar_periodo(periodo_id):
 @app.route('/api/periodos/<periodo_id>', methods=['DELETE'])
 @require_auth
 def eliminar_periodo(periodo_id):
-    """Elimina un período académico. Bloqueado si tiene secciones asociadas."""
+    """Elimina un período académico. Bloqueado si tiene secciones o inscripciones asociadas."""
     if not _verificar_admin(request.current_user.id):
         return jsonify({'success': False, 'message': 'Acción denegada. Solo administradores.'}), 403
 
     try:
-        # Verificar que no tenga secciones asociadas antes de eliminar
+        # 1. Verificar que no tenga secciones asociadas antes de eliminar
         secciones = supabase.table("secciones") \
             .select("id", count="exact") \
             .eq("periodo_id", periodo_id) \
@@ -2207,6 +2535,19 @@ def eliminar_periodo(periodo_id):
             return jsonify({
                 'success': False,
                 'message': f'No se puede eliminar: el período tiene {secciones.count} sección(es) asociada(s). Elimina primero las secciones.'
+            }), 409
+
+        # 2. Verificar si tiene inscripciones de alumnos asociadas
+        inscripciones = supabase.table("inscripciones") \
+            .select("id", count="exact") \
+            .eq("periodo_ingreso_id", periodo_id) \
+            .limit(1) \
+            .execute()
+
+        if inscripciones.count and inscripciones.count > 0:
+            return jsonify({
+                'success': False,
+                'message': 'No se puede eliminar: existen fichas de inscripción de alumnos asociadas a este período escolar.'
             }), 409
 
         supabase.table("periodos_academicos").delete().eq("id", periodo_id).execute()
@@ -2426,15 +2767,66 @@ def eliminar_seccion(seccion_id):
     if not _verificar_admin(request.current_user.id):
         return jsonify({'success': False, 'message': 'Solo administradores.'}), 403
     try:
-        # Supabase lo borra en cascada de docentes_secciones si el FK lo permite.
-        # Por seguridad y consistencia, borramos manualmente primero de docentes_secciones
+        # 1. Verificar si tiene alumnos asignados (activos o históricos)
+        alumnos = supabase.table("asignaciones_estudiantes") \
+            .select("id", count="exact") \
+            .eq("seccion_id", seccion_id) \
+            .limit(1) \
+            .execute()
+        
+        if alumnos.count and alumnos.count > 0:
+            return jsonify({
+                'success': False,
+                'message': 'No se puede eliminar la sección porque tiene alumnos asignados (actuales o históricos).'
+            }), 400
+
+        # 2. Verificar si tiene asistencias registradas
+        asistencias = supabase.table("asistencias") \
+            .select("id", count="exact") \
+            .eq("seccion_id", seccion_id) \
+            .limit(1) \
+            .execute()
+            
+        if asistencias.count and asistencias.count > 0:
+            return jsonify({
+                'success': False,
+                'message': 'No se puede eliminar la sección porque tiene registros de asistencia asociados.'
+            }), 400
+
+        # 3. Verificar si tiene proyectos de aprendizaje
+        proyectos = supabase.table("proyectos_aprendizaje") \
+            .select("id", count="exact") \
+            .eq("seccion_id", seccion_id) \
+            .limit(1) \
+            .execute()
+            
+        if proyectos.count and proyectos.count > 0:
+            return jsonify({
+                'success': False,
+                'message': 'No se puede eliminar la sección porque tiene proyectos de aprendizaje asociados.'
+            }), 400
+
+        # 4. Verificar si tiene recomendaciones en el banco
+        recom = supabase.table("banco_recomendaciones") \
+            .select("id", count="exact") \
+            .eq("seccion_id", seccion_id) \
+            .limit(1) \
+            .execute()
+            
+        if recom.count and recom.count > 0:
+            return jsonify({
+                'success': False,
+                'message': 'No se puede eliminar la sección porque tiene recomendaciones asociadas en el banco.'
+            }), 400
+
+        # Si no tiene ningún dato asociado de alumnos, se permite borrar de docentes_secciones y luego secciones
         supabase.table("docentes_secciones").delete().eq("seccion_id", seccion_id).execute()
         supabase.table("secciones").delete().eq("id", seccion_id).execute()
 
         return jsonify({'success': True, 'message': 'Sección eliminada permanentemente.'}), 200
     except Exception as e:
         print(f"❌ Error eliminar_seccion: {e}")
-        return jsonify({'success': False, 'message': 'Error al eliminar la sección.'}), 500
+        return jsonify({'success': False, 'message': 'Error interno al intentar eliminar la sección.'}), 500
 
 @app.route('/api/asistencias/<seccion_id>/<fecha>', methods=['GET'])
 @require_auth
@@ -2454,6 +2846,31 @@ def obtener_asistencia_dia(seccion_id, fecha):
         # 2. EL VIAJE EN EL TIEMPO: Buscar todos los asignados históricamente a la sección
         res_asig = supabase.table("asignaciones_estudiantes").select("created_at, estado, hijo_id, hijos(id, nombre, apellidos, cedula_escolar, fecha_retiro)").eq("seccion_id", seccion_id).execute()
         
+        fecha_fin_periodo = None
+        try:
+            res_sec = supabase.table("secciones") \
+                .select("periodo_id, periodos_academicos(fecha_fin)") \
+                .eq("id", seccion_id).execute()
+            if res_sec.data and len(res_sec.data) > 0:
+                p_info = res_sec.data[0].get('periodos_academicos')
+                if p_info and p_info.get('fecha_fin'):
+                    fecha_fin_periodo = datetime.strptime(p_info['fecha_fin'], "%Y-%m-%d").date()
+        except Exception as ex:
+            print(f"⚠️ Error al obtener fecha_fin de la sección: {ex}")
+
+        hijos_ids = [a['hijo_id'] for a in res_asig.data if a.get('hijo_id')]
+        asig_por_hijo = {}
+        if hijos_ids:
+            res_all_asig = supabase.table("asignaciones_estudiantes") \
+                .select("hijo_id, created_at, estado") \
+                .in_("hijo_id", hijos_ids) \
+                .execute()
+            for item in res_all_asig.data:
+                h_id = item['hijo_id']
+                if h_id not in asig_por_hijo:
+                    asig_por_hijo[h_id] = []
+                asig_por_hijo[h_id].append(item)
+
         fecha_consulta = datetime.strptime(fecha, "%Y-%m-%d").date()
         estudiantes_del_dia = []
         
@@ -2472,6 +2889,28 @@ def obtener_asistencia_dia(seccion_id, fecha):
                 # ponerle la fecha exacta en la BD, usamos la fecha actual como tope.
                 # De esta forma ya no seguirá apareciendo como un "fantasma" de hoy en adelante.
                 fecha_retiro = datetime.now().date()
+            elif estado_asignacion in ('promovido', 'repetido', 'egresado'):
+                # Si fue promovido, repetido o egresado, ya no cursa en esta sección.
+                # Averiguamos cuándo dejó de cursar.
+                # 1. Buscar si hay una asignación posterior
+                asignaciones_hijo = asig_por_hijo.get(h['id'], [])
+                posteriores = []
+                for ah in asignaciones_hijo:
+                    if ah.get('created_at'):
+                        f_ah = datetime.strptime(ah['created_at'][:10], "%Y-%m-%d").date()
+                        if f_ah > fecha_ingreso:
+                            posteriores.append(f_ah)
+                
+                if posteriores:
+                    # Dejó de cursar cuando se creó la nueva asignación
+                    fecha_retiro = min(posteriores)
+                else:
+                    # Si no hay posterior, es que egresó o fue promovido al final del período
+                    # Usamos la fecha de fin del período de la sección
+                    if fecha_fin_periodo:
+                        fecha_retiro = fecha_fin_periodo
+                    else:
+                        fecha_retiro = datetime.now().date()
                 
             # REGLA ESTRICTA DE TIEMPO:
             # - Ingresó a la escuela ANTES o el MISMO DÍA de la fecha consultada.
@@ -2578,17 +3017,12 @@ def obtener_mi_clase():
     docente_id = request.current_user.id
     
     try:
-        # 1. Buscar el período activo o en planificación más reciente
-        res_periodo = supabase.table("periodos_academicos") \
-            .select("id") \
-            .in_("estado", ["activo", "planificacion"]) \
-            .order("created_at", desc=True) \
-            .limit(1).execute()
+        # 1. Buscar el período activo o en planificación de forma inteligente
+        periodo_id = _obtener_periodo_inteligente()
         
         seccion_id = None
         
-        if res_periodo.data:
-            periodo_id = res_periodo.data[0]['id']
+        if periodo_id:
             # Buscar sección asignada al docente en este período
             res_doc_sec = supabase.table("docentes_secciones") \
                 .select("seccion_id, secciones!inner(periodo_id)") \
@@ -3220,7 +3654,7 @@ def generar_estadistica_mensual():
             ["Alumnos Retirados", str(egr_v), str(egr_h), str(egr_v + egr_h)],
             ["Alumnos último del mes", str(mat_fin_v), str(mat_fin_h), str(mat_fin_v + mat_fin_h)],
         ]
-        t_mat = Table(mat_data, colWidths=[2.2*inch, 0.5*inch, 0.5*inch, 0.5*inch])
+        t_mat = Table(mat_data, colWidths=[2.2*inch, 0.5*inch, 0.5*inch, 0.5*inch], rowHeights=[21]*6)
         style_mat = get_premium_table_style()
         style_mat.add('ALIGN', (0,1), (0,-1), 'LEFT')
         style_mat.add('BACKGROUND', (0,-1), (-1,-1), colors.HexColor("#DBEAFE"))
@@ -3237,7 +3671,7 @@ def generar_estadistica_mensual():
             ["De 6 años", str(edades_v['6']), str(edades_h['6']), str(edades_v['6'] + edades_h['6'])],
             ["TOTAL", str(sum(edades_v.values())), str(sum(edades_h.values())), str(sum(edades_v.values()) + sum(edades_h.values()))],
         ]
-        t_edades = Table(edades_data, colWidths=[1.5*inch, 0.7*inch, 0.7*inch, 0.8*inch])
+        t_edades = Table(edades_data, colWidths=[1.5*inch, 0.7*inch, 0.7*inch, 0.8*inch], rowHeights=[18]*7)
         style_edades = get_premium_table_style()
         style_edades.add('BACKGROUND', (0,-1), (-1,-1), colors.HexColor("#DBEAFE"))
         style_edades.add('TEXTCOLOR', (0,-1), (-1,-1), colors.HexColor("#1E3A8A"))
@@ -3382,18 +3816,14 @@ def estadistica_admin_por_rango():
         # Para el modo escuela, contar estudiantes únicos matriculados en el período activo
         total_estudiantes = 0
         if modo == 'escuela':
-            # Obtener período activo o planificación
-            periodo_res = supabase.table("periodos_academicos") \
-                .select("id") \
-                .in_("estado", ["activo", "planificacion"]) \
-                .order("created_at", desc=True) \
-                .limit(1) \
-                .execute()
-            if periodo_res.data:
+            # Obtener período activo o planificación de forma inteligente
+            periodo_id = _obtener_periodo_inteligente()
+            if periodo_id:
                 # Contar estudiantes únicos asignados a secciones de ese período
                 estudiantes_res = supabase.table("asignaciones_estudiantes") \
-                    .select("hijo_id", count="exact") \
+                    .select("hijo_id, secciones!inner(periodo_id)", count="exact") \
                     .eq("estado", "cursando") \
+                    .eq("secciones.periodo_id", periodo_id) \
                     .execute()
                 total_estudiantes = estudiantes_res.count or 0
         else:
@@ -3488,15 +3918,8 @@ def obtener_aulas():
         if not user_data.data or user_data.data[0].get('rol') != 'administrador':
             return jsonify({'success': False, 'message': 'Acceso no autorizado.'}), 403
         
-        # Obtener período activo o en planificación (el más reciente)
-        periodo_res = supabase.table("periodos_academicos") \
-            .select("id") \
-            .in_("estado", ["activo", "planificacion"]) \
-            .order("created_at", desc=True) \
-            .limit(1) \
-            .execute()
-        
-        periodo_id = periodo_res.data[0]['id'] if periodo_res.data else None
+        # Obtener período activo o en planificación de forma inteligente
+        periodo_id = _obtener_periodo_inteligente()
         
         # Consultar secciones
         query = supabase.table("secciones").select(
@@ -4424,8 +4847,7 @@ def descargar_ficha_inscripcion(hijo_id):
 
         section_title_style = ParagraphStyle(
             name='SectionTitle', fontName='Helvetica-Bold', fontSize=10.5, 
-            textColor=colors.HexColor("#0F172A"), spaceBefore=8, spaceAfter=4,
-            borderPadding=3.5, backColor=colors.HexColor("#E2E8F0")
+            textColor=colors.HexColor("#0F172A")
         )
         data_style = ParagraphStyle(name='DataStyle', fontName='Helvetica', fontSize=9, textColor=colors.HexColor("#1E293B"))
         bold_style = ParagraphStyle(name='BoldStyle', fontName='Helvetica-Bold', fontSize=9, textColor=colors.HexColor("#0F172A"))
@@ -4454,9 +4876,25 @@ def descargar_ficha_inscripcion(hijo_id):
         elements.append(t_header)
         elements.append(Spacer(1, 10))
         
+        # Helper function for section titles to align their width with the tables (7.2*inch)
+        def create_section_header(title_text):
+            p = Paragraph(title_text, section_title_style)
+            t = Table([[p]], colWidths=[7.2*inch])
+            t.setStyle(TableStyle([
+                ('BACKGROUND', (0,0), (-1,-1), colors.HexColor("#E2E8F0")),
+                ('TOPPADDING', (0,0), (-1,-1), 4),
+                ('BOTTOMPADDING', (0,0), (-1,-1), 4),
+                ('LEFTPADDING', (0,0), (-1,-1), 6),
+                ('RIGHTPADDING', (0,0), (-1,-1), 6),
+                ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
+            ]))
+            t.spaceBefore = 8
+            t.spaceAfter = 4
+            return t
+
         # Helper function for tables
         def create_data_table(data_matrix):
-            t = Table(data_matrix)
+            t = Table(data_matrix, colWidths=[1.45*inch, 2.15*inch, 1.2*inch, 2.4*inch])
             t.setStyle(TableStyle([
                 ('FONTNAME', (0,0), (-1,-1), 'Helvetica'),
                 ('FONTSIZE', (0,0), (-1,-1), 8.5),
@@ -4471,7 +4909,7 @@ def descargar_ficha_inscripcion(hijo_id):
             return t
 
         # Sección 1: Datos del Estudiante
-        elements.append(Paragraph("Datos del Estudiante", section_title_style))
+        elements.append(create_section_header("Datos del Estudiante"))
         d_estudiante = [
             [Paragraph("<b>Nombres:</b>", bold_style), Paragraph(hijo.get('nombre', ''), data_style), Paragraph("<b>Apellidos:</b>", bold_style), Paragraph(hijo.get('apellidos', ''), data_style)],
             [Paragraph("<b>Cédula Escolar:</b>", bold_style), Paragraph(cedula, data_style), Paragraph("<b>Sexo:</b>", bold_style), Paragraph(sexo, data_style)],
@@ -4479,15 +4917,11 @@ def descargar_ficha_inscripcion(hijo_id):
             [Paragraph("<b>Lugar de Nacimiento:</b>", bold_style), Paragraph(lugar_nac, data_style), Paragraph("<b>Sección:</b>", bold_style), Paragraph(seccion_nombre, data_style)]
         ]
         t1 = create_data_table(d_estudiante)
-        t1._argW[0] = 1.3*inch
-        t1._argW[1] = 2.4*inch
-        t1._argW[2] = 1.1*inch
-        t1._argW[3] = 2.4*inch
         elements.append(t1)
         elements.append(Spacer(1, 8))
 
         # Sección 2: Datos Familiares y Vivienda
-        elements.append(Paragraph("Datos Familiares y de Vivienda", section_title_style))
+        elements.append(create_section_header("Datos Familiares y de Vivienda"))
         d_familia = [
             [Paragraph("<b>Nombre de la Madre:</b>", bold_style), Paragraph(n_madre, data_style), Paragraph("<b>C.I. Madre:</b>", bold_style), Paragraph(ci_madre, data_style)],
             [Paragraph("<b>Teléfono Madre:</b>", bold_style), Paragraph(t_madre, data_style), Paragraph("<b>Ocupación:</b>", bold_style), Paragraph(oc_madre, data_style)],
@@ -4496,16 +4930,12 @@ def descargar_ficha_inscripcion(hijo_id):
             [Paragraph("<b>Tipo de Vivienda:</b>", bold_style), Paragraph(t_viv, data_style), Paragraph("<b>Tenencia:</b>", bold_style), Paragraph(ten_viv, data_style)],
         ]
         t2 = create_data_table(d_familia)
-        t2._argW[0] = 1.4*inch
-        t2._argW[1] = 2.3*inch
-        t2._argW[2] = 1.0*inch
-        t2._argW[3] = 2.5*inch
         t2.setStyle(TableStyle([('SPAN', (1,3), (3,3))])) # Span direccion
         elements.append(t2)
         elements.append(Spacer(1, 8))
 
         # Sección 3: Antecedentes de Salud y Nacimiento
-        elements.append(Paragraph("Antecedentes de Salud y Nacimiento", section_title_style))
+        elements.append(create_section_header("Antecedentes de Salud y Nacimiento"))
         d_salud = [
             [Paragraph("<b>Fue Cesárea:</b>", bold_style), Paragraph(fue_cesarea, data_style), Paragraph("<b>Es Prematuro:</b>", bold_style), Paragraph(es_prematuro, data_style)],
             [Paragraph("<b>Peso al Nacer:</b>", bold_style), Paragraph(peso_nacer, data_style), Paragraph("<b>Talla al Nacer:</b>", bold_style), Paragraph(talla_nacer, data_style)],
@@ -4513,25 +4943,17 @@ def descargar_ficha_inscripcion(hijo_id):
             [Paragraph("<b>Med. para Fiebre:</b>", bold_style), Paragraph(med_fiebre, data_style), "", ""]
         ]
         t3 = create_data_table(d_salud)
-        t3._argW[0] = 1.3*inch
-        t3._argW[1] = 2.3*inch
-        t3._argW[2] = 1.2*inch
-        t3._argW[3] = 2.4*inch
         t3.setStyle(TableStyle([('SPAN', (1,3), (3,3))]))
         elements.append(t3)
         elements.append(Spacer(1, 8))
 
         # Sección 4: Hábitos y Diagnóstico
-        elements.append(Paragraph("Hábitos y Diagnóstico", section_title_style))
+        elements.append(create_section_header("Hábitos y Diagnóstico"))
         d_habitos = [
             [Paragraph("<b>Come Solo:</b>", bold_style), Paragraph(come_solo, data_style), Paragraph("<b>Hora de Dormir:</b>", bold_style), Paragraph(hora_dormir, data_style)],
             [Paragraph("<b>Diagnóstico Inicial:</b>", bold_style), Paragraph(diagnostico_str, data_style), "", ""]
         ]
         t4 = create_data_table(d_habitos)
-        t4._argW[0] = 1.3*inch
-        t4._argW[1] = 2.3*inch
-        t4._argW[2] = 1.2*inch
-        t4._argW[3] = 2.4*inch
         t4.setStyle(TableStyle([('SPAN', (1,1), (3,1))]))
         elements.append(t4)
         elements.append(Spacer(1, 30))
@@ -5072,12 +5494,12 @@ def backup_manual():
                 archivos = []
                 if os.path.exists(backup_dir):
                     archivos = sorted(
-                        [f for f in os.listdir(backup_dir) if f.endswith('.7z') and 'manual' in f],
+                        [f for f in os.listdir(backup_dir) if f.endswith('.sql') and 'manual' in f],
                         reverse=True
                     )
                 return jsonify({
                     'success': True,
-                    'message': '✅ Respaldo local completado y encriptado con AES-256.',
+                    'message': '✅ Respaldo local completado exitosamente.',
                     'archivo': archivos[0] if archivos else None,
                     'timestamp': datetime.now().isoformat()
                 }), 200
@@ -5100,7 +5522,7 @@ def backup_historial():
     """
     Devuelve el historial de respaldos:
     - En 'production': lista archivos en la carpeta de Drive.
-    - En 'local': lista archivos .7z en C:\\Respaldos_CEI.
+    - En 'local': lista archivos .sql en C:\\Respaldos_CEI.
     Requiere rol administrador.
     """
     if not _verificar_admin():
@@ -5146,7 +5568,7 @@ def backup_historial():
 
         try:
             for fname in sorted(os.listdir(backup_dir), reverse=True):
-                if fname.endswith('.7z') and fname.startswith('cei_backup_'):
+                if fname.endswith('.sql') and fname.startswith('cei_backup_'):
                     fpath = os.path.join(backup_dir, fname)
                     stat  = os.stat(fpath)
                     tipo  = 'manual' if '_manual' in fname else 'auto'
@@ -5157,7 +5579,7 @@ def backup_historial():
                         'fecha':    fecha_mod,
                         'tamanio':  f'{tamanio_mb} MB',
                         'tipo':     tipo,
-                        'encriptado': True
+                        'encriptado': False
                     })
                     if len(archivos) >= 30:
                         break
@@ -5170,48 +5592,66 @@ def backup_historial():
 @require_auth
 def restaurar_respaldo(file_id):
     """
-    Descarga el archivo de respaldo desde Google Drive (.7z), 
-    lo extrae en memoria/temp usando BACKUP_PASSWORD,
-    y lo ejecuta en la base de datos Supabase usando psycopg2.
+    Restaura la base de datos a partir de un archivo de respaldo.
+    - En 'production' (Render): descarga desde Google Drive (.sql.gz)
+    - En 'local': lee el archivo SQL local desde C:\\Respaldos_CEI
+    Requiere rol administrador.
     """
     if not _verificar_admin():
         return jsonify({'success': False, 'message': 'Acción denegada. Solo administradores.'}), 403
 
+    entorno = os.getenv('ENVIRONMENT', 'local')
+
     try:
-        # 1. Obtener servicio de Drive
-        service = _get_drive_service()
-        if not service:
-            return jsonify({'success': False, 'message': 'Google Drive no está disponible.'}), 500
+        if entorno == 'production':
+            # ── PRODUCCIÓN: Google Drive
+            service = _get_drive_service()
+            if not service:
+                return jsonify({'success': False, 'message': 'Google Drive no está disponible.'}), 500
 
-        # 2. Descargar archivo
-        request_download = service.files().get_media(fileId=file_id)
-        fh = BytesIO()
-        downloader = googleapiclient.http.MediaIoBaseDownload(fh, request_download)
-        done = False
-        while done is False:
-            status, done = downloader.next_chunk()
-        fh.seek(0)
-
-        # 3. Extraer contenido .sql.gz (los archivos de Drive no tienen contraseña)
-        try:
-            raw_sql = gzip.decompress(fh.read()).decode('utf-8')
-        except OSError:
-            # Fallback por si el archivo no está comprimido en gzip
+            request_download = service.files().get_media(fileId=file_id)
+            fh = BytesIO()
+            downloader = googleapiclient.http.MediaIoBaseDownload(fh, request_download)
+            done = False
+            while done is False:
+                status, done = downloader.next_chunk()
             fh.seek(0)
-            raw_sql = fh.read().decode('utf-8')
 
-        # Filtrar comandos meta de psql (como \restrict inyectado por el pooler de Supabase)
-        # ya que psycopg2 no soporta meta-comandos de psql.
+            try:
+                raw_sql = gzip.decompress(fh.read()).decode('utf-8')
+            except OSError:
+                fh.seek(0)
+                raw_sql = fh.read().decode('utf-8')
+        else:
+            # ── LOCAL: Lectura directa del archivo de disco
+            nombre_archivo = os.path.basename(file_id)
+            if not nombre_archivo.startswith('cei_backup_') or not nombre_archivo.endswith('.sql'):
+                return jsonify({'success': False, 'message': 'Nombre de archivo de respaldo inválido.'}), 400
+
+            backup_dir = os.getenv('BACKUP_DIR', r'C:\Respaldos_CEI')
+            fpath = os.path.join(backup_dir, nombre_archivo)
+
+            if not os.path.exists(fpath):
+                return jsonify({'success': False, 'message': f'Archivo de respaldo no encontrado: {nombre_archivo}'}), 404
+
+            with open(fpath, 'r', encoding='utf-8') as f:
+                raw_sql = f.read()
+
+        # Filtrar comandos meta de psql
         sql_lines = []
         for line in raw_sql.splitlines():
             if not line.startswith('\\'):
                 sql_lines.append(line)
         sql_content = '\n'.join(sql_lines)
 
-        # 4. Ejecutar SQL en Supabase
+        # Ejecutar SQL en Supabase
         db_url = os.getenv("DATABASE_URL")
         if not db_url:
             return jsonify({'success': False, 'message': 'DATABASE_URL no configurado.'}), 500
+
+        # Leer opciones de la solicitud
+        body_data = request.get_json(silent=True) or {}
+        incluir_usuarios = bool(body_data.get('incluir_usuarios', False))
 
         # Nos conectamos y ejecutamos
         conn = psycopg2.connect(db_url)
@@ -5222,17 +5662,31 @@ def restaurar_respaldo(file_id):
                 import re
                 table_matches = re.findall(r'INSERT\s+INTO\s+([^\s\(]+)', sql_content, re.IGNORECASE)
                 tables_to_clean = sorted(list(set(table_matches)))
-                
+
                 if tables_to_clean:
-                    # Excluir la tabla 'usuarios' para no cerrar sesiones de administrador
-                    # ni eliminar cuentas de usuarios nuevas
-                    tables_to_truncate = [t for t in tables_to_clean if 'usuarios' not in t.lower()]
-                    
+                    if incluir_usuarios:
+                        # Restauración completa: incluir 'usuarios' en el ciclo TRUNCATE+reinsert.
+                        # Esto revierte soft-deletes (estado='inactivo') al estado del respaldo.
+                        # IMPORTANTE: excluir 'usuarios_archivo' — es el log permanente de emergencia.
+                        tables_to_truncate = [
+                            t for t in tables_to_clean
+                            if 'usuarios_archivo' not in t.lower()
+                        ]
+                        print("🔄 Restauración COMPLETA solicitada — se incluye la tabla 'usuarios'.")
+                    else:
+                        # Restauración estándar: excluir 'usuarios' para no cerrar sesiones
+                        # ni sobrescribir nuevos usuarios creados después del respaldo.
+                        # También excluir 'usuarios_archivo' siempre.
+                        tables_to_truncate = [
+                            t for t in tables_to_clean
+                            if 'usuarios' not in t.lower()
+                        ]
+
                     if tables_to_truncate:
                         truncate_query = f"TRUNCATE {', '.join(tables_to_truncate)} CASCADE;"
                         print(f"🔄 Limpiando tablas de datos antes de restaurar: {truncate_query}")
                         cur.execute(truncate_query)
-                
+
                 # 2. Ejecutar el contenido del respaldo SQL
                 cur.execute(sql_content)
             conn.commit()

@@ -72,8 +72,7 @@ function abrirModalEditarSeccion(id) {
     const seccion = seccionesCache.find(s => s.id === id);
     if (!seccion) return;
 
-    // Cargar selects primero (por seguridad)
-    cargarSelectsSecciones().then(() => {
+    const renderYMostrarModal = () => {
         const modal = document.getElementById('modal-crear-seccion');
         const content = document.getElementById('modal-crear-seccion-content');
         const titulo = document.querySelector('#modal-crear-seccion h3');
@@ -92,6 +91,18 @@ function abrirModalEditarSeccion(id) {
 
         // Cargar datos en los inputs
         document.getElementById('seccion-id').value = seccion.id;
+        
+        // Agregar temporalmente el período si no existe en la lista de activos/en planif
+        const pSelect = document.getElementById('seccion-periodo');
+        if (pSelect) {
+            const periodExists = periodosCacheSecciones.some(p => p.id === seccion.periodo_id);
+            if (!periodExists && seccion.periodo_nombre) {
+                const opt = document.createElement('option');
+                opt.value = seccion.periodo_id;
+                opt.textContent = `${seccion.periodo_nombre} (finalizado)`;
+                pSelect.appendChild(opt);
+            }
+        }
         document.getElementById('seccion-periodo').value = seccion.periodo_id;
         document.getElementById('seccion-nivel').value = seccion.nivel;
         document.getElementById('seccion-letra').value = seccion.letra;
@@ -103,7 +114,7 @@ function abrirModalEditarSeccion(id) {
 
         if (seccion.docentes && seccion.docentes.length > 0) {
             seccion.docentes.forEach(docente => {
-                agregarSelectDocente(docente.id);
+                agregarSelectDocente(docente.id, docente.nombre_completo);
             });
         } else {
             agregarSelectDocente();
@@ -117,7 +128,14 @@ function abrirModalEditarSeccion(id) {
             content.classList.remove('scale-95');
             content.classList.add('scale-100');
         }, 10);
-    });
+    };
+
+    // Si la caché está vacía, cargarla primero esperando la red; de lo contrario, abrir instantáneamente.
+    if (periodosCacheSecciones.length === 0 || docentesCache.length === 0) {
+        cargarSelectsSecciones(false).then(renderYMostrarModal);
+    } else {
+        renderYMostrarModal();
+    }
 }
 
 document.addEventListener('click', (e) => {
@@ -141,13 +159,25 @@ document.addEventListener('keydown', (e) => {
 // MANEJO DE MÚLTIPLES DOCENTES
 // =============================================================
 
-function agregarSelectDocente(selectedValue = '') {
+function agregarSelectDocente(selectedValue = '', selectedText = '') {
     const container = document.getElementById('seccion-docentes-container');
     const div = document.createElement('div');
     div.className = 'flex items-center gap-2 animate-fade-in';
 
-    const options = '<option value="">Sin asignar (Opcional)</option>' +
-        docentesCache.map(d => `<option value="${d.id}" ${d.id === selectedValue ? 'selected' : ''}>${d.nombres} ${d.apellidos}</option>`).join('');
+    let options = '<option value="">Sin asignar (Opcional)</option>';
+    let found = false;
+
+    const cacheOptions = docentesCache.map(d => {
+        if (d.id === selectedValue) found = true;
+        return `<option value="${d.id}" ${d.id === selectedValue ? 'selected' : ''}>${d.nombres} ${d.apellidos}</option>`;
+    }).join('');
+
+    options += cacheOptions;
+
+    if (selectedValue && !found) {
+        const name = selectedText || 'Docente no activo';
+        options += `<option value="${selectedValue}" selected>${name}</option>`;
+    }
 
     div.innerHTML = `
         <select class="seccion-docente-select w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-400 focus:border-blue-400 outline-none transition-all bg-gray-50 focus:bg-white text-sm">
@@ -164,33 +194,40 @@ function agregarSelectDocente(selectedValue = '') {
 // CARGA DE DATOS PARA SELECTS (Períodos y Docentes)
 // =============================================================
 
-async function cargarSelectsSecciones() {
+async function cargarSelectsSecciones(force = false) {
     // 1. Cargar Períodos
-    try {
-        const resP = await fetchWithAuth(`${API_BASE}/api/periodos`);
-        const dataP = await resP.json();
-        if (resP.ok && dataP.periodos) {
-            periodosCacheSecciones = dataP.periodos.filter(p => p.estado !== 'finalizado'); // Ocultar finalizados para crear sección
-            const pSelect = document.getElementById('seccion-periodo');
-
-            if (periodosCacheSecciones.length === 0) {
-                pSelect.innerHTML = '<option value="">No hay períodos activos/en planif</option>';
-            } else {
-                pSelect.innerHTML = periodosCacheSecciones.map(p =>
-                    `<option value="${p.id}">${p.nombre} (${p.estado})</option>`
-                ).join('');
+    if (force || periodosCacheSecciones.length === 0) {
+        try {
+            const resP = await fetchWithAuth(`${API_BASE}/api/periodos`);
+            const dataP = await resP.json();
+            if (resP.ok && dataP.periodos) {
+                periodosCacheSecciones = dataP.periodos.filter(p => p.estado !== 'finalizado'); // Ocultar finalizados para crear sección
+                const pSelect = document.getElementById('seccion-periodo');
+                if (pSelect) {
+                    const currentVal = pSelect.value;
+                    if (periodosCacheSecciones.length === 0) {
+                        pSelect.innerHTML = '<option value="">No hay períodos activos/en planif</option>';
+                    } else {
+                        pSelect.innerHTML = periodosCacheSecciones.map(p =>
+                            `<option value="${p.id}">${p.nombre} (${p.estado})</option>`
+                        ).join('');
+                    }
+                    if (currentVal) pSelect.value = currentVal;
+                }
             }
-        }
-    } catch (e) { console.error('Error cargando períodos:', e); }
+        } catch (e) { console.error('Error cargando períodos:', e); }
+    }
 
     // 2. Cargar Docentes
-    try {
-        const resD = await fetchWithAuth(`${API_BASE}/api/usuarios`);
-        const dataD = await resD.json();
-        if (resD.ok && dataD.usuarios) {
-            docentesCache = dataD.usuarios.filter(u => u.rol === 'docente');
-        }
-    } catch (e) { console.error('Error cargando docentes:', e); }
+    if (force || docentesCache.length === 0) {
+        try {
+            const resD = await fetchWithAuth(`${API_BASE}/api/usuarios`);
+            const dataD = await resD.json();
+            if (resD.ok && dataD.usuarios) {
+                docentesCache = dataD.usuarios.filter(u => u.rol === 'docente' && u.estado !== 'inactivo');
+            }
+        } catch (e) { console.error('Error cargando docentes:', e); }
+    }
 }
 
 
@@ -409,10 +446,18 @@ document.addEventListener('DOMContentLoaded', () => {
         btnGuardar.addEventListener('click', guardarSeccion);
     }
 
+    // Cargar secciones al cambiar a la sección (Premium y robusto)
+    document.addEventListener('sectionChanged', (e) => {
+        if (e.detail === 'section-secciones') {
+            cargarSelectsSecciones(true); // Forzar recarga al entrar a la sección
+            cargarSecciones();
+        }
+    });
+
     const linkSecciones = document.querySelector('[data-section="section-secciones"]');
     if (linkSecciones) {
         linkSecciones.addEventListener('click', () => {
-            cargarSelectsSecciones();
+            cargarSelectsSecciones(true); // Forzar recarga de los selects
             cargarSecciones();
         });
     }

@@ -32,15 +32,12 @@ if (Test-Path $envPath) {
 }
 
 $DATABASE_URL    = [System.Environment]::GetEnvironmentVariable("DATABASE_URL",    "Process")
-$BACKUP_PASSWORD = [System.Environment]::GetEnvironmentVariable("BACKUP_PASSWORD", "Process")
 $BACKUP_DIR      = [System.Environment]::GetEnvironmentVariable("BACKUP_DIR",      "Process")
 $PGDUMP_PATH     = [System.Environment]::GetEnvironmentVariable("PGDUMP_PATH",     "Process")
-$SEVEN_ZIP_PATH  = [System.Environment]::GetEnvironmentVariable("SEVEN_ZIP_PATH",  "Process")
 
 # Valores por defecto
 if (-not $BACKUP_DIR)     { $BACKUP_DIR     = "C:\Respaldos_CEI" }
 if (-not $PGDUMP_PATH)    { $PGDUMP_PATH    = "C:\Program Files\PostgreSQL\18\bin\pg_dump.exe" }
-if (-not $SEVEN_ZIP_PATH) { $SEVEN_ZIP_PATH = "C:\Program Files\7-Zip\7z.exe" }
 
 # --- 2. FUNCION LOG ---
 $logFile = Join-Path $BACKUP_DIR "backup_log.txt"
@@ -59,7 +56,7 @@ if ($Startup) { Log "Modo: STARTUP (verificando si es necesario)" }
 
 # --- 3. LOGICA DE STARTUP ---
 if ($Startup -and -not $Manual) {
-    $ultimoArchivo = @(Get-ChildItem -Path $BACKUP_DIR -Filter "cei_backup_*.7z" -ErrorAction SilentlyContinue |
+    $ultimoArchivo = @(Get-ChildItem -Path $BACKUP_DIR -Filter "cei_backup_*.sql" -ErrorAction SilentlyContinue |
                      Sort-Object LastWriteTime -Descending | Select-Object -First 1)
 
     if ($ultimoArchivo.Count -gt 0) {
@@ -80,19 +77,8 @@ if (-not (Test-Path $PGDUMP_PATH)) {
     exit 1
 }
 
-if (-not (Test-Path $SEVEN_ZIP_PATH)) {
-    Log "ERROR: 7-Zip no encontrado en: $SEVEN_ZIP_PATH"
-    Log "Instala 7-Zip desde https://www.7-zip.org/ o ajusta SEVEN_ZIP_PATH en el .env"
-    exit 1
-}
-
 if (-not $DATABASE_URL) {
     Log "ERROR: DATABASE_URL no esta definida en el .env"
-    exit 1
-}
-
-if (-not $BACKUP_PASSWORD -or $BACKUP_PASSWORD -eq "TU_CONTRASEÑA_MAESTRA_AQUI") {
-    Log "ERROR: BACKUP_PASSWORD no esta configurada. Edita el archivo .env y define una contrasena maestra."
     exit 1
 }
 
@@ -109,8 +95,7 @@ foreach ($dir in @($BACKUP_DIR, $anualesDir)) {
 $fechaStr  = Get-Date -Format "yyyy-MM-dd"
 $horaStr   = Get-Date -Format "HH-mm"
 $tipoLabel = if ($Manual) { "manual" } else { "auto" }
-$sqlFile   = Join-Path $env:TEMP "cei_backup_temp_$($fechaStr)_$($horaStr).sql"
-$archName  = "cei_backup_${fechaStr}_${tipoLabel}.7z"
+$archName  = "cei_backup_${fechaStr}_${tipoLabel}.sql"
 $archFile  = Join-Path $BACKUP_DIR $archName
 
 # Si ya existe un archivo del mismo nombre, eliminarlo antes de crear el nuevo
@@ -123,7 +108,7 @@ if (Test-Path $archFile) {
 Log "Iniciando pg_dump..."
 try {
     $env:PGPASSWORD = ""
-    $pgDumpArgs = @("--dbname=$DATABASE_URL", "-n", "public", "-T", "schema_migrations", "-T", "supabase_migrations", "--format=plain", "--no-owner", "--no-acl", "--encoding=UTF8", "--inserts", "--on-conflict-do-nothing", "--data-only", "--file=$sqlFile")
+    $pgDumpArgs = @("--dbname=$DATABASE_URL", "-n", "public", "-T", "schema_migrations", "-T", "supabase_migrations", "--format=plain", "--no-owner", "--no-acl", "--encoding=UTF8", "--inserts", "--on-conflict-do-nothing", "--data-only", "--file=$archFile")
     $pgDumpOutput = & $PGDUMP_PATH $pgDumpArgs 2>&1
 
     if ($LASTEXITCODE -ne 0) {
@@ -131,45 +116,18 @@ try {
         exit 1
     }
 
-    $sqlSizeMB = [math]::Round((Get-Item $sqlFile).Length / 1MB, 2)
-    Log "pg_dump completado. Tamano SQL: ${sqlSizeMB} MB"
+    $sqlSizeMB = [math]::Round((Get-Item $archFile).Length / 1MB, 2)
+    Log "pg_dump completado exitosamente. Archivo: $archName (${sqlSizeMB} MB)"
 }
 catch {
     Log "EXCEPCION en pg_dump: $_"
     exit 1
 }
 
-# --- 8. COMPRIMIR Y ENCRIPTAR CON 7-ZIP ---
-Log "Encriptando con 7-Zip AES-256..."
-try {
-    $7zArgs = @("a", "-t7z", "-p$BACKUP_PASSWORD", "-mhe=on", "-mx=5", "$archFile", "$sqlFile")
-    $7zOutput = & $SEVEN_ZIP_PATH $7zArgs 2>&1
-
-    if ($LASTEXITCODE -ne 0) {
-        Log "ERROR: 7-Zip fallo (codigo $LASTEXITCODE): $7zOutput"
-        if (Test-Path $sqlFile) { Remove-Item $sqlFile -Force }
-        exit 1
-    }
-
-    $archSizeMB = [math]::Round((Get-Item $archFile).Length / 1MB, 2)
-    Log "Encriptacion completada. Archivo: $archName (${archSizeMB} MB)"
-}
-catch {
-    Log "EXCEPCION en 7-Zip: $_"
-    if (Test-Path $sqlFile) { Remove-Item $sqlFile -Force }
-    exit 1
-}
-
-# --- 9. BORRAR SQL TEMPORAL ---
-if (Test-Path $sqlFile) {
-    Remove-Item $sqlFile -Force
-    Log "Archivo SQL temporal eliminado."
-}
-
-# --- 10. POLITICA DE RETENCION ---
+# --- 8. POLITICA DE RETENCION ---
 Log "Aplicando politica de retencion..."
 
-$todosArchivos = @(Get-ChildItem -Path $BACKUP_DIR -Filter "cei_backup_*.7z" |
+$todosArchivos = @(Get-ChildItem -Path $BACKUP_DIR -Filter "cei_backup_*.sql" |
     Sort-Object LastWriteTime -Descending)
 
 $hoy        = Get-Date
@@ -177,13 +135,13 @@ $diaJulio31 = ($hoy.Month -eq 7 -and $hoy.Day -eq 31)
 
 # Cierre anual: si hoy es 31 de julio
 if ($diaJulio31) {
-    $archivoAnual = Join-Path $BACKUP_DIR "cei_backup_${fechaStr}_auto.7z"
+    $archivoAnual = Join-Path $BACKUP_DIR "cei_backup_${fechaStr}_auto.sql"
     if (Test-Path $archivoAnual) {
-        $destAnual = Join-Path $anualesDir "cei_anual_${fechaStr}.7z"
+        $destAnual = Join-Path $anualesDir "cei_anual_${fechaStr}.sql"
         Move-Item $archivoAnual $destAnual -Force
         Log "CIERRE ANUAL: $archivoAnual movido a $destAnual"
     }
-    $todosArchivos = @(Get-ChildItem -Path $BACKUP_DIR -Filter "cei_backup_*.7z" |
+    $todosArchivos = @(Get-ChildItem -Path $BACKUP_DIR -Filter "cei_backup_*.sql" |
         Sort-Object LastWriteTime -Descending)
 }
 
@@ -229,7 +187,7 @@ foreach ($archivo in $todosArchivos) {
 $conservados = $todosArchivos.Count - $eliminados
 Log "Retencion completada: $conservados archivos conservados, $eliminados eliminados."
 
-# --- 11. RESUMEN FINAL ---
+# --- 9. RESUMEN FINAL ---
 Log "=== RESPALDO COMPLETADO EXITOSAMENTE ==="
 Log "Archivo: $archName"
 Log "Ubicacion: $BACKUP_DIR"
