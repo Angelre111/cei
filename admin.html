@@ -2787,6 +2787,9 @@
                     document.getElementById('f-enfermedad').value = f.enfermedad_cronica || 'Ninguna reportada';
                     document.getElementById('f-fiebre').value = f.medicamento_fiebre || 'Ninguno reportado';
 
+                    // Cargar estado de los boletines para este estudiante
+                    cargarEstadoBoletinesFicha(hijo_id);
+
                 } else {
                     Swal.fire('Error', data.message || 'No se pudo cargar la ficha.', 'error');
                     cerrarModalFicha();
@@ -2805,6 +2808,89 @@
             modal.classList.add('opacity-0');
             content.classList.add('scale-95');
             setTimeout(() => modal.classList.add('hidden'), 300);
+        }
+
+        // ============================================
+        // BOLETINES DE EVALUACIÓN EN MODAL FICHA
+        // ============================================
+        async function cargarEstadoBoletinesFicha(hijoId) {
+            const container = document.getElementById('ficha-boletines-container');
+            const periodoLabel = document.getElementById('ficha-boletines-periodo');
+            if (!container) return;
+
+            container.innerHTML = `<div class="col-span-3 flex items-center justify-center py-4"><i class="ph-bold ph-spinner-gap animate-spin text-indigo-300 text-2xl"></i></div>`;
+            periodoLabel.textContent = 'Verificando momentos...';
+
+            const token = localStorage.getItem('auth_token');
+            const baseUrl = typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : 'http://127.0.0.1:5000';
+
+            const momentos = [
+                { num: 1, label: '1er Momento' },
+                { num: 2, label: '2do Momento' },
+                { num: 3, label: '3er Momento' }
+            ];
+
+            const resultados = await Promise.all(momentos.map(async (m) => {
+                try {
+                    const res = await fetch(`${baseUrl}/api/evaluacion/${hijoId}/${m.num}`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    const data = await res.json();
+                    return { ...m, tieneBoletin: !!(data.success && data.data && data.data.boleta_id) };
+                } catch {
+                    return { ...m, tieneBoletin: false };
+                }
+            }));
+
+            const disponibles = resultados.filter(r => r.tieneBoletin).length;
+            periodoLabel.textContent = disponibles > 0
+                ? `${disponibles} de 3 momento(s) registrado(s)`
+                : 'Sin evaluaciones registradas aún';
+
+            container.innerHTML = resultados.map(r => {
+                if (r.tieneBoletin) {
+                    return `
+                        <button type="button"
+                            onclick="descargarBoletinDesdeModalFicha('${hijoId}', ${r.num})"
+                            class="flex flex-col items-center gap-2 p-4 bg-indigo-50 text-indigo-800 rounded-2xl hover:bg-indigo-100 border border-indigo-200 hover:border-indigo-300 font-extrabold text-xs transition-all group shadow-sm hover:shadow-md hover:-translate-y-0.5">
+                            <i class="ph-bold ph-file-pdf text-2xl text-indigo-400 group-hover:text-indigo-600 transition-colors"></i>
+                            <span class="text-center leading-tight">${r.label}</span>
+                            <span class="flex items-center gap-1">
+                                <span class="w-1.5 h-1.5 bg-emerald-400 rounded-full"></span>
+                                <span class="text-[10px] text-emerald-600 font-bold">Listo</span>
+                            </span>
+                        </button>`;
+                } else {
+                    return `
+                        <div class="flex flex-col items-center gap-2 p-4 bg-gray-50 text-gray-300 rounded-2xl border border-gray-100 font-extrabold text-xs opacity-60 cursor-not-allowed select-none">
+                            <i class="ph-bold ph-file-dashed text-2xl text-gray-300"></i>
+                            <span class="text-center leading-tight text-gray-400">${r.label}</span>
+                            <span class="flex items-center gap-1">
+                                <span class="w-1.5 h-1.5 bg-gray-300 rounded-full"></span>
+                                <span class="text-[10px] text-gray-300 font-bold">Sin datos</span>
+                            </span>
+                        </div>`;
+                }
+            }).join('');
+        }
+
+        function descargarBoletinDesdeModalFicha(hijoId, momento) {
+            const token = localStorage.getItem('auth_token');
+            const baseUrl = typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : 'http://127.0.0.1:5000';
+            const url = `${baseUrl}/api/boletines/descargar/${hijoId}/${momento}?token=${token}`;
+
+            Swal.fire({
+                title: `Generando Boletín...`,
+                text: `Preparando el boletín del Momento ${momento}`,
+                allowOutsideClick: false,
+                didOpen: () => { Swal.showLoading(); },
+                customClass: { popup: 'rounded-3xl' }
+            });
+
+            setTimeout(() => {
+                Swal.close();
+                window.open(url, '_blank');
+            }, 1200);
         }
 
         function toggleEditFicha() {
@@ -3828,6 +3914,21 @@
                                     </div>
                                 </div>
                             </div>
+
+                            <!-- Boletines de Evaluación (columna izquierda, espacio vacío) -->
+                            <div class="bg-indigo-50/30 rounded-[2rem] p-6 border border-indigo-100/50 shadow-sm">
+                                <div class="flex items-center justify-between mb-3">
+                                    <h4 class="text-[11px] font-black text-indigo-600 uppercase tracking-[0.2em] flex items-center gap-2">
+                                        <i class="ph-bold ph-clipboard-text text-base text-indigo-500"></i> Boletines de Evaluación
+                                    </h4>
+                                    <p id="ficha-boletines-periodo" class="text-[10px] text-indigo-400 font-bold tracking-widest">Cargando...</p>
+                                </div>
+                                <div class="grid grid-cols-3 gap-3" id="ficha-boletines-container">
+                                    <div class="col-span-3 flex items-center justify-center py-4">
+                                        <i class="ph-bold ph-spinner-gap animate-spin text-indigo-300 text-2xl"></i>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
                         <!-- Columna Derecha: Padres y Documentos -->
@@ -3920,7 +4021,9 @@
                                     </button>
                                 </div>
                             </div>
-                        </div>
+
+                            <!-- (boletines movidos a la columna izquierda) -->
+                            </div>
                     </div>
                 </form>
             </div>
