@@ -46,7 +46,9 @@ async function cargarYRenderizarUsuarios() {
         if (cardAdmins) cardAdmins.innerText = totalAdmins;
         if (cardDocentes) cardDocentes.innerText = totalDocentes;
 
-        renderizarTablaUsuarios(cachedUsuarios);
+        // Temporal: mostrar solo usuarios activos e invitados
+        const usuariosFiltrados = cachedUsuarios.filter(u => u.estado === 'activo' || u.estado === 'invitado');
+        renderizarTablaUsuarios(usuariosFiltrados);
 
     } catch (error) {
         console.error('Error cargando usuarios:', error);
@@ -240,7 +242,9 @@ function filtrarUsuarios() {
     const countEl = document.getElementById('user-search-count');
 
     if (!query) {
-        renderizarTablaUsuarios(cachedUsuarios);
+        // Temporal: mostrar solo usuarios activos e invitados
+        const usuariosFiltrados = cachedUsuarios.filter(u => u.estado === 'activo' || u.estado === 'invitado');
+        renderizarTablaUsuarios(usuariosFiltrados);
         if (countEl) countEl.innerText = 'Mostrando todos los usuarios';
         return;
     }
