@@ -2174,6 +2174,10 @@
             document.getElementById('student-cedula').value = '';
             modal.removeAttribute('data-estudiante-id'); // limpia rastro
 
+            // Ocultar botón eliminar hasta que se encuentre un estudiante
+            const btnEliminar = document.getElementById('btn-eliminar-alumno-modal');
+            if (btnEliminar) btnEliminar.classList.add('hidden');
+
             cargarSeccionesSelect();
 
             modal.classList.remove('hidden');
@@ -2433,6 +2437,18 @@
                         const modal = document.getElementById('modal-registrar-alumno');
                         modal.dataset.estudianteId = est.id;
 
+                        // ── Mostrar y configurar el botón de eliminar ──────────────
+                        const btnEliminar = document.getElementById('btn-eliminar-alumno-modal');
+                        if (btnEliminar) {
+                            btnEliminar.classList.remove('hidden');
+                            // Reasignar handler con los datos actuales del estudiante
+                            btnEliminar.onclick = () => {
+                                adminEliminarHijo(est.id, est.nombres, null, null);
+                                // Tras confirmar eliminación, cerrar el modal y recargar matrícula
+                                // (adminEliminarHijo ya muestra el Swal; tras él cerramos)
+                            };
+                        }
+
                         // Notificación de éxito
                         Swal.fire({
                             toast: true,
@@ -2484,6 +2500,9 @@
                     });
                     document.getElementById('student-name').value = '';
                     document.getElementById('student-rep').value = '';
+                    // Ocultar el botón eliminar si no hay estudiante
+                    const btnEliminar = document.getElementById('btn-eliminar-alumno-modal');
+                    if (btnEliminar) btnEliminar.classList.add('hidden');
                 }
             } catch (err) {
                 console.error("Error al buscar estudiante:", err);
@@ -3580,13 +3599,23 @@
                         </select>
                     </div>
                 </div>
-                <div class="mt-10 flex justify-end gap-4">
-                    <button onclick="cerrarModalRegistrarAlumno()"
-                        class="px-8 py-3.5 text-gray-500 font-bold hover:bg-gray-100 rounded-2xl transition-all text-sm">Cancelar</button>
-                    <button id="btn-add-student"
-                        class="px-8 py-3.5 bg-blue-600 text-white rounded-2xl font-extrabold hover:bg-blue-700 transition shadow-xl shadow-blue-200 flex items-center gap-2 text-sm transform active:scale-95">
-                        <i class="ph-bold ph-user-plus"></i> Confirmar Inscripción
+                <div class="mt-10 flex justify-between items-center gap-4">
+                    <!-- Botón eliminar (oculto hasta que se cargue un estudiante) -->
+                    <button id="btn-eliminar-alumno-modal"
+                        class="hidden px-5 py-3.5 bg-red-50 text-red-600 border border-red-200 rounded-2xl font-bold
+                               hover:bg-red-100 hover:border-red-400 transition-all text-sm flex items-center gap-2"
+                        title="Eliminar el registro completo de este estudiante de la base de datos">
+                        <i class="ph-bold ph-trash text-lg"></i>
+                        <span class="hidden md:inline">Eliminar Registro</span>
                     </button>
+                    <div class="flex gap-4 ml-auto">
+                        <button onclick="cerrarModalRegistrarAlumno()"
+                            class="px-8 py-3.5 text-gray-500 font-bold hover:bg-gray-100 rounded-2xl transition-all text-sm">Cancelar</button>
+                        <button id="btn-add-student"
+                            class="px-8 py-3.5 bg-blue-600 text-white rounded-2xl font-extrabold hover:bg-blue-700 transition shadow-xl shadow-blue-200 flex items-center gap-2 text-sm transform active:scale-95">
+                            <i class="ph-bold ph-user-plus"></i> Confirmar Inscripción
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>

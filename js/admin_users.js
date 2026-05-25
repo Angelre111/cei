@@ -473,11 +473,10 @@ window.adminEliminarHijo = async function(hijoId, nombreHijo, repUserId, repNomb
         const data = await res.json();
 
         if (res.ok && data.success) {
-            // Eliminar la fila del modal sin cerrarlo y reabrir con datos frescos
+            // Eliminar la fila del modal sin cerrarlo (solo aplica si viene del modal representante)
             const row = document.getElementById(`hijo-row-${hijoId}`);
             if (row) row.remove();
 
-            // Reabrir el modal del representante con datos actualizados
             await Swal.fire({
                 icon: 'success',
                 title: '¡Eliminado!',
@@ -486,8 +485,15 @@ window.adminEliminarHijo = async function(hijoId, nombreHijo, repUserId, repNomb
                 showConfirmButton: false,
                 customClass: { popup: 'rounded-[2rem]' }
             });
-            // Recargar el modal del representante con datos frescos
-            window.abrirModalRepresentanteVincular(repUserId, repNombre);
+
+            if (repUserId) {
+                // Venía del modal de representante → reabrirlo con datos frescos
+                window.abrirModalRepresentanteVincular(repUserId, repNombre);
+            } else {
+                // Venía del modal "Inscribir Alumno" → cerrarlo y recargar matrícula
+                if (typeof cerrarModalRegistrarAlumno === 'function') cerrarModalRegistrarAlumno();
+                if (typeof cargarMatriculaGeneral === 'function') cargarMatriculaGeneral();
+            }
         } else {
             Swal.fire({ icon: 'error', title: 'Error', text: data.message || 'No se pudo eliminar.', confirmButtonColor: '#EF4444', customClass: { popup: 'rounded-[2rem]' } });
         }
