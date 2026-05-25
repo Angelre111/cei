@@ -2,7 +2,7 @@
 // MODAL REGISTRO COMPLETO DE ESTUDIANTE
 // ============================================
 
-async function abrirModalRegistrarNuevoEstudiante() {
+async function abrirModalRegistrarNuevoEstudiante(emailRepPrellenado = '') {
     // Limpiar formulario
     const form = document.getElementById('form-nuevo-estudiante');
     if (form) form.reset();
@@ -27,6 +27,18 @@ async function abrirModalRegistrarNuevoEstudiante() {
         content.classList.remove('scale-95');
         content.classList.add('scale-100');
     }, 10);
+
+    // Pre-llenar email del representante si viene de la vinculación desde admin
+    const emailInput = document.getElementById('nuevo_representante_email');
+    if (emailInput && emailRepPrellenado) {
+        emailInput.value = emailRepPrellenado;
+        emailInput.readOnly = true;
+        emailInput.classList.add('bg-violet-50', 'border-violet-200', 'text-violet-700');
+        emailInput.title = 'Email pre-llenado desde el perfil del representante';
+    } else if (emailInput) {
+        emailInput.readOnly = false;
+        emailInput.classList.remove('bg-violet-50', 'border-violet-200', 'text-violet-700');
+    }
 
     // Cargar secciones disponibles en segundo plano
     cargarSeccionesNuevoEstudiante();

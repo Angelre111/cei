@@ -1523,6 +1523,11 @@ def admin_registrar_estudiante():
         # Representante: es él mismo
         rep_id = current_user.id
 
+    # ── Verificar límite de hijos (máximo 8 por representante) ───────────────
+    res_hijos_actuales = supabase.table("hijos").select("id", count="exact").eq("representante_id", rep_id).execute()
+    if (res_hijos_actuales.count or len(res_hijos_actuales.data or [])) >= 8:
+        return jsonify({'success': False, 'message': 'Este representante ya tiene el máximo de 8 hijos registrados en el sistema.'}), 409
+
     # ── Período académico activo ──────────────────────────────────────────────
     periodo_id = _obtener_periodo_inteligente()
 
@@ -2160,16 +2165,20 @@ def promover_estudiantes():
 def verificar_estado(user_id):
     """Verifica si un usuario ya ha completado su inscripción."""
     try:
-        # Busca en la tabla 'inscripciones' si existe una fila con este user_id
+        # Busca todos los hijos inscritos por este usuario
         response = supabase.table("inscripciones").select("id", count="exact").eq("user_id", user_id).execute()
-        
-        # Si la lista de datos no está vacía, es que YA existe
-        ya_existe = len(response.data) > 0
-        
-        return jsonify({'completado': ya_existe}), 200
+        total_hijos = len(response.data)
+        ya_existe = total_hijos > 0
+        # Los representantes SIEMPRE pueden registrar más hijos (hasta el límite de 8)
+        # bloquear_formulario=False para que el frontend no bloquee el acceso al form
+        return jsonify({
+            'completado': ya_existe,
+            'bloquear_formulario': False,
+            'total_hijos': total_hijos
+        }), 200
     except Exception as e:
         print(f"❌ Error verificación: {e}")
-        return jsonify({'completado': False}), 200 # En caso de duda, dejamos pasar
+        return jsonify({'completado': False, 'bloquear_formulario': False, 'total_hijos': 0}), 200
 
 @app.route('/api/inscribir', methods=['POST'])
 @require_auth
@@ -2193,11 +2202,11 @@ def inscribir_estudiante():
         if rol_actual == 'docente':
             return jsonify({'success': False, 'message': 'Acción no permitida para docentes.'}), 403
 
-        # 2. Verificar si este usuario ya llenó una ficha
+        # 2. Verificar límite de hijos (máximo 8 por representante)
         verif = supabase.table("inscripciones").select("id").eq("user_id", user_id_real).execute()
         print("🚀 [BACKEND] Verificación completada.")
-        if len(verif.data) > 0:
-             return jsonify({"error": "Ya has completado una ficha de inscripción previamente."}), 409
+        if len(verif.data) >= 8:
+            return jsonify({"error": "Has alcanzado el límite máximo de 8 hijos registrados en el sistema."}), 409
 
         # 3. BÚSQUEDA INTELIGENTE DEL PERÍODO ACADÉMICO
         periodo_id = _obtener_periodo_inteligente()
@@ -5061,6 +5070,99 @@ def obtener_perfil_representante():
     except Exception as e:
         print(f"❌ Error al obtener perfil representante: {e}")
         return jsonify({'success': False, 'message': 'Error interno en el servidor.'}), 500
+
+
+# =======================================================
+# ADMIN: Consultar hijos de un representante específico
+# =======================================================
+@app.route('/api/admin/representante/<user_id>/hijos', methods=['GET'])
+@require_auth
+def admin_obtener_hijos_representante(user_id):
+    """Retorna los hijos de un representante específico. Solo para administradores."""
+    try:
+        solicitante_id = request.current_user.id
+        perfil_sol = supabase.table("usuarios").select("rol").eq("id", solicitante_id).single().execute()
+        if not perfil_sol.data or perfil_sol.data.get("rol") != "administrador":
+            return jsonify({'success': False, 'message': 'Acción denegada. Solo administradores.'}), 403
+
+        res_hijos = supabase.table("hijos").select("*").eq("representante_id", user_id).execute()
+        hijos_lista = []
+        for h in (res_hijos.data or []):
+            res_asig = supabase.table("asignaciones_estudiantes") \
+                .select("seccion_id, estado, secciones(nivel, letra)") \
+                .eq("hijo_id", h['id']) \
+                .eq("estado", "cursando") \
+                .execute()
+            seccion_nombre = "No asignada"
+            if res_asig.data:
+                sec = res_asig.data[0].get('secciones', {})
+                if sec:
+                    seccion_nombre = f"{sec.get('nivel', '')} - {sec.get('letra', '')}"
+            hijos_lista.append({
+                'id': h['id'],
+                'nombres': h.get('nombre', ''),
+                'apellidos': h.get('apellidos', ''),
+                'cedula_escolar': h.get('cedula_escolar', 'S/N'),
+                'fecha_nacimiento': h.get('fecha_nacimiento', ''),
+                'estado_alumno': h.get('estado_alumno', ''),
+                'seccion': seccion_nombre
+            })
+
+        return jsonify({'success': True, 'hijos': hijos_lista, 'total': len(hijos_lista)}), 200
+
+    except Exception as e:
+        print(f"❌ Error admin_obtener_hijos_representante: {e}")
+        return jsonify({'success': False, 'message': 'Error interno del servidor.'}), 500
+
+
+# =======================================================
+# ADMIN: Eliminar registro de un hijo (hard delete)
+# =======================================================
+@app.route('/api/admin/hijos/<int:hijo_id>', methods=['DELETE'])
+@require_auth
+def admin_eliminar_hijo(hijo_id):
+    """Elimina un hijo y todos sus datos asociados. Solo para administradores."""
+    try:
+        solicitante_id = request.current_user.id
+        perfil_sol = supabase.table("usuarios").select("rol").eq("id", solicitante_id).single().execute()
+        if not perfil_sol.data or perfil_sol.data.get("rol") != "administrador":
+            return jsonify({'success': False, 'message': 'Acción denegada. Solo administradores.'}), 403
+
+        # Verificar que el hijo existe
+        res_hijo = supabase.table("hijos").select("id, nombre, apellidos").eq("id", hijo_id).execute()
+        if not res_hijo.data:
+            return jsonify({'success': False, 'message': 'Estudiante no encontrado.'}), 404
+
+        nombre_hijo = f"{res_hijo.data[0].get('nombre', '')} {res_hijo.data[0].get('apellidos', '')}".strip()
+
+        # Eliminar registros dependientes en cascada manual
+        # (asignaciones, inscripciones, evaluaciones, asistencias)
+        tablas_dependientes = [
+            ("asignaciones_estudiantes", "hijo_id"),
+            ("inscripciones", "hijo_id"),
+            ("evaluaciones", "hijo_id"),
+            ("asistencias", "hijo_id"),
+            ("recomendaciones", "hijo_id"),
+        ]
+        for tabla, campo in tablas_dependientes:
+            try:
+                supabase.table(tabla).delete().eq(campo, hijo_id).execute()
+            except Exception as ex:
+                print(f"⚠️ No se pudo limpiar {tabla} para hijo {hijo_id}: {ex}")
+
+        # Eliminar el hijo principal
+        supabase.table("hijos").delete().eq("id", hijo_id).execute()
+        print(f"🗑️ Admin eliminó al hijo #{hijo_id} ({nombre_hijo})")
+
+        return jsonify({
+            'success': True,
+            'message': f'El registro de {nombre_hijo} ha sido eliminado permanentemente.'
+        }), 200
+
+    except Exception as e:
+        print(f"❌ Error admin_eliminar_hijo: {e}")
+        return jsonify({'success': False, 'message': f'Error interno: {str(e)}'}), 500
+
 
 @app.route('/api/representante/hijos/<hijo_id>/progreso', methods=['GET'])
 @require_auth

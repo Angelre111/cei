@@ -331,33 +331,181 @@ window.reenviarInvitacionBtn = async function(btn) {
     }
 };
 
-window.abrirModalRepresentanteVincular = function(userId, nombre) {
+window.abrirModalRepresentanteVincular = async function(userId, nombre) {
+    // ── 1. Mostrar modal de carga inmediatamente ──────────────────────────────
     Swal.fire({
-        title: 'Detalles del Representante',
+        title: `<span style="font-size:1.1rem">👨‍👩‍👧‍👦 ${nombre}</span>`,
+        html: `<div style="text-align:center;padding:20px 0">
+                 <svg style="width:32px;height:32px;animation:spin 0.8s linear infinite;color:#8b5cf6" fill="none" viewBox="0 0 24 24">
+                   <circle style="opacity:0.25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                   <path style="opacity:0.75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+                 </svg>
+                 <p style="color:#6b7280;font-size:0.85rem;margin-top:8px">Cargando hijos...</p>
+               </div>`,
+        showConfirmButton: false,
+        allowOutsideClick: false,
+        customClass: { popup: 'rounded-[2rem]' }
+    });
+
+    // ── 2. Obtener hijos del representante ───────────────────────────────────
+    let hijos = [];
+    try {
+        const res = await fetchWithAuth(`${API_BASE}/api/admin/representante/${userId}/hijos`);
+        const data = await res.json();
+        if (res.ok && data.success) hijos = data.hijos || [];
+    } catch (err) {
+        console.error('Error al obtener hijos del representante:', err);
+    }
+
+    const MAX_HIJOS = 8;
+    const puedeAgregarMas = hijos.length < MAX_HIJOS;
+    const emailRep = cachedUsuarios.find(u => u.id === userId)?.email || '';
+
+    // ── 3. Construir HTML de la lista de hijos ───────────────────────────────
+    const hijosHtml = hijos.length > 0
+        ? hijos.map(h => `
+            <div id="hijo-row-${h.id}"
+                 style="display:flex;align-items:center;gap:10px;padding:10px 12px;
+                        background:#f9fafb;border-radius:14px;border:1px solid #e5e7eb;margin-bottom:8px">
+                <!-- Avatar inicial -->
+                <div style="width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#8b5cf6,#6d28d9);
+                            color:#fff;font-weight:800;font-size:1rem;display:flex;align-items:center;
+                            justify-content:center;flex-shrink:0">
+                    ${(h.nombres[0] || '?').toUpperCase()}
+                </div>
+                <!-- Info -->
+                <div style="flex:1;min-width:0;text-align:left">
+                    <p style="font-weight:700;color:#1f2937;font-size:0.85rem;
+                               white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
+                        ${h.nombres} ${h.apellidos}
+                    </p>
+                    <p style="font-size:0.72rem;color:#6b7280;margin-top:1px">
+                        <span style="font-family:monospace;background:#ede9fe;color:#5b21b6;
+                                     padding:1px 6px;border-radius:6px;font-weight:700">
+                            ${h.cedula_escolar || 'S/N'}
+                        </span>
+                        &nbsp;·&nbsp;${h.seccion || 'Sin sección'}
+                    </p>
+                </div>
+                <!-- Botón eliminar -->
+                <button onclick="adminEliminarHijo(${h.id}, '${h.nombres} ${h.apellidos}', '${userId}', '${nombre.replace(/'/g, "\\'")}')"
+                        title="Eliminar registro de este estudiante"
+                        style="width:32px;height:32px;border-radius:10px;border:1px solid #fca5a5;
+                               background:#fff1f2;color:#ef4444;cursor:pointer;
+                               display:flex;align-items:center;justify-content:center;
+                               flex-shrink:0;transition:all 0.15s">
+                    <i class="ph-bold ph-trash" style="font-size:0.9rem"></i>
+                </button>
+            </div>`)
+        .join('')
+        : `<div style="text-align:center;padding:20px 0;color:#9ca3af">
+               <i class="ph-duotone ph-baby" style="font-size:2.5rem;display:block;margin-bottom:8px"></i>
+               <p style="font-size:0.85rem">No hay hijos registrados aún.</p>
+           </div>`;
+
+    // ── 4. Renderizar modal completo ─────────────────────────────────────────
+    Swal.fire({
+        title: `<span style="font-size:1rem;font-weight:800">👨‍👩‍👧‍👦 ${nombre}</span>`,
         html: `
-            <div class="text-left space-y-4">
-                <div class="p-4 bg-rose-50 rounded-2xl border border-rose-100">
-                    <p class="text-[11px] font-black text-rose-400 uppercase tracking-widest mb-1">Nombre Completo</p>
-                    <p class="font-bold text-gray-800">${nombre}</p>
-                    <p class="text-xs text-gray-500 mt-1">ID Usuario: ${userId}</p>
+            <div style="text-align:left">
+                <!-- Contador -->
+                <div style="display:flex;align-items:center;justify-content:space-between;
+                            margin-bottom:12px;padding:8px 12px;background:#f5f3ff;
+                            border-radius:12px;border:1px solid #ede9fe">
+                    <p style="font-size:0.78rem;font-weight:700;color:#5b21b6">
+                        <i class="ph-bold ph-users-three" style="margin-right:4px"></i>
+                        Hijos vinculados: <strong>${hijos.length} / ${MAX_HIJOS}</strong>
+                    </p>
+                    ${puedeAgregarMas
+                        ? `<button onclick="adminAbrirRegistroParaRep('${emailRep}')"
+                                   style="padding:5px 12px;background:#7c3aed;color:#fff;border-radius:10px;
+                                          border:none;font-size:0.75rem;font-weight:700;cursor:pointer;
+                                          display:flex;align-items:center;gap:5px;transition:all 0.15s">
+                               <i class="ph-bold ph-plus-circle"></i> Agregar hijo
+                           </button>`
+                        : `<span style="font-size:0.72rem;color:#ef4444;font-weight:700">Límite alcanzado</span>`
+                    }
                 </div>
-                <div class="p-4 bg-gray-50 rounded-2xl border border-gray-100 flex items-center gap-3">
-                    <i class="ph-duotone ph-student text-3xl text-gray-400"></i>
-                    <div>
-                        <p class="text-sm font-bold text-gray-700">Hijos vinculados</p>
-                        <p class="text-xs text-gray-400">La vinculación detallada se gestiona en la ficha del alumno.</p>
-                    </div>
-                </div>
+                <!-- Lista de hijos -->
+                <div id="lista-hijos-modal">${hijosHtml}</div>
             </div>
         `,
-        icon: 'info',
-        confirmButtonText: 'Entendido',
+        showConfirmButton: true,
+        confirmButtonText: 'Cerrar',
         confirmButtonColor: '#EC4899',
+        width: '480px',
         customClass: {
             popup: 'rounded-[2rem]',
             confirmButton: 'rounded-xl px-8 py-3'
         }
     });
+};
+
+
+// ─────────────────────────────────────────────────────────────
+// HELPER: Eliminar hijo desde el modal de representante
+// ─────────────────────────────────────────────────────────────
+window.adminEliminarHijo = async function(hijoId, nombreHijo, repUserId, repNombre) {
+    const { isConfirmed } = await Swal.fire({
+        title: '¿Eliminar registro?',
+        html: `<p style="color:#374151;margin-bottom:8px">Se eliminará permanentemente a:</p>
+               <p style="font-weight:800;color:#7c3aed;font-size:1.05rem">${nombreHijo}</p>
+               <p style="color:#ef4444;font-size:0.8rem;margin-top:10px">
+                 ⚠️ Esta acción borrará la ficha, asistencias y evaluaciones.<br>Es irreversible.
+               </p>`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Sí, eliminar',
+        cancelButtonText: 'Cancelar',
+        confirmButtonColor: '#ef4444',
+        cancelButtonColor: '#9ca3af',
+        reverseButtons: true,
+        focusCancel: true,
+        customClass: { popup: 'rounded-[2rem]' }
+    });
+
+    if (!isConfirmed) return;
+
+    Swal.fire({ title: 'Eliminando...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+
+    try {
+        const res = await fetchWithAuth(`${API_BASE}/api/admin/hijos/${hijoId}`, { method: 'DELETE' });
+        const data = await res.json();
+
+        if (res.ok && data.success) {
+            // Eliminar la fila del modal sin cerrarlo y reabrir con datos frescos
+            const row = document.getElementById(`hijo-row-${hijoId}`);
+            if (row) row.remove();
+
+            // Reabrir el modal del representante con datos actualizados
+            await Swal.fire({
+                icon: 'success',
+                title: '¡Eliminado!',
+                text: data.message,
+                timer: 1500,
+                showConfirmButton: false,
+                customClass: { popup: 'rounded-[2rem]' }
+            });
+            // Recargar el modal del representante con datos frescos
+            window.abrirModalRepresentanteVincular(repUserId, repNombre);
+        } else {
+            Swal.fire({ icon: 'error', title: 'Error', text: data.message || 'No se pudo eliminar.', confirmButtonColor: '#EF4444', customClass: { popup: 'rounded-[2rem]' } });
+        }
+    } catch (err) {
+        console.error('Error al eliminar hijo:', err);
+        Swal.fire({ icon: 'error', title: 'Error de red', text: 'No se pudo contactar al servidor.', confirmButtonColor: '#EF4444', customClass: { popup: 'rounded-[2rem]' } });
+    }
+};
+
+// ─────────────────────────────────────────────────────────────
+// HELPER: Abrir modal de registro con email del representante pre-llenado
+// ─────────────────────────────────────────────────────────────
+window.adminAbrirRegistroParaRep = function(emailRep) {
+    Swal.close(); // Cerrar el modal de representante
+    // Pequeño delay para que el cierre sea suave
+    setTimeout(() => {
+        abrirModalRegistrarNuevoEstudiante(emailRep);
+    }, 200);
 };
 
 // ─────────────────────────────────────────────────────────────

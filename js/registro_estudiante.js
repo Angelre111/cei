@@ -35,16 +35,21 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
             const checkData = await checkResp.json();
 
-            if (checkData.completado) {
+            // Solo bloquear si el backend lo indica explícitamente (nunca para representantes)
+            if (checkData.bloquear_formulario === true) {
                 document.querySelector('main').innerHTML = "";
                 Swal.fire({
-                    title: '¡Ya estás inscrito!',
-                    text: 'Ya recibimos los datos de tu representado.',
+                    title: 'Registro cerrado',
+                    text: checkData.message || 'No puedes registrar más hijos en este momento.',
                     icon: 'info',
                     confirmButtonText: 'Ir al Login',
                     confirmButtonColor: '#ec4899'
                 }).then(() => { window.location.href = 'login.html'; });
                 return;
+            }
+            // Informar cuántos hijos ya tiene registrados (sin bloquear)
+            if (checkData.completado && checkData.total_hijos > 0) {
+                console.log(`ℹ️ Representante con ${checkData.total_hijos} hijo(s) registrado(s). Puede agregar más.`);
             }
         } catch (error) {
             console.error("❌ Error en verificación de estado:", error);
