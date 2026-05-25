@@ -446,26 +446,81 @@ window.abrirModalRepresentanteVincular = async function(userId, nombre) {
 // HELPER: Eliminar hijo desde el modal de representante
 // ─────────────────────────────────────────────────────────────
 window.adminEliminarHijo = async function(hijoId, nombreHijo, repUserId, repNombre) {
-    const { isConfirmed } = await Swal.fire({
+    const result = await Swal.fire({
         title: '¿Eliminar registro?',
         html: `<p style="color:#374151;margin-bottom:8px">Se eliminará permanentemente a:</p>
                <p style="font-weight:800;color:#7c3aed;font-size:1.05rem">${nombreHijo}</p>
                <p style="color:#ef4444;font-size:0.8rem;margin-top:10px">
                  ⚠️ Esta acción borrará la ficha, asistencias y evaluaciones.<br>Es irreversible.
+               </p>
+               <p style="color:#4b5563;font-size:0.85rem;margin-top:12px;font-weight:600;">
+                 Se recomienda realizar un respaldo de la base de datos antes de proceder.
                </p>`,
         icon: 'warning',
         showCancelButton: true,
-        confirmButtonText: 'Sí, eliminar',
+        showDenyButton: true,
+        confirmButtonText: '📦 Respaldar y Eliminar',
+        denyButtonText: '🗑️ Eliminar sin Respaldar',
         cancelButtonText: 'Cancelar',
-        confirmButtonColor: '#ef4444',
-        cancelButtonColor: '#9ca3af',
+        confirmButtonColor: '#10b981', // Verde Esmeralda
+        denyButtonColor: '#ef4444',    // Rojo
+        cancelButtonColor: '#9ca3af',  // Gris
         reverseButtons: true,
         focusCancel: true,
         customClass: { popup: 'rounded-[2rem]' }
     });
 
-    if (!isConfirmed) return;
+    if (result.isDismissed) return; // Clic en Cancelar o fuera del diálogo
 
+    const hacerBackup = result.isConfirmed; // Clic en "Respaldar y Eliminar"
+
+    if (hacerBackup) {
+        Swal.fire({
+            title: 'Creando respaldo...',
+            text: 'Por favor espera un momento.',
+            allowOutsideClick: false,
+            didOpen: () => Swal.showLoading()
+        });
+
+        try {
+            const resBackup = await fetchWithAuth(`${API_BASE}/api/admin/backup-manual`, { method: 'POST' });
+            const dataBackup = await resBackup.json();
+
+            if (!resBackup.ok || !dataBackup.success) {
+                // Si falla el respaldo, preguntar si desea abortar o proceder de todos modos
+                const proceedAnyway = await Swal.fire({
+                    title: 'Error al crear respaldo',
+                    text: dataBackup.message || 'No se pudo generar el archivo de respaldo. ¿Deseas continuar con la eliminación de todos modos?',
+                    icon: 'error',
+                    showCancelButton: true,
+                    confirmButtonText: 'Sí, eliminar sin respaldo',
+                    cancelButtonText: 'Abortar eliminación',
+                    confirmButtonColor: '#ef4444',
+                    cancelButtonColor: '#9ca3af',
+                    reverseButtons: true,
+                    customClass: { popup: 'rounded-[2rem]' }
+                });
+                if (!proceedAnyway.isConfirmed) return;
+            }
+        } catch (err) {
+            console.error('Error al generar respaldo:', err);
+            const proceedAnyway = await Swal.fire({
+                title: 'Error de red al respaldar',
+                text: 'No se pudo contactar al servidor para realizar el respaldo. ¿Deseas continuar con la eliminación de todos modos?',
+                icon: 'error',
+                showCancelButton: true,
+                confirmButtonText: 'Sí, eliminar sin respaldo',
+                cancelButtonText: 'Abortar eliminación',
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#9ca3af',
+                reverseButtons: true,
+                customClass: { popup: 'rounded-[2rem]' }
+            });
+            if (!proceedAnyway.isConfirmed) return;
+        }
+    }
+
+    // Procede a eliminar
     Swal.fire({ title: 'Eliminando...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
 
     try {
@@ -480,8 +535,8 @@ window.adminEliminarHijo = async function(hijoId, nombreHijo, repUserId, repNomb
             await Swal.fire({
                 icon: 'success',
                 title: '¡Eliminado!',
-                text: data.message,
-                timer: 1500,
+                text: data.message + (hacerBackup ? ' (Respaldo creado con éxito)' : ''),
+                timer: 2000,
                 showConfirmButton: false,
                 customClass: { popup: 'rounded-[2rem]' }
             });
