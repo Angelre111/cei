@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Diagrama E-R (Chen) – CEI Sistema Escolar</title>
+  <style>
+    body { background:#dce3ea; font-family:Arial,sans-serif; padding:30px 20px 60px; overflow-x:auto; }
+    .page { position:relative; width:2960px; margin:0 auto; background:#fff;
+            border:2px solid #888; box-shadow:5px 5px 18px rgba(0,0,0,.3); }
+    .page-title { text-align:center; font-size:16px; font-weight:bold; color:#1F3864;
+                  padding:10px 0 4px; letter-spacing:.5px; border-bottom:1px solid #ccc; }
+    .badge { position:absolute; top:0; right:0; border-left:2px solid #888;
+             border-bottom:2px solid #888; padding:4px 14px; font-size:13px;
+             font-weight:700; color:#333; background:#fff; z-index:2; }
+    .hint  { text-align:center; font-size:11px; color:#555; padding:3px 0 5px;
+             background:#f0f4f8; border-bottom:1px solid #ccc; }
+    .footer-bar { border-top:2px solid #888; padding:5px 18px; font-size:13px; color:#444; }
+    canvas { display:block; cursor:default; }
+  </style>
+</head>
+<body>
+<div class="page">
+  <div class="badge">Diagrama E-R (Chen)</div>
+  <div class="page-title">CEI – Sistema de Gestión Escolar &nbsp;·&nbsp; Modelo Entidad–Relación (Notación de Chen)</div>
+  <div class="hint">🖱️ Arrastra cualquier elemento para reorganizarlo</div>
+  <canvas id="er" width="2900" height="1760"></canvas>
+  <div class="footer-bar"><strong>Fuente: El Autor</strong></div>
+</div>
+
+<script>
+const cv  = document.getElementById('er');
+const ctx = cv.getContext('2d');
+
+/* ── Paleta ───────────────────────────────────────────── */
+const ENT_F='#BDD7EE',ENT_S='#2E75B6',ENT_T='#1F3864';
+const ATR_F='#EBF3FB',ATR_S='#2E75B6',ATR_T='#333';
+const PK_F='#FFF9C4', PK_S='#B8A000', PK_T='#7B5A00';
+const REL_F='#FFE699',REL_S='#C07B00',REL_T='#5C3D00';
+const ASS_F='#FFD0A8',MN_F='#D4E6FF',MN_T='#1F3864';
+const LN='#2E75B6',CARD='#1F3864';
+
+/* ── Almacén de elementos ─────────────────────────────── */
+const EL=[], CN=[];
+
+/* Registradores */
+const ent=(id,cx,cy,w,h,name)=>EL.push({id,type:'entity',cx,cy,w,h,name});
+const dia=(id,cx,cy,hw,hh,name,rel='n')=>EL.push({id,type:'diamond',cx,cy,hw,hh,name,rel});
+const atr=(id,cx,cy,rx,ry,name,pk=false)=>EL.push({id,type:'oval',cx,cy,rx,ry,name,pk});
+const lbl=(id,cx,cy,text)=>EL.push({id,type:'card',cx,cy,text});
+const con=(a,b)=>CN.push({a,b});
+const byId=id=>EL.find(e=>e.id===id);
+
+/* ═══════════════════════════════════════════════════════
+   ENTIDADES  (todas las cx llevan +150 del desplazamiento original)
+   ═══════════════════════════════════════════════════════ */
+ent('E1',1230,170,240,40,'PERIODOS_ACADÉMICOS');
+ent('E2',445,450,165,40,'USUARIOS');
+ent('E3',1230,450,155,40,'SECCIONES');
+ent('E4',2040,450,245,40,'BANCO_RECOMENDACIONES');
+ent('E5',310,770,210,40,'PERFILES_PERSONAL');
+ent('E6',1630,770,235,40,'PROYECTOS_APRENDIZAJE');
+ent('E7',2040,1010,165,40,'INDICADORES');
+ent('E8',725,1080,140,40,'HIJOS');
+ent('E9',415,1380,175,40,'INSCRIPCIONES');
+ent('E10',1020,1380,160,40,'ASISTENCIAS');
+ent('E11',1620,1380,150,40,'BOLETINES');
+
+/* ═══════════════════════════════════════════════════════
+   RELACIONES (rombos)
+   ═══════════════════════════════════════════════════════ */
+dia('R1',1230,310,90,40,'COMPRENDE');
+dia('R2',368,605,100,40,'TIENE|PERFIL');
+dia('R3',838,450,85,40,'IMPARTE EN','a');
+dia('R4',1635,450,100,40,'RECOMIENDA');
+dia('R5',1430,610,100,38,'DESARROLLA');
+dia('R6',1835,890,80,37,'DEFINE');
+dia('R7',585,765,95,37,'REPRESENTA');
+dia('R8',978,765,110,40,'ASIGNADO A','a');
+dia('R9',570,1230,90,37,'INSCRITO EN');
+dia('R10',873,1230,88,37,'TIENE ASIST.');
+dia('R11',1125,915,85,37,'ASISTE EN');
+dia('R12',1173,1230,95,37,'TIENE BOLETÍN');
+dia('R13',1425,915,95,37,'EMITE BOLETÍN');
+dia('R14',1830,1195,80,38,'EVALÚA','m');
+
+/* ═══════════════════════════════════════════════════════
+   ATRIBUTOS (óvalos)
+   ═══════════════════════════════════════════════════════ */
+// E1 PERIODOS
+atr('A1a',1092,85,32,16,'id',true); atr('A1b',1230,65,45,16,'nombre');
+atr('A1c',1390,83,70,16,'fecha_inicio'); atr('A1d',1520,152,57,16,'fecha_fin');
+atr('A1e',1520,218,45,16,'estado'); atr('A1f',1055,228,58,16,'created_at');
+// E2 USUARIOS
+atr('A2a',445,335,32,16,'id',true); atr('A2b',308,352,50,16,'nombres');
+atr('A2c',605,352,52,16,'apellidos'); atr('A2d',258,440,40,16,'email');
+atr('A2e',645,395,52,16,'telefono'); atr('A2f',308,522,30,16,'rol');
+atr('A2g',605,522,45,16,'estado'); atr('A2h',445,568,58,16,'created_at');
+// E3 SECCIONES
+atr('A3a',1230,335,32,16,'id',true); atr('A3b',1105,352,38,16,'nivel');
+atr('A3c',1372,352,38,16,'letra'); atr('A3d',1415,395,83,16,'capacidad_maxima');
+atr('A3e',1115,525,58,16,'created_at');
+// E4 BANCO
+atr('A4a',2040,342,32,16,'id',true); atr('A4b',2250,378,43,16,'titulo');
+atr('A4c',2250,452,38,16,'texto'); atr('A4d',2250,528,58,16,'created_at');
+// E5 PERFILES
+atr('A5a',180,740,32,16,'id',true); atr('A5b',180,810,78,16,'perfil_completado');
+atr('A5c',180,878,83,16,'fecha_nacimiento'); atr('A5d',225,940,65,16,'codigo_cargo');
+atr('A5e',370,940,57,16,'tipo_cargo'); atr('A5f',468,858,62,16,'talla_zapato');
+atr('A5g',468,795,64,16,'talla_camisa'); atr('A5h',468,718,72,16,'talla_pantalon');
+// E6 PROYECTOS
+atr('A6a',1630,650,32,16,'id',true); atr('A6b',1820,650,93,16,'momento_pedagogico');
+atr('A6c',1888,768,48,16,'nombre'); atr('A6d',1888,825,45,16,'estado');
+atr('A6e',1488,650,58,16,'created_at');
+// E7 INDICADORES
+atr('A7a',2240,965,32,16,'id',true); atr('A7b',2240,1038,80,16,'area_aprendizaje');
+atr('A7c',2240,1110,57,16,'descripcion'); atr('A7d',2240,1172,58,16,'created_at');
+// E8 HIJOS
+atr('A8a',550,1010,32,16,'id',true); atr('A8b',550,1062,45,16,'nombre');
+atr('A8c',550,1112,52,16,'apellidos'); atr('A8d',550,1165,73,16,'cedula_escolar');
+atr('A8e',568,1222,78,16,'fecha_nacimiento'); atr('A8f',725,950,32,16,'sexo');
+atr('A8g',860,968,68,16,'estado_alumno'); atr('A8h',915,1068,95,16,'municipio_nacimiento');
+atr('A8i',915,1128,85,16,'estado_nacimiento'); atr('A8j',915,1188,72,16,'motivo_retiro');
+atr('A8k',712,1198,63,16,'fecha_retiro');
+// E9 INSCRIPCIONES
+atr('A9a',250,1337,32,16,'id',true); atr('A9b',250,1388,85,16,'periodo_ingreso_id');
+atr('A9c',250,1440,50,16,'user_id'); atr('A9d',328,1480,74,16,'edad_estudiante');
+atr('A9e',460,1480,78,16,'lugar_nacimiento'); atr('A9f',307,1548,70,16,'nombre_madre');
+atr('A9g',458,1548,68,16,'nombre_padre'); atr('A9h',583,1548,68,16,'tipo_vivienda');
+atr('A9i',308,1615,68,16,'fue_cesarea'); atr('A9j',488,1615,80,16,'diagnostico_inicial');
+// E10 ASISTENCIAS
+atr('A10a',1198,1330,32,16,'id',true); atr('A10b',1198,1382,38,16,'fecha');
+atr('A10c',1198,1438,80,16,'estado_asistencia'); atr('A10d',1020,1478,55,16,'observacion');
+atr('A10e',928,1478,72,16,'registrado_por'); atr('A10f',1112,1478,58,16,'created_at');
+// E11 BOLETINES
+atr('A11a',1512,1325,32,16,'id',true); atr('A11b',1480,1382,85,16,'momento_pedagogico');
+atr('A11c',1485,1442,98,16,'recomendaciones_docente'); atr('A11d',1620,1482,68,16,'fecha_emision');
+atr('A11e',1728,1482,70,16,'registrado_por'); atr('A11f',1782,1318,58,16,'created_at');
+// Atribs de R3 IMPARTE
+atr('AR3a',838,548,32,16,'id',true); atr('AR3b',718,548,58,16,'rol_en_aula');
+atr('AR3c',962,548,58,16,'created_at');
+// Atribs de R8 ASIGNADO_A
+atr('AR8a',978,858,32,16,'id',true); atr('AR8b',862,858,45,16,'estado');
+atr('AR8c',1100,858,58,16,'created_at');
+
+/* ═══════════════════════════════════════════════════════
+   CARDINALIDADES  (etiquetas sueltas, arrastrables)
+   ═══════════════════════════════════════════════════════ */
+lbl('C1a',1242,220,'1'); lbl('C1b',1242,392,'N');
+lbl('C2a',388,530,'1');  lbl('C2b',343,700,'1');
+lbl('C3a',572,443,'N');  lbl('C3b',1104,443,'M');
+lbl('C4a',1344,443,'1'); lbl('C4b',1910,443,'N');
+lbl('C5a',1304,478,'1'); lbl('C5b',1548,762,'N');
+lbl('C6a',1748,808,'1'); lbl('C6b',1948,1005,'N');
+lbl('C7a',504,492,'1');  lbl('C7b',652,1052,'N');
+lbl('C8a',850,1052,'N'); lbl('C8b',1142,468,'M');
+lbl('C9a',680,1108,'1'); lbl('C9b',468,1368,'N');
+lbl('C10a',760,1108,'1');lbl('C10b',994,1368,'N');
+lbl('C11a',1186,490,'1');lbl('C11b',1056,1368,'N');
+lbl('C12a',780,1094,'1');lbl('C12b',1558,1368,'N');
+lbl('C13a',1260,490,'1');lbl('C13b',1600,1368,'N');
+lbl('C14a',1734,1372,'N');lbl('C14b',1974,1044,'M');
+
+/* ═══════════════════════════════════════════════════════
+   CONEXIONES  (determinan las líneas del diagrama)
+   ═══════════════════════════════════════════════════════ */
+// Relación ↔ Entidad
+con('E1','R1'); con('E3','R1');
+con('E2','R2'); con('E5','R2');
+con('E2','R3'); con('E3','R3');
+con('E3','R4'); con('E4','R4');
+con('E3','R5'); con('E6','R5');
+con('E6','R6'); con('E7','R6');
+con('E2','R7'); con('E8','R7');
+con('E8','R8'); con('E3','R8');
+con('E8','R9'); con('E9','R9');
+con('E8','R10'); con('E10','R10');
+con('E3','R11'); con('E10','R11');
+con('E8','R12'); con('E11','R12');
+con('E3','R13'); con('E11','R13');
+con('E11','R14'); con('E7','R14');
+// Relación ↔ Sus atributos
+['AR3a','AR3b','AR3c'].forEach(id=>con('R3',id));
+['AR8a','AR8b','AR8c'].forEach(id=>con('R8',id));
+// Entidad ↔ Sus atributos
+['A1a','A1b','A1c','A1d','A1e','A1f'].forEach(id=>con('E1',id));
+['A2a','A2b','A2c','A2d','A2e','A2f','A2g','A2h'].forEach(id=>con('E2',id));
+['A3a','A3b','A3c','A3d','A3e'].forEach(id=>con('E3',id));
+['A4a','A4b','A4c','A4d'].forEach(id=>con('E4',id));
+['A5a','A5b','A5c','A5d','A5e','A5f','A5g','A5h'].forEach(id=>con('E5',id));
+['A6a','A6b','A6c','A6d','A6e'].forEach(id=>con('E6',id));
+['A7a','A7b','A7c','A7d'].forEach(id=>con('E7',id));
+['A8a','A8b','A8c','A8d','A8e','A8f','A8g','A8h','A8i','A8j','A8k'].forEach(id=>con('E8',id));
+['A9a','A9b','A9c','A9d','A9e','A9f','A9g','A9h','A9i','A9j'].forEach(id=>con('E9',id));
+['A10a','A10b','A10c','A10d','A10e','A10f'].forEach(id=>con('E10',id));
+['A11a','A11b','A11c','A11d','A11e','A11f'].forEach(id=>con('E11',id));
+
+/* ═══════════════════════════════════════════════════════
+   DIBUJO DE UN ELEMENTO
+   ═══════════════════════════════════════════════════════ */
+function drawEl(e){
+  ctx.save();
+  if(e===dragEl){ ctx.shadowColor='rgba(0,0,0,.35)'; ctx.shadowBlur=12; }
+
+  if(e.type==='entity'){
+    ctx.fillStyle=ENT_F; ctx.strokeStyle=ENT_S; ctx.lineWidth=2;
+    ctx.fillRect(e.cx-e.w/2,e.cy-e.h/2,e.w,e.h);
+    ctx.strokeRect(e.cx-e.w/2,e.cy-e.h/2,e.w,e.h);
+    ctx.fillStyle=ENT_T; ctx.font='bold 11px Arial';
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText(e.name,e.cx,e.cy);
+
+  } else if(e.type==='diamond'){
+    ctx.beginPath();
+    ctx.moveTo(e.cx,e.cy-e.hh); ctx.lineTo(e.cx+e.hw,e.cy);
+    ctx.lineTo(e.cx,e.cy+e.hh); ctx.lineTo(e.cx-e.hw,e.cy);
+    ctx.closePath();
+    ctx.fillStyle  = e.rel==='a'?ASS_F : e.rel==='m'?MN_F : REL_F;
+    ctx.strokeStyle= e.rel==='m'?ENT_S : REL_S;
+    ctx.lineWidth=2; ctx.fill(); ctx.stroke();
+    ctx.fillStyle  = e.rel==='m'?MN_T : REL_T;
+    ctx.font='bold 9px Arial'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    e.name.split('|').forEach((l,i,a)=>ctx.fillText(l,e.cx,e.cy+(i-(a.length-1)/2)*11));
+
+  } else if(e.type==='oval'){
+    ctx.beginPath(); ctx.ellipse(e.cx,e.cy,e.rx,e.ry,0,0,Math.PI*2);
+    ctx.fillStyle=e.pk?PK_F:ATR_F; ctx.fill();
+    ctx.strokeStyle=e.pk?PK_S:ATR_S; ctx.lineWidth=e.pk?1.6:1.4; ctx.stroke();
+    ctx.fillStyle=e.pk?PK_T:ATR_T;
+    ctx.font=(e.pk?'bold ':'' )+'9px Arial';
+    ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText(e.name,e.cx,e.cy);
+    if(e.pk){
+      const tw=ctx.measureText(e.name).width;
+      ctx.beginPath(); ctx.moveTo(e.cx-tw/2,e.cy+5); ctx.lineTo(e.cx+tw/2,e.cy+5);
+      ctx.strokeStyle=PK_T; ctx.lineWidth=1; ctx.stroke();
+    }
+
+  } else if(e.type==='card'){
+    ctx.fillStyle=CARD; ctx.font='bold 11px Arial';
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText(e.text,e.cx,e.cy);
+  }
+  ctx.restore();
+}
+
+/* ═══════════════════════════════════════════════════════
+   LEYENDA (fija, no arrastrable)
+   ═══════════════════════════════════════════════════════ */
+function drawLegend(){
+  const lx=2330,ly=640,lw=260,lh=290;
+  ctx.save();
+  ctx.fillStyle='#F2F7FC'; ctx.strokeStyle=ENT_S; ctx.lineWidth=1.2;
+  ctx.fillRect(lx,ly,lw,lh); ctx.strokeRect(lx,ly,lw,lh);
+  ctx.beginPath(); ctx.moveTo(lx,ly+28); ctx.lineTo(lx+lw,ly+28);
+  ctx.strokeStyle=ENT_S; ctx.lineWidth=1; ctx.stroke();
+  ctx.fillStyle=ENT_T; ctx.font='bold 9.5px Arial'; ctx.textAlign='center';
+  ctx.textBaseline='middle'; ctx.fillText('LEYENDA',lx+lw/2,ly+15);
+
+  const rows=[
+    ()=>{
+      ctx.fillStyle=ENT_F; ctx.strokeStyle=ENT_S; ctx.lineWidth=2;
+      ctx.fillRect(lx+12,ly+38,88,24); ctx.strokeRect(lx+12,ly+38,88,24);
+      ctx.fillStyle=ENT_T; ctx.font='bold 9px Arial'; ctx.textAlign='center';
+      ctx.textBaseline='middle'; ctx.fillText('ENTIDAD',lx+56,ly+50);
+      ctx.fillStyle='#333'; ctx.font='8px Arial'; ctx.textAlign='left';
+      ctx.fillText('Entidad',lx+108,ly+50);
+    },
+    ()=>{
+      ctx.beginPath(); ctx.ellipse(lx+48,ly+84,35,13,0,0,Math.PI*2);
+      ctx.fillStyle=ATR_F; ctx.fill(); ctx.strokeStyle=ATR_S; ctx.lineWidth=1.4; ctx.stroke();
+      ctx.fillStyle=ATR_T; ctx.font='8px Arial'; ctx.textAlign='center';
+      ctx.textBaseline='middle'; ctx.fillText('atrib.',lx+48,ly+84);
+      ctx.fillStyle='#333'; ctx.textAlign='left'; ctx.fillText('Atributo',lx+92,ly+84);
+    },
+    ()=>{
+      ctx.beginPath(); ctx.ellipse(lx+42,ly+114,28,13,0,0,Math.PI*2);
+      ctx.fillStyle=PK_F; ctx.fill(); ctx.strokeStyle=PK_S; ctx.lineWidth=1.6; ctx.stroke();
+      ctx.fillStyle=PK_T; ctx.font='bold 8px Arial'; ctx.textAlign='center';
+      ctx.textBaseline='middle'; ctx.fillText('id',lx+42,ly+114);
+      const tw=ctx.measureText('id').width;
+      ctx.beginPath(); ctx.moveTo(lx+42-tw/2,ly+119); ctx.lineTo(lx+42+tw/2,ly+119);
+      ctx.strokeStyle=PK_T; ctx.lineWidth=1; ctx.stroke();
+      ctx.fillStyle='#333'; ctx.font='8px Arial'; ctx.textAlign='left';
+      ctx.fillText('Atrib. clave (PK)',lx+80,ly+114);
+    },
+  ];
+  rows.forEach(f=>f());
+  [['REL.',lx+48,ly+152,REL_F,REL_S,REL_T,'Relación 1:N o 1:1'],
+   ['REL.',lx+48,ly+192,ASS_F,REL_S,REL_T,'Relación N:M (con atribs.)'],
+   ['REL.',lx+48,ly+232,MN_F, ENT_S,MN_T, 'Relación N:M pura'],
+  ].forEach(([nm,cx,cy,ff,ss,tt,label])=>{
+    ctx.beginPath();
+    ctx.moveTo(cx,cy-22); ctx.lineTo(cx+42,cy); ctx.lineTo(cx,cy+22); ctx.lineTo(cx-42,cy);
+    ctx.closePath();
+    ctx.fillStyle=ff; ctx.fill(); ctx.strokeStyle=ss; ctx.lineWidth=2; ctx.stroke();
+    ctx.fillStyle=tt; ctx.font='bold 8px Arial'; ctx.textAlign='center';
+    ctx.textBaseline='middle'; ctx.fillText(nm,cx,cy);
+    ctx.fillStyle='#333'; ctx.font='8px Arial'; ctx.textAlign='left'; ctx.fillText(label,cx+50,cy);
+  });
+  ctx.fillStyle='#666'; ctx.font='8px Arial'; ctx.textAlign='center';
+  ctx.fillText('1 / N / M  — Cardinalidad',lx+lw/2,ly+lh-12);
+  ctx.restore();
+}
+
+/* ═══════════════════════════════════════════════════════
+   RENDER PRINCIPAL
+   ═══════════════════════════════════════════════════════ */
+function render(){
+  ctx.clearRect(0,0,cv.width,cv.height);
+
+  /* 1. Líneas (debajo de todo) */
+  ctx.strokeStyle=LN; ctx.lineWidth=1.3;
+  CN.forEach(({a,b})=>{
+    const ea=byId(a), eb=byId(b);
+    if(!ea||!eb) return;
+    ctx.beginPath(); ctx.moveTo(ea.cx,ea.cy); ctx.lineTo(eb.cx,eb.cy); ctx.stroke();
+  });
+
+  /* 2. Formas por capa: rombos → entidades → óvalos → etiquetas */
+  ['diamond','entity','oval','card'].forEach(t=>EL.filter(e=>e.type===t).forEach(drawEl));
+
+  /* 3. Leyenda fija */
+  drawLegend();
+}
+
+/* ═══════════════════════════════════════════════════════
+   HIT TESTING
+   ═══════════════════════════════════════════════════════ */
+function hit(e,mx,my){
+  const dx=mx-e.cx, dy=my-e.cy;
+  if(e.type==='entity')  return Math.abs(dx)<=e.w/2 && Math.abs(dy)<=e.h/2;
+  if(e.type==='diamond') return Math.abs(dx)/e.hw + Math.abs(dy)/e.hh <= 1.05;
+  if(e.type==='oval')    return (dx/e.rx)**2+(dy/e.ry)**2 <= 1.1;
+  if(e.type==='card')    return Math.abs(dx)<=14 && Math.abs(dy)<=12;
+  return false;
+}
+
+/* ═══════════════════════════════════════════════════════
+   DRAG & DROP
+   ═══════════════════════════════════════════════════════ */
+let dragEl=null, dragOx=0, dragOy=0;
+
+function canvasPos(evt){
+  const r=cv.getBoundingClientRect();
+  const sx=cv.width/r.width, sy=cv.height/r.height;
+  const src=evt.touches ? evt.touches[0] : evt;
+  return { x:(src.clientX-r.left)*sx, y:(src.clientY-r.top)*sy };
+}
+
+function onDown(evt){
+  evt.preventDefault();
+  const {x,y}=canvasPos(evt);
+  // Prioridad: card → oval → entity → diamond
+  for(const type of ['card','oval','entity','diamond']){
+    const found=[...EL].filter(e=>e.type===type).reverse().find(e=>hit(e,x,y));
+    if(found){ dragEl=found; dragOx=x-found.cx; dragOy=y-found.cy;
+               cv.style.cursor='grabbing'; return; }
+  }
+}
+function onMove(evt){
+  evt.preventDefault();
+  const {x,y}=canvasPos(evt);
+  if(dragEl){
+    dragEl.cx=x-dragOx; dragEl.cy=y-dragOy;
+    render();
+  } else {
+    cv.style.cursor=EL.some(e=>hit(e,x,y))?'grab':'default';
+  }
+}
+function onUp(){ dragEl=null; cv.style.cursor='default'; }
+
+cv.addEventListener('mousedown',onDown);
+cv.addEventListener('mousemove',onMove);
+cv.addEventListener('mouseup',  onUp);
+cv.addEventListener('mouseleave',onUp);
+cv.addEventListener('touchstart',onDown,{passive:false});
+cv.addEventListener('touchmove', onMove,{passive:false});
+cv.addEventListener('touchend',  onUp);
+
+/* Render inicial */
+render();
+</script>
+</body>
+</html>
