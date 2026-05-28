@@ -853,6 +853,11 @@
                 </div>
                 <p class="text-sm text-slate-500 mb-6 ml-1">Haz clic en los indicadores para marcarlos como <strong class="text-indigo-600">Alcanzados</strong> por el estudiante.</p>
                 
+                <!-- Botón para añadir indicador individual en vivo -->
+                <button id="btn-nuevo-indicador-individual" class="mb-6 ml-1 px-4 py-2.5 bg-indigo-50 text-indigo-700 border border-indigo-100 hover:bg-indigo-600 hover:text-white rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shadow-sm">
+                    <i class="ph-bold ph-plus-circle text-sm"></i> Agregar Indicador Individual
+                </button>
+                
                 <div id="eval-indicadores-container" class="space-y-6"></div>
             </div>
 
@@ -1748,7 +1753,12 @@
                         <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-emerald-50 text-emerald-600 text-[10px] font-black uppercase tracking-widest border border-emerald-100 mb-2" id="proyecto-detalle-estado">
                             <i class="ph-fill ph-check-circle"></i> Proyecto Activo
                         </span>
-                        <h2 class="text-2xl md:text-3xl font-black text-slate-800 tracking-tight leading-none" id="proyecto-detalle-nombre">Nombre del Proyecto</h2>
+                        <div class="flex items-center gap-2">
+                            <h2 class="text-2xl md:text-3xl font-black text-slate-800 tracking-tight leading-none" id="proyecto-detalle-nombre">Nombre del Proyecto</h2>
+                            <button id="btn-editar-proyecto-nombre" class="p-1.5 text-slate-400 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-colors ml-2" title="Editar nombre de proyecto">
+                                <i class="ph-bold ph-pencil-simple text-lg"></i>
+                            </button>
+                        </div>
                     </div>
                 </div>
                 <button onclick="cerrarModalVerProyecto()" class="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-colors">

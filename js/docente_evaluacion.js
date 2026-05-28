@@ -68,6 +68,11 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    const btnNuevoInd = document.getElementById('btn-nuevo-indicador-individual');
+    if (btnNuevoInd) {
+        btnNuevoInd.addEventListener('click', abrirModalIndicadorIndividual);
+    }
+
     // El banco de frases ahora se gestiona dinámicamente desde js/docente_recomendaciones.js
 });
 
@@ -137,6 +142,23 @@ async function fetchEvaluacionEstudiante(hijoId, momento) {
 
         if (res.ok && data.success) {
             currentEvalData = data.data || { logrados: [] };
+
+            // Integrar indicadores individuales en masterIndicators
+            const indivs = currentEvalData.indicadores_individuales || [];
+            indivs.forEach(ind => {
+                const area = ind.area_aprendizaje;
+                if (!masterIndicators[area]) {
+                    masterIndicators[area] = [];
+                }
+                if (!masterIndicators[area].some(existing => existing.id === ind.id)) {
+                    masterIndicators[area].push({
+                        id: ind.id,
+                        proyecto_id: null,
+                        proyecto_nombre: 'Indicador Individual',
+                        descripcion: ind.descripcion
+                    });
+                }
+            });
         } else {
             currentEvalData = { logrados: [] };
         }
@@ -323,4 +345,122 @@ function descargarBoletinPDF() {
         Swal.close();
         window.open(url, '_blank');
     }, 1000);
+}
+
+async function abrirModalIndicadorIndividual() {
+    const hijoId = document.getElementById('eval-estudiante').value;
+    const momento = document.getElementById('eval-momento').value;
+
+    if (!hijoId || !momento) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Selección Incompleta',
+            text: 'Por favor seleccione un estudiante y un momento pedagógico primero.',
+            customClass: { popup: 'rounded-3xl' }
+        });
+        return;
+    }
+
+    Swal.fire({
+        title: 'Agregar Indicador Individual',
+        html: `
+            <div class="text-left space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Área de Aprendizaje</label>
+                    <select id="swal-indicador-area" class="w-full px-3 py-2.5 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-indigo-300 bg-white">
+                        <option value="Formación Personal y Social">Formación Personal y Social</option>
+                        <option value="Relación entre los Componentes del Ambiente">Relación con el Ambiente</option>
+                        <option value="Comunicación y Representación">Comunicación y Representación</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Descripción del Indicador</label>
+                    <textarea id="swal-indicador-desc" rows="3" placeholder="Ej: Demuestra independencia al realizar tareas sencillas..." class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-indigo-300 resize-none"></textarea>
+                </div>
+            </div>
+        `,
+        showCancelButton: true,
+        confirmButtonColor: '#4f46e5',
+        cancelButtonColor: '#9ca3af',
+        confirmButtonText: 'Guardar',
+        cancelButtonText: 'Cancelar',
+        focusConfirm: false,
+        preConfirm: () => {
+            const area = document.getElementById('swal-indicador-area').value;
+            const desc = document.getElementById('swal-indicador-desc').value.trim();
+            if (!desc) {
+                Swal.showValidationMessage('La descripción del indicador es requerida.');
+                return false;
+            }
+            return { area_aprendizaje: area, descripcion: desc };
+        },
+        customClass: { popup: 'rounded-3xl' }
+    }).then(async (result) => {
+        if (result.isConfirmed) {
+            const { area_aprendizaje, descripcion } = result.value;
+
+            try {
+                const token = localStorage.getItem('auth_token');
+                const baseUrl = typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : 'http://127.0.0.1:5000';
+
+                Swal.fire({ title: 'Creando...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+
+                const res = await fetch(`${baseUrl}/api/evaluacion/indicador-individual`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        hijo_id: hijoId,
+                        momento: momento,
+                        area_aprendizaje: area_aprendizaje,
+                        descripcion: descripcion
+                    })
+                });
+
+                const data = await res.json();
+
+                if (res.ok && data.success) {
+                    Swal.fire({
+                        toast: true,
+                        position: 'top-end',
+                        icon: 'success',
+                        title: 'Indicador individual añadido',
+                        showConfirmButton: false,
+                        timer: 2000
+                    });
+
+                    const nuevoInd = data.data;
+
+                    // Añadir a masterIndicators localmente
+                    const area = nuevoInd.area_aprendizaje;
+                    if (!masterIndicators[area]) {
+                        masterIndicators[area] = [];
+                    }
+                    masterIndicators[area].push({
+                        id: nuevoInd.id,
+                        proyecto_id: null,
+                        proyecto_nombre: 'Indicador Individual',
+                        descripcion: nuevoInd.descripcion
+                    });
+
+                    // Añadir a los marcados como logrados
+                    if (!currentEvalData.logrados) {
+                        currentEvalData.logrados = [];
+                    }
+                    currentEvalData.logrados.push(nuevoInd.id);
+
+                    // Re-renderizar el panel
+                    renderizarPanelPremium();
+
+                } else {
+                    Swal.fire('Error', data.message || 'No se pudo crear el indicador.', 'error');
+                }
+            } catch (err) {
+                console.error(err);
+                Swal.fire('Error', 'Problema de conexión con el servidor.', 'error');
+            }
+        }
+    });
 }

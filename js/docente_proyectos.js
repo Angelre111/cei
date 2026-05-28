@@ -192,11 +192,13 @@ function seleccionarProyecto(id) {
     
     const badgeEstado = document.getElementById('proyecto-detalle-estado');
     const btnCerrarOficial = document.getElementById('btn-cerrar-proyecto-oficial');
+    const btnEditarNombre = document.getElementById('btn-editar-proyecto-nombre');
     
     if (proyecto.estado === 'cerrado') {
         badgeEstado.innerHTML = '<i class="ph-fill ph-lock"></i> Proyecto Finalizado';
         badgeEstado.className = 'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-slate-100 text-slate-500 text-[10px] font-black uppercase tracking-widest border border-slate-200 mb-2';
         if (btnCerrarOficial) btnCerrarOficial.classList.add('hidden');
+        if (btnEditarNombre) btnEditarNombre.classList.add('hidden');
     } else {
         badgeEstado.innerHTML = '<i class="ph-fill ph-check-circle"></i> Proyecto Activo';
         badgeEstado.className = 'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-emerald-50 text-emerald-600 text-[10px] font-black uppercase tracking-widest border border-emerald-100 mb-2';
@@ -207,6 +209,10 @@ function seleccionarProyecto(id) {
                 cerrarModalVerProyecto();
                 cerrarProyecto(proyecto.id);
             };
+        }
+        if (btnEditarNombre) {
+            btnEditarNombre.classList.remove('hidden');
+            btnEditarNombre.onclick = () => editarNombreProyecto(proyecto);
         }
     }
 
@@ -352,6 +358,70 @@ async function cerrarProyecto(proyectoId) {
             } catch (e) {
                 console.error(e);
                 Swal.fire('Error de red', 'Fallo de conexión.', 'error');
+            }
+        }
+    });
+}
+
+async function editarNombreProyecto(proyecto) {
+    Swal.fire({
+        title: 'Editar Nombre del Proyecto',
+        input: 'text',
+        inputValue: proyecto.nombre,
+        showCancelButton: true,
+        confirmButtonColor: '#a855f7',
+        cancelButtonColor: '#9ca3af',
+        confirmButtonText: 'Guardar Cambios',
+        cancelButtonText: 'Cancelar',
+        inputValidator: (value) => {
+            if (!value || !value.trim()) {
+                return 'El nombre del proyecto no puede estar vacío.';
+            }
+        },
+        customClass: { popup: 'rounded-3xl' }
+    }).then(async (result) => {
+        if (result.isConfirmed) {
+            const nuevoNombre = result.value.trim();
+            if (nuevoNombre === proyecto.nombre) return;
+
+            try {
+                const token = localStorage.getItem('auth_token');
+                const baseUrl = typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : 'http://127.0.0.1:5000';
+                
+                Swal.fire({ title: 'Guardando...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+
+                const res = await fetch(`${baseUrl}/api/proyectos/${proyecto.id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ nombre: nuevoNombre })
+                });
+
+                const data = await res.json();
+
+                if (res.ok && data.success) {
+                    Swal.fire({
+                        title: '¡Actualizado!',
+                        text: 'El nombre del proyecto ha sido modificado.',
+                        icon: 'success',
+                        confirmButtonColor: '#a855f7',
+                        customClass: { popup: 'rounded-3xl' }
+                    });
+                    
+                    // Actualizar en la lista en memoria y la interfaz
+                    proyecto.nombre = nuevoNombre;
+                    document.getElementById('proyecto-detalle-nombre').innerText = nuevoNombre;
+                    
+                    // Recargar listado de proyectos de fondo
+                    cargarProyectosAPI();
+                } else {
+                    Swal.fire('Error', data.message || 'No se pudo actualizar.', 'error');
+                }
+            } catch (err) {
+                console.error(err);
+                Swal.fire('Error de red', 'No se pudo contactar al servidor.', 'error');
             }
         }
     });

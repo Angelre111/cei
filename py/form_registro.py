@@ -4068,6 +4068,50 @@ def cerrar_proyecto(proyecto_id):
         return jsonify({'success': False, 'message': 'Error interno al cerrar el proyecto.'}), 500
 
 
+@app.route('/api/proyectos/<proyecto_id>', methods=['PUT'])
+@require_auth
+def editar_proyecto(proyecto_id):
+    """Edita el nombre de un proyecto de aprendizaje."""
+    data = request.get_json(silent=True) or {}
+    nombre = data.get('nombre', '').strip()
+
+    if not nombre:
+        return jsonify({
+            'success': False,
+            'message': 'El nombre del proyecto es requerido.'
+        }), 400
+
+    try:
+        # Verificar si el proyecto está activo antes de permitir editar
+        proj = supabase.table('proyectos_aprendizaje').select('estado').eq('id', proyecto_id).execute()
+        if not proj.data:
+            return jsonify({
+                'success': False,
+                'message': 'Proyecto no encontrado.'
+            }), 404
+            
+        if proj.data[0].get('estado') == 'cerrado':
+            return jsonify({
+                'success': False,
+                'message': 'No se puede editar un proyecto finalizado.'
+            }), 400
+
+        res = supabase.table('proyectos_aprendizaje') \
+            .update({'nombre': nombre}) \
+            .eq('id', proyecto_id) \
+            .execute()
+
+        return jsonify({
+            'success': True,
+            'message': 'Proyecto actualizado exitosamente.',
+            'data': res.data[0] if res.data else None
+        }), 200
+
+    except Exception as e:
+        print(f"❌ Error al editar proyecto: {e}")
+        return jsonify({'success': False, 'message': 'Error interno al editar el proyecto.'}), 500
+
+
 # =======================================================
 # MÓDULO: INDICADORES DEL PROYECTO
 # =======================================================
@@ -4221,17 +4265,20 @@ def obtener_indicadores_por_momento(seccion_id, momento):
             .eq('momento_pedagogico', str(momento)) \
             .execute()
 
-        if not res_proyectos.data:
+        # Filtrar el proyecto especial "Indicadores Individuales"
+        proyectos_filtrados = [p for p in (res_proyectos.data or []) if p['nombre'] != 'Indicadores Individuales']
+
+        if not proyectos_filtrados:
             return jsonify({
                 'success': True,
                 'message': 'No hay proyectos registrados para este momento pedagógico.',
                 'data':    {}
             }), 200
 
-        proyectos_ids = [p['id'] for p in res_proyectos.data]
+        proyectos_ids = [p['id'] for p in proyectos_filtrados]
 
         # Mapa id → nombre para enriquecer la respuesta si se necesita
-        mapa_proyectos = {p['id']: p['nombre'] for p in res_proyectos.data}
+        mapa_proyectos = {p['id']: p['nombre'] for p in proyectos_filtrados}
 
         # ── Paso 2: obtener todos los indicadores de esos proyectos ──────────
         res_indicadores = supabase.table('indicadores') \
@@ -4279,7 +4326,7 @@ def obtener_evaluacion(hijo_id, momento):
             return jsonify({
                 'success': True,
                 'message': 'Sin evaluación previa.',
-                'data': { 'boleta_id': None, 'recomendacion_docente': '', 'logrados': [] }
+                'data': { 'boleta_id': None, 'recomendacion_docente': '', 'logrados': [], 'indicadores_individuales': [] }
             }), 200
             
         boletin = res_boletin.data[0]
@@ -4292,6 +4339,23 @@ def obtener_evaluacion(hijo_id, momento):
             .execute()
             
         logrados = [i['indicador_id'] for i in (res_ind.data or [])]
+
+        # 3. Buscar los indicadores individuales que corresponden a la boleta del estudiante
+        indicadores_individuales = []
+        if logrados:
+            res_detalles = supabase.table('indicadores') \
+                .select('id, area_aprendizaje, descripcion, proyectos_aprendizaje(nombre)') \
+                .in_('id', logrados) \
+                .execute()
+            
+            for item in (res_detalles.data or []):
+                proyecto = item.get('proyectos_aprendizaje')
+                if proyecto and proyecto.get('nombre') == 'Indicadores Individuales':
+                    indicadores_individuales.append({
+                        'id': item['id'],
+                        'area_aprendizaje': item['area_aprendizaje'],
+                        'descripcion': item['descripcion']
+                    })
         
         return jsonify({
             'success': True,
@@ -4299,13 +4363,125 @@ def obtener_evaluacion(hijo_id, momento):
             'data': {
                 'boleta_id': boletin_id,
                 'recomendacion_docente': boletin.get('recomendaciones_docente', ''), # kept as _docente for the frontend JS to map properly
-                'logrados': logrados
+                'logrados': logrados,
+                'indicadores_individuales': indicadores_individuales
             }
         }), 200
 
     except Exception as e:
         print(f"❌ Error al obtener evaluacion: {e}")
         return jsonify({'success': False, 'message': 'Error interno.'}), 500
+
+
+@app.route('/api/evaluacion/indicador-individual', methods=['POST'])
+@require_auth
+def agregar_indicador_individual():
+    """Registra un indicador individual para un estudiante y lo marca como logrado en su boletín."""
+    data = request.get_json(silent=True) or {}
+    hijo_id = data.get('hijo_id')
+    momento = data.get('momento')
+    area_aprendizaje = data.get('area_aprendizaje', '').strip()
+    descripcion = data.get('descripcion', '').strip()
+
+    if not all([hijo_id, momento, area_aprendizaje, descripcion]):
+        return jsonify({
+            'success': False,
+            'message': 'Faltan datos requeridos: hijo_id, momento, area_aprendizaje y descripcion.'
+        }), 400
+
+    try:
+        # 1. Obtener la sección del estudiante
+        res_asig = supabase.table('asignaciones_estudiantes') \
+            .select('seccion_id') \
+            .eq('hijo_id', hijo_id) \
+            .eq('estado', 'cursando') \
+            .execute()
+        
+        if not res_asig.data:
+            return jsonify({
+                'success': False,
+                'message': 'El estudiante no tiene una sección activa asignada.'
+            }), 400
+        
+        seccion_id = res_asig.data[0]['seccion_id']
+
+        # 2. Buscar o crear el boletín del estudiante para este momento
+        res_boletin = supabase.table('boletines') \
+            .select('id') \
+            .eq('hijo_id', hijo_id) \
+            .eq('momento_pedagogico', str(momento)) \
+            .execute()
+        
+        if res_boletin.data:
+            boletin_id = res_boletin.data[0]['id']
+        else:
+            # Crear boletín
+            nuevo_boletin = {
+                'hijo_id': hijo_id,
+                'seccion_id': seccion_id,
+                'momento_pedagogico': str(momento),
+                'recomendaciones_docente': ''
+            }
+            res_new_b = supabase.table('boletines').insert(nuevo_boletin).execute()
+            if not res_new_b.data:
+                return jsonify({'success': False, 'message': 'No se pudo crear la boleta de evaluación.'}), 500
+            boletin_id = res_new_b.data[0]['id']
+
+        # 3. Buscar o crear el proyecto especial "Indicadores Individuales" para la sección
+        res_proj = supabase.table('proyectos_aprendizaje') \
+            .select('id') \
+            .eq('seccion_id', seccion_id) \
+            .eq('momento_pedagogico', str(momento)) \
+            .eq('nombre', 'Indicadores Individuales') \
+            .execute()
+        
+        if res_proj.data:
+            proyecto_id = res_proj.data[0]['id']
+        else:
+            # Crear el proyecto especial
+            nuevo_proyecto = {
+                'seccion_id': seccion_id,
+                'nombre': 'Indicadores Individuales',
+                'momento_pedagogico': str(momento),
+                'estado': 'activo'
+            }
+            res_new_p = supabase.table('proyectos_aprendizaje').insert(nuevo_proyecto).execute()
+            if not res_new_p.data:
+                return jsonify({'success': False, 'message': 'No se pudo crear el proyecto para indicadores individuales.'}), 500
+            proyecto_id = res_new_p.data[0]['id']
+
+        # 4. Insertar el nuevo indicador en la tabla "indicadores"
+        nuevo_indicador = {
+            'proyecto_id': proyecto_id,
+            'area_aprendizaje': area_aprendizaje,
+            'descripcion': descripcion
+        }
+        res_ind = supabase.table('indicadores').insert(nuevo_indicador).execute()
+        if not res_ind.data:
+            return jsonify({'success': False, 'message': 'No se pudo crear el indicador.'}), 500
+        
+        indicador_id = res_ind.data[0]['id']
+
+        # 5. Asociar el indicador a la boleta en "boletines_indicadores"
+        asociacion = {
+            'boletin_id': boletin_id,
+            'indicador_id': indicador_id
+        }
+        supabase.table('boletines_indicadores').insert(asociacion).execute()
+
+        return jsonify({
+            'success': True,
+            'message': 'Indicador individual añadido y registrado con éxito.',
+            'data': {
+                'id': indicador_id,
+                'area_aprendizaje': area_aprendizaje,
+                'descripcion': descripcion
+            }
+        }), 201
+
+    except Exception as e:
+        print(f"❌ Error al agregar indicador individual: {e}")
+        return jsonify({'success': False, 'message': 'Error interno del servidor al registrar el indicador.'}), 500
 
 
 @app.route('/api/evaluacion', methods=['POST'])
