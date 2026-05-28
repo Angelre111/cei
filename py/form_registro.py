@@ -3054,9 +3054,9 @@ def obtener_mi_clase():
         seccion_info = res_seccion.data[0] if res_seccion.data else {'nivel': 'Desconocido', 'letra': '', 'periodo_id': None}
         
         res_user = supabase.table("usuarios").select("nombres, apellidos").eq("id", docente_id).single().execute()
-        nombre_docente = "¡Bienvenida!"
+        nombre_docente = "Docente"
         if res_user.data:
-            nombre_docente = f"¡Bienvenida, {res_user.data['nombres']}!"
+            nombre_docente = f"{res_user.data['nombres']} {res_user.data['apellidos']}".strip()
 
         # Buscar los datos reales del período académico asociado a esta sección
         periodo_nombre = "Sin asignar"

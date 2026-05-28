@@ -377,7 +377,7 @@
                     </div>
                     <div>
                         <h1 id="header-nombre-docente"
-                            class="text-xl font-black text-gray-800 tracking-tight leading-tight">¡Bienvenida!</h1>
+                            class="text-xl font-black text-gray-800 tracking-tight leading-tight">Panel docente</h1>
                         <div class="flex items-center gap-1.5 mt-0.5">
                             <i class="ph-fill ph-users-three text-gray-400 text-sm"></i>
                             <p id="header-seccion-info"
@@ -1967,6 +1967,34 @@
         async function initApp() {
             setupNavigation();
 
+            // Mostrar el nombre de perfil de inmediato (evitando parpadeos)
+            let nombrePila = localStorage.getItem('user_nombres');
+            const userEmail = localStorage.getItem('user_email');
+            
+            const esNombreValido = (nombre) => {
+                return nombre && nombre.trim() !== '' && nombre.trim().toLowerCase() !== 'docente';
+            };
+
+            if (nombrePila && (nombrePila.includes('¡Bienvenida,') || nombrePila.includes('¡Hola,'))) {
+                nombrePila = nombrePila.replace(/^[¡!]*Bienvenida,\s*/i, '').replace(/^[¡!]*Hola,\s*/i, '').replace(/[!¡]+$/, '').trim();
+                localStorage.setItem('user_nombres', nombrePila);
+            }
+
+            if (!esNombreValido(nombrePila)) {
+                nombrePila = userEmail ? userEmail.split('@')[0] : 'Docente';
+            }
+
+            const profileNameEl = document.getElementById('header-profile-name');
+            const profileInitialEl = document.getElementById('header-profile-initial');
+            if (profileNameEl) profileNameEl.innerText = nombrePila.split(' ')[0];
+            if (profileInitialEl) {
+                let initialChar = nombrePila.charAt(0);
+                if (initialChar === '¡' || initialChar === '!') {
+                    initialChar = 'D';
+                }
+                profileInitialEl.innerText = initialChar.toUpperCase();
+            }
+
             // Setear la fecha de hoy en el picker de asistencia
             const today = new Date().toISOString().split('T')[0];
             const dateInput = document.getElementById('attendance-date');
@@ -2044,24 +2072,43 @@
                     localStorage.setItem('seccion_activa_id', seccionActivaId); // Para que la asistencia lo use
 
                     // 2. Actualizar el Header Visual
-                    const nombrePila = localStorage.getItem('user_nombres') || 'Docente';
-                    document.getElementById('header-nombre-docente').innerText = result.docente || '¡Bienvenida, Profesor(a)!';
+                    document.getElementById('header-nombre-docente').innerText = 'Panel docente';
                     document.getElementById('header-seccion-info').innerText = `Grupo: ${result.seccion.nivel} - ${result.seccion.letra}`;
 
                     // LLAMADA INTELIGENTE PARA EL PERÍODO
                     actualizarBadgePeriodo(result.periodo, result.periodo_estado);
 
+                    // Guardar y actualizar con el nombre real del docente de la API
+                    let nombreDocente = result.docente || localStorage.getItem('user_nombres') || 'Docente';
+                    
+                    // Limpiar posibles saludos del string del nombre del docente
+                    if (nombreDocente && (nombreDocente.includes('¡Bienvenida,') || nombreDocente.includes('¡Hola,'))) {
+                        nombreDocente = nombreDocente.replace(/^[¡!]*Bienvenida,\s*/i, '').replace(/^[¡!]*Hola,\s*/i, '').replace(/[!¡]+$/, '').trim();
+                    }
+                    
+                    if (result.docente) {
+                        let nombreLimpio = result.docente;
+                        if (nombreLimpio.includes('¡Bienvenida,') || nombreLimpio.includes('¡Hola,')) {
+                            nombreLimpio = nombreLimpio.replace(/^[¡!]*Bienvenida,\s*/i, '').replace(/^[¡!]*Hola,\s*/i, '').replace(/[!¡]+$/, '').trim();
+                        }
+                        localStorage.setItem('user_nombres', nombreLimpio);
+                    }
+
                     // Avatar y perfil
                     if (document.getElementById('header-profile-name')) {
-                        document.getElementById('header-profile-name').innerText = nombrePila.split(' ')[0];
+                        document.getElementById('header-profile-name').innerText = nombreDocente.split(' ')[0];
                     }
                     if (document.getElementById('header-profile-initial')) {
-                        document.getElementById('header-profile-initial').innerText = nombrePila.charAt(0).toUpperCase();
+                        let initialChar = nombreDocente.charAt(0);
+                        if (initialChar === '¡' || initialChar === '!') {
+                            initialChar = 'D';
+                        }
+                        document.getElementById('header-profile-initial').innerText = initialChar.toUpperCase();
                     }
 
                     // 3. Poblar Dashboard Nuevo (Si existe)
                     if (document.getElementById('dashboard-docente-nombres')) {
-                        document.getElementById('dashboard-docente-nombres').innerText = result.docente || nombrePila;
+                        document.getElementById('dashboard-docente-nombres').innerText = nombreDocente;
                     }
                     if (document.getElementById('dashboard-periodo-activo')) {
                         document.getElementById('dashboard-periodo-activo').innerText = result.periodo || '...';
