@@ -137,10 +137,9 @@ document.addEventListener('DOMContentLoaded', () => {
         };
 
         // Validaciones básicas
-        if (!payload.nombre || !payload.apellidos || !payload.fecha_nacimiento ||
-            !payload.sexo || !payload.email_representante) {
+        if (!payload.nombre || !payload.apellidos || !payload.fecha_nacimiento || !payload.sexo) {
             Swal.fire('Campos incompletos',
-                'Por favor completa los campos obligatorios: Nombres, Apellidos, Fecha de nacimiento, Sexo y Correo del representante.',
+                'Por favor completa los campos obligatorios: Nombres, Apellidos, Fecha de nacimiento y Sexo.',
                 'warning');
             if (btn) { btn.disabled = false; btn.innerHTML = originalText; }
             return;

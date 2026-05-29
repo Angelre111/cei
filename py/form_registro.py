@@ -1491,34 +1491,67 @@ def admin_registrar_estudiante():
 
     # ── Determinar el representante ───────────────────────────────────────────
     if rol_solicitante == 'administrador':
-        # Admin: busca/crea el representante por email
+        # Admin: busca/crea el representante por email o cédula
         email_representante = data.get('email_representante', '').strip().lower()
-        if not email_representante:
-            return jsonify({'success': False, 'message': 'El correo del representante es obligatorio.'}), 400
+        rep_id = None
 
-        rep_user = supabase.table("usuarios").select("id, rol").eq("email", email_representante).execute()
-        if rep_user.data:
-            rep_id   = rep_user.data[0]['id']
-            rol_rep  = rep_user.data[0].get('rol')
-            if rol_rep != 'representante':
-                return jsonify({'success': False, 'message': 'El correo ya está registrado con un rol diferente.'}), 409
-        else:
-            # Crear representante vía invitación
+        # 1. Intentar buscar por cédula en inscripciones si ci_rep está disponible
+        if ci_rep and ci_rep != '00000000':
             try:
-                redirect_url  = os.getenv('SET_PASSWORD_URL', 'https://animated-gnome-3fdf38.netlify.app/set_password.html')
-                auth_response = supabase.auth.admin.invite_user_by_email(
-                    email_representante,
-                    options={"data": {"role": "representante"}, "redirect_to": redirect_url}
-                )
-                rep_id = auth_response.user.id
-                supabase.table("usuarios").insert({
-                    "id": rep_id, "email": email_representante,
-                    "rol": "representante", "estado": "invitado",
-                    "nombres": "", "apellidos": ""
-                }).execute()
+                res_insc = supabase.table("inscripciones").select("user_id").eq("ci_madre", ci_rep).limit(1).execute()
+                if res_insc.data:
+                    rep_id = res_insc.data[0]['user_id']
             except Exception as e:
-                print(f"Error al invitar representante: {e}")
-                return jsonify({'success': False, 'message': 'No se pudo crear la invitación para el representante.'}), 500
+                print(f"⚠️ Error al buscar representante por cédula: {e}")
+
+        # 2. Si no se encontró por cédula, y hay email, buscar por email
+        if not rep_id and email_representante:
+            try:
+                rep_user = supabase.table("usuarios").select("id, rol").eq("email", email_representante).execute()
+                if rep_user.data:
+                    rep_id = rep_user.data[0]['id']
+                    rol_rep = rep_user.data[0].get('rol')
+                    if rol_rep != 'representante':
+                        return jsonify({'success': False, 'message': 'El correo ya está registrado con un rol diferente.'}), 409
+            except Exception as e:
+                print(f"⚠️ Error al buscar representante por correo: {e}")
+
+        # 3. Si sigue sin encontrarse, y no tenemos email, generamos uno temporal
+        if not rep_id:
+            if not email_representante:
+                if ci_rep and ci_rep != '00000000':
+                    email_representante = f"sin_correo_{ci_rep}@cei.com"
+                else:
+                    email_representante = f"sin_correo_{uuid.uuid4().hex[:10]}@cei.com"
+
+            # Buscar si el correo (real o temporal) ya está registrado
+            try:
+                rep_user = supabase.table("usuarios").select("id, rol").eq("email", email_representante).execute()
+                if rep_user.data:
+                    rep_id = rep_user.data[0]['id']
+                    rol_rep = rep_user.data[0].get('rol')
+                    if rol_rep != 'representante':
+                        return jsonify({'success': False, 'message': 'El correo ya está registrado con un rol diferente.'}), 409
+            except Exception as e:
+                print(f"⚠️ Error al verificar correo temporal: {e}")
+
+            # 4. Si aún no existe, crearlo / invitarlo
+            if not rep_id:
+                try:
+                    redirect_url  = os.getenv('SET_PASSWORD_URL', 'https://animated-gnome-3fdf38.netlify.app/set_password.html')
+                    auth_response = supabase.auth.admin.invite_user_by_email(
+                        email_representante,
+                        options={"data": {"role": "representante"}, "redirect_to": redirect_url}
+                    )
+                    rep_id = auth_response.user.id
+                    supabase.table("usuarios").insert({
+                        "id": rep_id, "email": email_representante,
+                        "rol": "representante", "estado": "invitado",
+                        "nombres": "", "apellidos": ""
+                    }).execute()
+                except Exception as e:
+                    print(f"Error al invitar representante: {e}")
+                    return jsonify({'success': False, 'message': 'No se pudo crear la invitación para el representante.'}), 500
     else:
         # Representante: es él mismo
         rep_id = current_user.id
