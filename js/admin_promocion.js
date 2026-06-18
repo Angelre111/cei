@@ -1,5 +1,5 @@
 // =============================================================
-// MÓDULO: PROMOCIÓN DE ESTUDIANTES (V2)
+// MÓDULO: PROMOCIÓN DE ESTUDIANTES (V2 — Optimizado)
 // Flujo segmentado por aula con modal de revisión.
 // =============================================================
 
@@ -10,12 +10,28 @@ let _promAlumnos         = [];   // Alumnos de la sección origen cargada
 // Mapa de estado por fila: { hijoId → { accion, seccionDestinoId } }
 let _promAcciones        = {};
 let _promSeccionOrigenInfo = null; // { id, nivel, nombre }
+let _promYaCargado       = false;  // Guard: evita recargas accidentales con datos activos
 
 // =============================================================
 // PASO 1 — CARGA DE PERÍODOS
 // =============================================================
 
 async function cargarDatosPromocion() {
+    // Guard: si hay alumnos a medio configurar, no recargar sin avisar
+    if (_promYaCargado && _promAlumnos.length > 0) {
+        const confirmar = await Swal.fire({
+            title: '¿Recargar períodos?',
+            text: 'Tienes alumnos configurados en pantalla. Si recargas, perderás los cambios no confirmados.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Sí, recargar',
+            cancelButtonText: 'Cancelar',
+            confirmButtonColor: '#ef4444',
+            cancelButtonColor: '#6b7280'
+        });
+        if (!confirmar.isConfirmed) return;
+    }
+
     const selOrigen  = document.getElementById('prom-periodo-origen');
     const selDestino = document.getElementById('prom-periodo-destino');
     if (!selOrigen || !selDestino) return;
@@ -25,7 +41,9 @@ async function cargarDatosPromocion() {
         const data = await res.json();
         if (!res.ok || !data.success) return;
 
-        _promPeriodos = data.periodos;
+        _promPeriodos  = data.periodos;
+        _promYaCargado = true;
+
         const opts = _promPeriodos
             .map(p => `<option value="${p.id}">${p.nombre} (${p.estado})</option>`)
             .join('');
@@ -37,12 +55,29 @@ async function cargarDatosPromocion() {
         const activo = _promPeriodos.find(p => p.estado === 'activo');
         if (activo) selOrigen.value = activo.id;
 
-        // Pre-seleccionar como destino el primero que NO sea activo
-        const destino = _promPeriodos.find(p => p.id !== (activo?.id || ''));
+        // Bug 2 Fix — Priorizar planificacion como destino, luego cualquier otro diferente al activo
+        const destino = _promPeriodos.find(p => p.estado === 'planificacion')
+            || _promPeriodos.find(p => p.id !== (activo?.id || ''));
         if (destino) selDestino.value = destino.id;
+
+        // UX 1 — Mostrar aviso si no hay período en planificación disponible
+        _verificarPeriodoDestinoDisponible();
 
     } catch (err) {
         console.error('Error cargando períodos para promoción:', err);
+    }
+}
+
+// UX 1 — Banner informativo si no hay planificacion para elegir como destino
+function _verificarPeriodoDestinoDisponible() {
+    const bannerEl = document.getElementById('prom-banner-sin-planificacion');
+    if (!bannerEl) return;
+
+    const hayPlanificacion = _promPeriodos.some(p => p.estado === 'planificacion');
+    if (!hayPlanificacion) {
+        bannerEl.classList.remove('hidden');
+    } else {
+        bannerEl.classList.add('hidden');
     }
 }
 
@@ -96,11 +131,24 @@ async function cargarSeccionesOrigen(periodoId) {
 // =============================================================
 
 async function cargarAlumnosPorSeccion() {
-    const seccionId   = document.getElementById('prom-seccion-origen')?.value;
+    const seccionId     = document.getElementById('prom-seccion-origen')?.value;
     const periodoDestId = document.getElementById('prom-periodo-destino')?.value;
+    const periodoOrigId = document.getElementById('prom-periodo-origen')?.value;
 
     if (!seccionId || !periodoDestId) {
         _resetTabla();
+        return;
+    }
+
+    // Prob 3 Fix — validar origen ≠ destino antes de cargar
+    if (periodoOrigId && periodoOrigId === periodoDestId) {
+        _resetTabla();
+        Swal.fire({
+            title: 'Períodos iguales',
+            text: 'El período de origen y el período destino no pueden ser el mismo.',
+            icon: 'error',
+            confirmButtonColor: '#4f46e5'
+        });
         return;
     }
 
@@ -160,7 +208,10 @@ async function cargarAlumnosPorSeccion() {
 
         _renderTablaPromocionV2();
         _actualizarContadores();
-        document.getElementById('btn-iniciar-promocion').disabled = false;
+
+        // UX 2 Fix — solo habilitar el botón si hay período destino seleccionado
+        const periodoDestinoValido = !!document.getElementById('prom-periodo-destino')?.value;
+        document.getElementById('btn-iniciar-promocion').disabled = !periodoDestinoValido;
 
         // Mostrar control masivo si hay secciones destino
         if (_promSecciones.length > 0) {
@@ -181,19 +232,38 @@ async function _cargarSeccionesDestino(periodoId) {
         const data = await res.json();
         _promSecciones = (res.ok && data.success) ? data.secciones : [];
 
-        // Llenar el dropdown masivo con secciones del nivel siguiente al origen
+        // Llenar el dropdown masivo — UX 4 Fix: dos grupos (promover + repetir)
         const nivelOrigen = _promSeccionOrigenInfo?.nivel || '';
         const jerarquia   = ['MATERNAL', '1ER GRUPO', '2DO GRUPO', '3ER GRUPO'];
         const idxOrigen   = jerarquia.indexOf(nivelOrigen);
         const nivelSig    = idxOrigen >= 0 && idxOrigen < jerarquia.length - 1
             ? jerarquia[idxOrigen + 1] : nivelOrigen;
 
-        const secsBulk = _promSecciones.filter(s => s.nivel === nivelSig);
+        // Secciones para promovidos (nivel siguiente)
+        const secsPromover = _promSecciones.filter(s => s.nivel === nivelSig);
+        // Secciones para repetidores (mismo nivel)
+        const secsRepetir  = _promSecciones.filter(s => s.nivel === nivelOrigen);
+
         const bulkSel  = document.getElementById('prom-bulk-seccion');
+        const bulkAccion = document.getElementById('prom-bulk-accion');
+
         if (bulkSel) {
-            bulkSel.innerHTML = secsBulk.length
-                ? secsBulk.map(s => `<option value="${s.id}">${s.nombre}</option>`).join('')
+            const _buildOpts = (secs) => secs.length
+                ? secs.map(s => `<option value="${s.id}">${s.nombre}</option>`).join('')
                 : '<option value="">Sin secciones para este nivel</option>';
+
+            // Sincronizar opciones del dropdown de sección según la acción bulk seleccionada
+            const actualizarOpcionesSeccionBulk = () => {
+                const accionBulk = bulkAccion?.value || 'promover';
+                bulkSel.innerHTML = accionBulk === 'repetir'
+                    ? _buildOpts(secsRepetir)
+                    : _buildOpts(secsPromover);
+            };
+
+            if (bulkAccion) {
+                bulkAccion.onchange = actualizarOpcionesSeccionBulk;
+            }
+            actualizarOpcionesSeccionBulk();
         }
     } catch (_) {
         _promSecciones = [];
@@ -337,19 +407,30 @@ function onSeccionCambio(hijoId) {
     }
 }
 
+// UX 4 Fix — aplicar sección masiva a promovidos o repetidores según la acción del bulk
 function aplicarSeccionMasiva() {
-    const bulkSel = document.getElementById('prom-bulk-seccion');
+    const bulkSel   = document.getElementById('prom-bulk-seccion');
+    const bulkAccion = document.getElementById('prom-bulk-accion');
     if (!bulkSel?.value) return;
 
+    const accionFiltro = bulkAccion?.value || 'promover';
+
+    let count = 0;
     _promAlumnos.forEach(a => {
-        if (_promAcciones[a.hijo_id]?.accion === 'promover') {
+        if (_promAcciones[a.hijo_id]?.accion === accionFiltro) {
             _promAcciones[a.hijo_id].seccionDestinoId = bulkSel.value;
             const sel = document.getElementById(`prom-destino-${a.hijo_id}`);
             if (sel) sel.value = bulkSel.value;
+            count++;
         }
     });
 
-    Swal.fire({ icon: 'success', title: 'Sección aplicada', timer: 1200, showConfirmButton: false });
+    Swal.fire({
+        icon: 'success',
+        title: `Sección aplicada a ${count} alumno(s)`,
+        timer: 1400,
+        showConfirmButton: false
+    });
 }
 
 function _colorFila(accion) {
@@ -382,6 +463,31 @@ function _resetTabla() {
 // =============================================================
 
 function abrirModalRevision() {
+    // UX 2 Fix — Validar que haya período destino seleccionado
+    const periodoDestinoId = document.getElementById('prom-periodo-destino')?.value;
+    const periodoOrigenId  = document.getElementById('prom-periodo-origen')?.value;
+
+    if (!periodoDestinoId) {
+        Swal.fire({
+            title: 'Período destino requerido',
+            text: 'Debes seleccionar un período de destino antes de continuar.',
+            icon: 'warning',
+            confirmButtonColor: '#4f46e5'
+        });
+        return;
+    }
+
+    // Prob 3 Fix — validar origen ≠ destino
+    if (periodoOrigenId && periodoOrigenId === periodoDestinoId) {
+        Swal.fire({
+            title: 'Períodos iguales',
+            text: 'El período de origen y el período destino no pueden ser el mismo.',
+            icon: 'error',
+            confirmButtonColor: '#4f46e5'
+        });
+        return;
+    }
+
     const nPromover = Object.values(_promAcciones).filter(v => v.accion === 'promover').length;
     const nRepetir  = Object.values(_promAcciones).filter(v => v.accion === 'repetir').length;
     const nRetirar  = Object.values(_promAcciones).filter(v => v.accion === 'retirar').length;
@@ -499,13 +605,14 @@ async function confirmarYProcesar() {
     }
 }
 
+// UX 3 Fix — mostrar sección asignada en el modal de resultados
 function mostrarModalResultados(resultados) {
-    const lista = document.getElementById('modal-resultados-lista');
-    const titulo = document.getElementById('modal-resultados-titulo');
+    const lista     = document.getElementById('modal-resultados-lista');
+    const titulo    = document.getElementById('modal-resultados-titulo');
     const subtitulo = document.getElementById('modal-resultados-subtitulo');
-    
+
     lista.innerHTML = '';
-    
+
     let errores = 0;
     let omitidos = 0;
     let exitos = 0;
@@ -514,9 +621,9 @@ function mostrarModalResultados(resultados) {
         // Encontrar alumno para sacar el nombre real
         const alumno = _promAlumnos.find(a => a.hijo_id === res.hijo_id);
         const nombre = alumno ? (alumno.estudiante || `${alumno.nombres || ''} ${alumno.apellidos || ''}`.trim()) : 'Alumno Desconocido';
-        
+
         let colorBg, colorText, iconHtml;
-        
+
         if (!res.exito) {
             errores++;
             colorBg = 'bg-red-50 border-red-100';
@@ -534,11 +641,16 @@ function mostrarModalResultados(resultados) {
             iconHtml = '<i class="ph-fill ph-check-circle text-emerald-500 text-xl"></i>';
         }
 
+        // Mostrar sección asignada si viene en el resultado (UX 3)
+        const seccionInfo = res.seccion_nombre
+            ? `<span class="ml-1 font-black opacity-60">→ ${res.seccion_nombre}</span>`
+            : '';
+
         lista.innerHTML += `
             <div class="flex items-start gap-3 p-3 rounded-xl border ${colorBg}">
                 <div class="mt-0.5 flex-shrink-0">${iconHtml}</div>
                 <div>
-                    <p class="font-bold text-sm ${colorText}">${nombre}</p>
+                    <p class="font-bold text-sm ${colorText}">${nombre}${seccionInfo}</p>
                     <p class="text-xs text-gray-600 mt-0.5">${res.status}</p>
                 </div>
             </div>
@@ -574,6 +686,7 @@ function cerrarModalResultados() {
         modal.classList.add('hidden');
         // Limpiar estado y resetear para la siguiente aula
         _resetTabla();
+        _promYaCargado = false;  // permitir recarga limpia
         const selectOrigen = document.getElementById('prom-seccion-origen');
         if (selectOrigen) selectOrigen.value = '';
     }, 300);
@@ -586,7 +699,7 @@ function cerrarModalResultados() {
 document.addEventListener('DOMContentLoaded', () => {
     const secPromocion = document.getElementById('section-promocion');
 
-    // Cargar períodos cuando la sección se vuelve visible
+    // Cargar períodos cuando la sección se vuelve visible (con guard de Observer)
     if (secPromocion) {
         const observer = new MutationObserver(mutations => {
             mutations.forEach(m => {

@@ -1773,61 +1773,73 @@ def asignar_estudiante():
 @app.route('/api/matricula', methods=['GET'])
 @require_auth
 def obtener_matricula():
-    """Obtiene estudiantes asignados.
-    Acepta ?seccion_id=<uuid> para filtrar por aula específica (para el panel de promoción).
-    Sin filtro, devuelve todos los activos (comportamiento legacy).
+    """Obtiene estudiantes asignados con un único JOIN para evitar N+1 queries.
+    Acepta ?seccion_id=<uuid> para filtrar por aula específica (panel de promoción).
+    Sin filtro, devuelve todos los activos del período inteligente.
     """
     try:
         seccion_id_filtro = request.args.get('seccion_id')
 
-        if not seccion_id_filtro:
+        # ── Una sola query con JOINs — sin bucle de queries individuales ──────
+        select_fields = (
+            "id, hijo_id, seccion_id, "
+            "hijos(nombre, apellidos, cedula_escolar, representante_id, "
+            "      usuarios!hijos_representante_id_fkey(nombres, apellidos)), "
+            "secciones(nivel, letra)"
+        )
+
+        if seccion_id_filtro:
+            res = supabase.table("asignaciones_estudiantes") \
+                .select(select_fields) \
+                .eq("estado", "cursando") \
+                .eq("seccion_id", seccion_id_filtro) \
+                .execute()
+        else:
             periodo_actual_id = _obtener_periodo_inteligente()
             if periodo_actual_id:
-                query = supabase.table("asignaciones_estudiantes") \
-                    .select("*, secciones!inner(periodo_id)") \
+                res = supabase.table("asignaciones_estudiantes") \
+                    .select(select_fields + ", secciones!inner(periodo_id)") \
                     .eq("estado", "cursando") \
-                    .eq("secciones.periodo_id", periodo_actual_id)
+                    .eq("secciones.periodo_id", periodo_actual_id) \
+                    .execute()
             else:
-                query = supabase.table("asignaciones_estudiantes") \
-                    .select("*").eq("estado", "cursando")
-        else:
-            query = supabase.table("asignaciones_estudiantes").select("*").eq("estado", "cursando").eq("seccion_id", seccion_id_filtro)
-
-        res_asignaciones = query.execute()
-        asignaciones = res_asignaciones.data
+                res = supabase.table("asignaciones_estudiantes") \
+                    .select(select_fields) \
+                    .eq("estado", "cursando") \
+                    .execute()
 
         matricula_completa = []
-        for asig in asignaciones:
-            hijo_id = asig.get('hijo_id')
-            seccion_id = asig.get('seccion_id')
-            
-            # Datos base del estudiante
-            hijo = None
-            if hijo_id:
-                res_h = supabase.table("hijos").select("cedula_escolar, nombre, apellidos, representante_id").eq("id", hijo_id).execute()
-                if res_h.data: hijo = res_h.data[0]
-                
-            # Datos del representante
-            representante_nombre = _nombre_representante(hijo.get('representante_id') if hijo else None)
-                    
-            # Datos de la sección
-            seccion_nombre = "Sin asignar"
-            if seccion_id:
-                res_s = supabase.table("secciones").select("nivel, letra").eq("id", seccion_id).execute()
-                if res_s.data:
-                    sec = res_s.data[0]
-                    seccion_nombre = f"{sec.get('nivel', '')} - {sec.get('letra', '')}".strip()
-                    
-            if hijo:
-                matricula_completa.append({
-                    "id": asig.get("id"),
-                    "hijo_id": hijo_id,
-                    "cedula": hijo.get("cedula_escolar", "N/A"),
-                    "estudiante": f"{hijo.get('nombre', '')} {hijo.get('apellidos', '')}".strip(),
-                    "seccion": seccion_nombre,
-                    "representante": representante_nombre
-                })
-                
+        for asig in (res.data or []):
+            hijo      = asig.get("hijos") or {}
+            seccion   = asig.get("secciones") or {}
+            rep_user  = hijo.get("usuarios") or {}
+
+            # Nombre del representante: primero del JOIN, luego fallback DB
+            rep_nombres   = rep_user.get("nombres", "").strip()
+            rep_apellidos = rep_user.get("apellidos", "").strip()
+            if rep_nombres or rep_apellidos:
+                representante_nombre = f"{rep_nombres} {rep_apellidos}".strip()
+            else:
+                # Fallback: búsqueda directa (solo si el JOIN no trajo datos)
+                representante_nombre = _nombre_representante(hijo.get("representante_id"))
+
+            nivel  = seccion.get("nivel", "")
+            letra  = seccion.get("letra", "")
+            seccion_nombre = f"{nivel} - {letra}".strip(" -") if (nivel or letra) else "Sin asignar"
+
+            nombre_est = f"{hijo.get('nombre', '')} {hijo.get('apellidos', '')}".strip()
+            if not nombre_est:
+                continue  # Registro huérfano, omitir
+
+            matricula_completa.append({
+                "id":             asig.get("id"),
+                "hijo_id":        asig.get("hijo_id"),
+                "cedula":         hijo.get("cedula_escolar", "N/A"),
+                "estudiante":     nombre_est,
+                "seccion":        seccion_nombre,
+                "representante":  representante_nombre,
+            })
+
         return jsonify({'success': True, 'matricula': matricula_completa}), 200
 
     except Exception as e:
@@ -1998,6 +2010,13 @@ def promover_estudiantes():
                 print(f"Error calculando periodo destino: {ex}")
                 return jsonify({'success': False, 'message': 'No se pudo determinar el período destino. Por favor selecciónelo manualmente.'}), 400
 
+        # ── Validar que origen y destino sean períodos distintos ───────────
+        if periodo_origen_id and periodo_destino_id and periodo_origen_id == periodo_destino_id:
+            return jsonify({
+                'success': False,
+                'message': 'El período de origen y el período destino no pueden ser el mismo.'
+            }), 400
+
         jerarquia_niveles = ['MATERNAL', '1ER GRUPO', '2DO GRUPO', '3ER GRUPO']
         resultados = []
 
@@ -2061,23 +2080,34 @@ def promover_estudiantes():
                         # Calcular nivel destino según la acción
                         nivel_destino = jerarquia_niveles[idx + 1] if accion == 'promover' else nivel_actual
 
-                        # Determinar sección destino
+                        # Determinar sección destino y su nombre (para UX en resultados)
                         dest_id = seccion_destino_id  # Puede venir del frontend
+                        nombre_seccion_destino = nivel_destino  # fallback
                         if not dest_id:
                             # Auto-buscar: misma letra en el período destino
-                            sec_res = supabase.table("secciones").select("id") \
+                            sec_res = supabase.table("secciones").select("id, nivel, letra") \
                                 .eq("periodo_id", periodo_destino_id) \
                                 .eq("nivel", nivel_destino) \
                                 .eq("letra", letra_actual).execute()
                             if sec_res.data:
                                 dest_id = sec_res.data[0]['id']
+                                nombre_seccion_destino = f"{sec_res.data[0].get('nivel','')} {sec_res.data[0].get('letra','')}".strip()
                             else:
                                 # Cualquier sección del nivel destino
-                                sec_res_alt = supabase.table("secciones").select("id") \
+                                sec_res_alt = supabase.table("secciones").select("id, nivel, letra") \
                                     .eq("periodo_id", periodo_destino_id) \
                                     .eq("nivel", nivel_destino).limit(1).execute()
                                 if sec_res_alt.data:
                                     dest_id = sec_res_alt.data[0]['id']
+                                    nombre_seccion_destino = f"{sec_res_alt.data[0].get('nivel','')} {sec_res_alt.data[0].get('letra','')}".strip()
+                        else:
+                            # dest_id viene del frontend — buscar nombre de la sección
+                            try:
+                                sec_n = supabase.table("secciones").select("nivel, letra").eq("id", dest_id).limit(1).execute()
+                                if sec_n.data:
+                                    nombre_seccion_destino = f"{sec_n.data[0].get('nivel','')} {sec_n.data[0].get('letra','')}".strip()
+                            except Exception:
+                                pass
 
                         if not dest_id:
                             resultados.append({'hijo_id': hijo_id, 'accion': accion, 'status': f'Error: No existe sección para {nivel_destino} en el período destino.', 'exito': False})
@@ -2115,9 +2145,9 @@ def promover_estudiantes():
 
                         if not ya_existe.data:
                             label = 'Promovido' if accion == 'promover' else 'Repitente asignado'
-                            resultados.append({'hijo_id': hijo_id, 'accion': accion, 'status': f'{label} → {nivel_destino}', 'exito': True})
+                            resultados.append({'hijo_id': hijo_id, 'accion': accion, 'status': f'{label} → {nombre_seccion_destino}', 'seccion_nombre': nombre_seccion_destino, 'exito': True})
                         else:
-                            resultados.append({'hijo_id': hijo_id, 'accion': accion, 'status': f'Ya se encontraba en {nivel_destino} (Regularizado)', 'exito': True, 'omitido': True})
+                            resultados.append({'hijo_id': hijo_id, 'accion': accion, 'status': f'Ya estaba en {nombre_seccion_destino} (Regularizado)', 'seccion_nombre': nombre_seccion_destino, 'exito': True, 'omitido': True})
                     else:
                         resultados.append({'hijo_id': hijo_id, 'accion': accion, 'status': f'Error: Nivel {nivel_actual} no reconocido.', 'exito': False})
 
@@ -2171,7 +2201,13 @@ def promover_estudiantes():
                             if not seccion_destino_id:
                                 resultados.append({'hijo_id': hijo_id, 'status': f'Error: No existe sección para {nivel_destino}.', 'exito': False})
                                 continue
-                            supabase.table("asignaciones_estudiantes").insert({"hijo_id": hijo_id, "seccion_id": seccion_destino_id, "estado": "cursando"}).execute()
+                            # ── Idempotencia en modo legacy ───────────────────────────────
+                            ya_existe_leg = supabase.table("asignaciones_estudiantes") \
+                                .select("id").eq("hijo_id", hijo_id).eq("seccion_id", seccion_destino_id).execute()
+                            if not ya_existe_leg.data:
+                                supabase.table("asignaciones_estudiantes").insert({"hijo_id": hijo_id, "seccion_id": seccion_destino_id, "estado": "cursando"}).execute()
+                            else:
+                                supabase.table("asignaciones_estudiantes").update({"estado": "cursando"}).eq("id", ya_existe_leg.data[0]['id']).execute()
                             # Cerrar el registro anterior
                             supabase.table("asignaciones_estudiantes").update({"estado": "promovido"}).eq("id", asig['id']).execute()
                             supabase.table("hijos").update({"estado_alumno": "Inscrito"}).eq("id", hijo_id).execute()

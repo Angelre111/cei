@@ -1309,15 +1309,31 @@
                             </div>
                         </div>
 
+                        <!-- UX 1 — Aviso: no hay período en planificación disponible -->
+                        <div id="prom-banner-sin-planificacion"
+                            class="hidden mb-6 p-4 bg-amber-50 border border-amber-200 rounded-2xl flex items-start gap-3">
+                            <i class="ph-fill ph-warning text-amber-500 text-xl flex-shrink-0 mt-0.5"></i>
+                            <div>
+                                <p class="text-sm font-bold text-amber-800">No hay un período en planificación creado.</p>
+                                <p class="text-xs text-amber-700 mt-0.5">Para poder promover alumnos, primero debes crear el período académico destino en la sección <strong>Períodos Académicos</strong> con estado <em>Planificación</em>.</p>
+                            </div>
+                        </div>
+
                         <!-- ── PASO 2: Tabla de alumnos (se muestra solo si los 3 filtros están) ── -->
                         <div id="prom-tabla-container" class="hidden">
 
-                            <!-- Control masivo -->
+                            <!-- Control masivo — UX 4: ahora permite elegir la acción (promover o repetir) -->
                             <div id="prom-bulk-control"
                                 class="hidden mb-4 p-4 bg-blue-50 border border-blue-100 rounded-2xl flex flex-col sm:flex-row items-center gap-3">
                                 <i class="ph-fill ph-lightning text-blue-500 text-lg flex-shrink-0"></i>
-                                <span class="text-sm font-bold text-blue-700">Mover todos los <span
-                                        class="text-emerald-700">Promovidos</span> a la sección:</span>
+                                <span class="text-sm font-bold text-blue-700">Mover todos los</span>
+                                <!-- Selector de acción bulk -->
+                                <select id="prom-bulk-accion"
+                                    class="px-3 py-2 border border-blue-200 rounded-xl focus:ring-2 focus:ring-blue-200 outline-none text-sm font-bold bg-white text-gray-700">
+                                    <option value="promover" class="text-emerald-700">✅ Promovidos</option>
+                                    <option value="repetir"  class="text-amber-700">⚠️ Repetidores</option>
+                                </select>
+                                <span class="text-sm font-bold text-blue-700">a la sección:</span>
                                 <select id="prom-bulk-seccion"
                                     class="flex-1 max-w-xs px-3 py-2 border border-blue-200 rounded-xl focus:ring-2 focus:ring-blue-200 outline-none text-sm font-bold bg-white text-gray-700">
                                     <option value="">Cargando secciones destino...</option>
