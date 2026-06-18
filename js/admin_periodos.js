@@ -214,6 +214,61 @@ async function cargarPeriodoActivoHeader() {
 // CRUD — CREAR / EDITAR
 // =============================================================
 
+// =============================================================
+// VALIDACIÓN PREVIA AL CREAR — usa periodosCache (sin petición extra)
+// =============================================================
+
+/**
+ * Valida las reglas de negocio antes de enviar un POST al servidor.
+ * Solo se ejecuta en modo CREACIÓN (editId vacío).
+ * Retorna true si todo está OK, false si detectó algún conflicto.
+ */
+function _validarNuevoPeriodo(nombre, estado) {
+    // Regla 1: Nombre duplicado (comparación case-insensitive)
+    const nombreRepetido = periodosCache.some(
+        p => p.nombre.trim().toLowerCase() === nombre.toLowerCase()
+    );
+    if (nombreRepetido) {
+        Swal.fire({
+            title: 'Nombre duplicado',
+            text: `Ya existe un período llamado "${nombre}". Por favor elige un nombre diferente.`,
+            icon: 'error',
+            confirmButtonColor: '#4f46e5'
+        });
+        return false;
+    }
+
+    // Regla 2: Solo puede haber un período activo
+    if (estado === 'activo') {
+        const periodoActivo = periodosCache.find(p => p.estado === 'activo');
+        if (periodoActivo) {
+            Swal.fire({
+                title: 'Ya existe un período activo',
+                text: `El período "${periodoActivo.nombre}" ya está activo. Solo puede haber uno activo a la vez.`,
+                icon: 'error',
+                confirmButtonColor: '#4f46e5'
+            });
+            return false;
+        }
+    }
+
+    // Regla 3: Solo puede haber un período en planificación
+    if (estado === 'planificacion') {
+        const periodoEnPlanif = periodosCache.find(p => p.estado === 'planificacion');
+        if (periodoEnPlanif) {
+            Swal.fire({
+                title: 'Ya existe un período en planificación',
+                text: `El período "${periodoEnPlanif.nombre}" ya está en planificación. Solo puede haber uno a la vez.`,
+                icon: 'error',
+                confirmButtonColor: '#4f46e5'
+            });
+            return false;
+        }
+    }
+
+    return true;
+}
+
 async function guardarPeriodo() {
     const editId = document.getElementById('periodo-edit-id').value.trim();
     const nombre = document.getElementById('periodo-nombre').value.trim();
@@ -231,11 +286,16 @@ async function guardarPeriodo() {
         return;
     }
 
+    // ── Validación de negocio (solo en modo CREACIÓN) ──────────
+    const esEdicion = !!editId;
+    if (!esEdicion && !_validarNuevoPeriodo(nombre, estado)) {
+        return;
+    }
+
     const btn = document.getElementById('btn-guardar-periodo');
     btn.disabled = true;
     btn.textContent = 'Guardando...';
 
-    const esEdicion = !!editId;
     const url = esEdicion ? `${API_BASE}/api/periodos/${editId}` : `${API_BASE}/api/periodos`;
     const method = esEdicion ? 'PUT' : 'POST';
 

@@ -2485,6 +2485,54 @@ def crear_periodo():
     except ValueError:
         return jsonify({'success': False, 'message': 'Formato de fecha inválido. Use YYYY-MM-DD.'}), 400
 
+    # ── Validaciones de negocio antes del INSERT ─────────────────
+    # Regla 1: Nombre duplicado (insensible a mayúsculas)
+    try:
+        existe_nombre = supabase.table("periodos_academicos") \
+            .select("id") \
+            .ilike("nombre", datos.nombre.strip()) \
+            .limit(1).execute()
+        if existe_nombre.data:
+            return jsonify({
+                'success': False,
+                'message': f'Ya existe un período llamado "{datos.nombre}". Elige un nombre diferente.'
+            }), 409
+    except Exception as e:
+        print(f"⚠️ Error al verificar nombre duplicado: {e}")
+
+    # Regla 2: Solo puede haber un período activo
+    if datos.estado == 'activo':
+        try:
+            activo_existente = supabase.table("periodos_academicos") \
+                .select("id, nombre") \
+                .eq("estado", "activo") \
+                .limit(1).execute()
+            if activo_existente.data:
+                nombre_activo = activo_existente.data[0]['nombre']
+                return jsonify({
+                    'success': False,
+                    'message': f'Ya existe un período activo: "{nombre_activo}". Solo puede haber uno activo a la vez.'
+                }), 409
+        except Exception as e:
+            print(f"⚠️ Error al verificar período activo: {e}")
+
+    # Regla 3: Solo puede haber un período en planificación
+    if datos.estado == 'planificacion':
+        try:
+            planif_existente = supabase.table("periodos_academicos") \
+                .select("id, nombre") \
+                .eq("estado", "planificacion") \
+                .limit(1).execute()
+            if planif_existente.data:
+                nombre_planif = planif_existente.data[0]['nombre']
+                return jsonify({
+                    'success': False,
+                    'message': f'Ya existe un período en planificación: "{nombre_planif}". Solo puede haber uno a la vez.'
+                }), 409
+        except Exception as e:
+            print(f"⚠️ Error al verificar período en planificación: {e}")
+    # ─────────────────────────────────────────────────────────────
+
     try:
         response = supabase.table("periodos_academicos").insert({
             "nombre": datos.nombre.strip(),
