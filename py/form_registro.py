@@ -1773,19 +1773,20 @@ def asignar_estudiante():
 @app.route('/api/matricula', methods=['GET'])
 @require_auth
 def obtener_matricula():
-    """Obtiene estudiantes asignados con un único JOIN para evitar N+1 queries.
-    Acepta ?seccion_id=<uuid> para filtrar por aula específica (panel de promoción).
-    Sin filtro, devuelve todos los activos del período inteligente.
+    """Obtiene estudiantes asignados. Evita N+1 con una estrategia de 3 queries máximo:
+    1) asignaciones + hijos + secciones (un único SELECT con JOINs seguros)
+    2) batch de representantes por IDs únicos
+    3) ensamblado en Python
+    Acepta ?seccion_id=<uuid> para filtrar por aula (panel de promoción).
     """
     try:
         seccion_id_filtro = request.args.get('seccion_id')
 
-        # ── Una sola query con JOINs — sin bucle de queries individuales ──────
+        # ── Query 1: asignaciones con hijo y sección (JOINs sin alias FK problemáticos) ─
         select_fields = (
             "id, hijo_id, seccion_id, "
-            "hijos(nombre, apellidos, cedula_escolar, representante_id, "
-            "      usuarios!hijos_representante_id_fkey(nombres, apellidos)), "
-            "secciones(nivel, letra)"
+            "hijos(nombre, apellidos, cedula_escolar, representante_id), "
+            "secciones(nivel, letra, periodo_id)"
         )
 
         if seccion_id_filtro:
@@ -1798,7 +1799,7 @@ def obtener_matricula():
             periodo_actual_id = _obtener_periodo_inteligente()
             if periodo_actual_id:
                 res = supabase.table("asignaciones_estudiantes") \
-                    .select(select_fields + ", secciones!inner(periodo_id)") \
+                    .select(select_fields) \
                     .eq("estado", "cursando") \
                     .eq("secciones.periodo_id", periodo_actual_id) \
                     .execute()
@@ -1808,36 +1809,60 @@ def obtener_matricula():
                     .eq("estado", "cursando") \
                     .execute()
 
+        asignaciones = res.data or []
+        if not asignaciones:
+            return jsonify({'success': True, 'matricula': []}), 200
+
+        # ── Query 2: batch de representantes (una sola query para todos los IDs únicos) ─
+        rep_ids = list({
+            a["hijos"]["representante_id"]
+            for a in asignaciones
+            if a.get("hijos") and a["hijos"].get("representante_id")
+        })
+
+        rep_map = {}  # { rep_id: "Nombre Apellido" }
+        if rep_ids:
+            try:
+                res_reps = supabase.table("usuarios") \
+                    .select("id, nombres, apellidos") \
+                    .in_("id", rep_ids) \
+                    .execute()
+                for r in (res_reps.data or []):
+                    nombre_rep = f"{r.get('nombres', '')} {r.get('apellidos', '')}".strip()
+                    rep_map[r["id"]] = nombre_rep or "Desconocido"
+            except Exception as e_rep:
+                print(f"⚠️ Error cargando representantes en batch: {e_rep}")
+
+        # ── Query 3 (fallback individual solo si el batch no trajo el nombre) ─────────
+        # Esto NUNCA debería ocurrir salvo inconsistencia de datos
+        def _rep_nombre(rep_id):
+            if not rep_id:
+                return "Sin representante"
+            if rep_id in rep_map:
+                return rep_map[rep_id]
+            return _nombre_representante(rep_id)  # última opción
+
+        # ── Ensamblar resultados ────────────────────────────────────────────────────────
         matricula_completa = []
-        for asig in (res.data or []):
-            hijo      = asig.get("hijos") or {}
-            seccion   = asig.get("secciones") or {}
-            rep_user  = hijo.get("usuarios") or {}
-
-            # Nombre del representante: primero del JOIN, luego fallback DB
-            rep_nombres   = rep_user.get("nombres", "").strip()
-            rep_apellidos = rep_user.get("apellidos", "").strip()
-            if rep_nombres or rep_apellidos:
-                representante_nombre = f"{rep_nombres} {rep_apellidos}".strip()
-            else:
-                # Fallback: búsqueda directa (solo si el JOIN no trajo datos)
-                representante_nombre = _nombre_representante(hijo.get("representante_id"))
-
-            nivel  = seccion.get("nivel", "")
-            letra  = seccion.get("letra", "")
-            seccion_nombre = f"{nivel} - {letra}".strip(" -") if (nivel or letra) else "Sin asignar"
+        for asig in asignaciones:
+            hijo    = asig.get("hijos") or {}
+            seccion = asig.get("secciones") or {}
 
             nombre_est = f"{hijo.get('nombre', '')} {hijo.get('apellidos', '')}".strip()
             if not nombre_est:
                 continue  # Registro huérfano, omitir
 
+            nivel  = seccion.get("nivel", "")
+            letra  = seccion.get("letra", "")
+            seccion_nombre = f"{nivel} - {letra}".strip(" -") if (nivel or letra) else "Sin asignar"
+
             matricula_completa.append({
-                "id":             asig.get("id"),
-                "hijo_id":        asig.get("hijo_id"),
-                "cedula":         hijo.get("cedula_escolar", "N/A"),
-                "estudiante":     nombre_est,
-                "seccion":        seccion_nombre,
-                "representante":  representante_nombre,
+                "id":            asig.get("id"),
+                "hijo_id":       asig.get("hijo_id"),
+                "cedula":        hijo.get("cedula_escolar", "N/A"),
+                "estudiante":    nombre_est,
+                "seccion":       seccion_nombre,
+                "representante": _rep_nombre(hijo.get("representante_id")),
             })
 
         return jsonify({'success': True, 'matricula': matricula_completa}), 200
