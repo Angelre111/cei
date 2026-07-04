@@ -277,7 +277,7 @@
             <div class="p-8 flex flex-col items-center justify-center border-b border-gray-50 flex-shrink-0">
                 <a href="#" class="flex flex-col items-center gap-3">
                     <div
-                        class="flex items-center justify-center w-24 h-24 bg-pink-50 rounded-full shadow-inner border-4 border-white">
+                        class="flex items-center justify-center w-32 h-32 bg-pink-50 rounded-full shadow-inner border-4 border-white">
                         <img src="img/cei.png" onerror="this.src='https://placehold.co/100x100/FCE7F3/EC4899?text=CEI'"
                             class="w-full h-full rounded-full object-cover p-1" alt="Logo CEI La Paragua">
                     </div>
@@ -658,8 +658,10 @@
                                     <i class="ph-bold ph-database text-2xl sm:text-3xl text-white"></i>
                                 </div>
                                 <div>
-                                    <h2 class="text-2xl sm:text-3xl font-black text-gray-800 tracking-tight">Respaldo de Datos</h2>
-                                    <p class="text-xs sm:text-sm text-gray-500 font-medium mt-1">Protección y recuperación ante desastres (DRP)</p>
+                                    <h2 class="text-2xl sm:text-3xl font-black text-gray-800 tracking-tight">Respaldo de
+                                        Datos</h2>
+                                    <p class="text-xs sm:text-sm text-gray-500 font-medium mt-1">Protección y
+                                        recuperación ante desastres (DRP)</p>
                                 </div>
                             </div>
                             <div
@@ -771,7 +773,8 @@
                                 class="ml-auto px-5 py-4 bg-gradient-to-r from-rose-50 to-orange-50 border border-rose-200 text-rose-600 rounded-2xl font-bold text-sm hover:from-rose-100 hover:to-orange-100 hover:border-rose-300 hover:shadow-md transition-all flex items-center justify-center gap-2 relative">
                                 <i class="ph-bold ph-warning-circle text-base"></i>
                                 Recuperación de Emergencia
-                                <span id="badge-archivados" class="hidden absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-rose-500 text-white text-[10px] font-black flex items-center justify-center"></span>
+                                <span id="badge-archivados"
+                                    class="hidden absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-rose-500 text-white text-[10px] font-black flex items-center justify-center"></span>
                             </button>
                         </div>
 
@@ -821,14 +824,17 @@
                         style="animation: slideUp 0.25s cubic-bezier(.16,1,.3,1);">
 
                         <!-- Header del modal -->
-                        <div class="px-8 pt-8 pb-5 border-b border-slate-100 flex items-start justify-between gap-4 flex-shrink-0">
+                        <div
+                            class="px-8 pt-8 pb-5 border-b border-slate-100 flex items-start justify-between gap-4 flex-shrink-0">
                             <div class="flex items-center gap-4">
-                                <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-rose-400 to-orange-500 flex items-center justify-center shadow-lg shadow-rose-100 flex-shrink-0">
+                                <div
+                                    class="w-12 h-12 rounded-2xl bg-gradient-to-br from-rose-400 to-orange-500 flex items-center justify-center shadow-lg shadow-rose-100 flex-shrink-0">
                                     <i class="ph-bold ph-warning-circle text-2xl text-white"></i>
                                 </div>
                                 <div>
                                     <h3 class="text-xl font-black text-slate-800">Recuperación de Emergencia</h3>
-                                    <p class="text-sm text-slate-500 font-medium mt-0.5">Docentes eliminados que pueden reactivarse tras restaurar un respaldo</p>
+                                    <p class="text-sm text-slate-500 font-medium mt-0.5">Docentes eliminados que pueden
+                                        reactivarse tras restaurar un respaldo</p>
                                 </div>
                             </div>
                             <button onclick="cerrarModalDocentesArchivados()" id="btn-cerrar-modal-archivados"
@@ -842,7 +848,10 @@
                             <div class="p-4 bg-amber-50 border border-amber-200 rounded-2xl flex items-start gap-3">
                                 <i class="ph-fill ph-info text-amber-500 text-xl flex-shrink-0 mt-0.5"></i>
                                 <p class="text-xs text-amber-800 font-medium leading-relaxed">
-                                    Estos docentes fueron eliminados físicamente del sistema. Si restauraste un respaldo que contenía sus datos históricos, usa <strong>Reactivar</strong> para reconstruir su acceso sin perder ningún registro. Se enviará un correo de restablecimiento de contraseña automáticamente.
+                                    Estos docentes fueron eliminados físicamente del sistema. Si restauraste un respaldo
+                                    que contenía sus datos históricos, usa <strong>Reactivar</strong> para reconstruir
+                                    su acceso sin perder ningún registro. Se enviará un correo de restablecimiento de
+                                    contraseña automáticamente.
                                 </p>
                             </div>
                         </div>
@@ -851,7 +860,9 @@
                         <div class="flex-1 overflow-y-auto px-8 py-5" id="lista-docentes-archivados-container">
                             <div id="lista-docentes-archivados" class="space-y-3">
                                 <div class="flex items-center justify-center gap-2 py-10 text-slate-400 text-sm">
-                                    <div class="w-4 h-4 border-2 border-slate-300 border-t-slate-500 rounded-full animate-spin"></div>
+                                    <div
+                                        class="w-4 h-4 border-2 border-slate-300 border-t-slate-500 rounded-full animate-spin">
+                                    </div>
                                     Cargando...
                                 </div>
                             </div>
@@ -878,8 +889,10 @@
                                     <i class="ph-bold ph-users-three text-2xl sm:text-3xl text-white"></i>
                                 </div>
                                 <div>
-                                    <h2 class="text-2xl sm:text-3xl font-black text-gray-800 tracking-tight">Usuarios del Sistema</h2>
-                                    <p class="text-xs sm:text-sm text-gray-500 font-medium mt-1" id="user-section-subtitle">
+                                    <h2 class="text-2xl sm:text-3xl font-black text-gray-800 tracking-tight">Usuarios
+                                        del Sistema</h2>
+                                    <p class="text-xs sm:text-sm text-gray-500 font-medium mt-1"
+                                        id="user-section-subtitle">
                                         Gestiona los accesos de Administradores y Docentes.
                                     </p>
                                 </div>
@@ -887,7 +900,8 @@
 
                             <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full md:w-auto">
                                 <!-- Tab Toggle: Personal vs Representantes -->
-                                <div class="flex bg-gray-50/80 p-1 rounded-2xl border border-gray-100 shadow-inner w-full sm:w-auto">
+                                <div
+                                    class="flex bg-gray-50/80 p-1 rounded-2xl border border-gray-100 shadow-inner w-full sm:w-auto">
                                     <button onclick="cambiarTabUsuarios('personal')" id="btn-tab-personal"
                                         class="flex-1 sm:flex-none px-3 sm:px-5 py-2 sm:py-2.5 text-xs sm:text-sm font-bold rounded-xl bg-white shadow-sm text-purple-700 transition-all flex items-center gap-1.5 justify-center">
                                         <i class="ph-fill ph-shield-check text-sm sm:text-base"></i> Personal
@@ -966,8 +980,10 @@
                                     <i class="ph-bold ph-student text-2xl sm:text-3xl text-white"></i>
                                 </div>
                                 <div>
-                                    <h2 class="text-2xl sm:text-3xl font-black text-gray-800 tracking-tight">Matrícula General</h2>
-                                    <p class="text-xs sm:text-sm text-gray-500 font-medium mt-1">Consulta y gestiona los alumnos inscritos en el sistema.</p>
+                                    <h2 class="text-2xl sm:text-3xl font-black text-gray-800 tracking-tight">Matrícula
+                                        General</h2>
+                                    <p class="text-xs sm:text-sm text-gray-500 font-medium mt-1">Consulta y gestiona los
+                                        alumnos inscritos en el sistema.</p>
                                 </div>
                             </div>
 
@@ -1042,8 +1058,10 @@
                                     <i class="ph-bold ph-archive text-2xl sm:text-3xl text-white"></i>
                                 </div>
                                 <div>
-                                    <h2 class="text-2xl sm:text-3xl font-black text-gray-800 tracking-tight">Historial Estudiantil</h2>
-                                    <p class="text-xs sm:text-sm text-gray-500 font-medium mt-1">Consulta los alumnos egresados o retirados de la institución.</p>
+                                    <h2 class="text-2xl sm:text-3xl font-black text-gray-800 tracking-tight">Historial
+                                        Estudiantil</h2>
+                                    <p class="text-xs sm:text-sm text-gray-500 font-medium mt-1">Consulta los alumnos
+                                        egresados o retirados de la institución.</p>
                                 </div>
                             </div>
 
@@ -1112,8 +1130,10 @@
                                     <i class="ph-bold ph-chalkboard-teacher text-2xl sm:text-3xl text-white"></i>
                                 </div>
                                 <div>
-                                    <h2 class="text-2xl sm:text-3xl font-black text-gray-800 tracking-tight">Gestión de Secciones</h2>
-                                    <p class="text-xs sm:text-sm text-gray-500 font-medium mt-1">Administra los grupos y aulas del año escolar.</p>
+                                    <h2 class="text-2xl sm:text-3xl font-black text-gray-800 tracking-tight">Gestión de
+                                        Secciones</h2>
+                                    <p class="text-xs sm:text-sm text-gray-500 font-medium mt-1">Administra los grupos y
+                                        aulas del año escolar.</p>
                                 </div>
                             </div>
 
@@ -1190,8 +1210,10 @@
                                     <i class="ph-bold ph-calendar-plus text-2xl sm:text-3xl text-white"></i>
                                 </div>
                                 <div>
-                                    <h2 class="text-2xl sm:text-3xl font-black text-gray-800 tracking-tight">Períodos Académicos</h2>
-                                    <p class="text-xs sm:text-sm text-gray-500 font-medium mt-1">Gestiona los años y ciclos escolares del sistema.</p>
+                                    <h2 class="text-2xl sm:text-3xl font-black text-gray-800 tracking-tight">Períodos
+                                        Académicos</h2>
+                                    <p class="text-xs sm:text-sm text-gray-500 font-medium mt-1">Gestiona los años y
+                                        ciclos escolares del sistema.</p>
                                 </div>
                             </div>
 
@@ -1205,7 +1227,8 @@
                         <div
                             class="p-3 sm:p-5 bg-gray-50/50 rounded-2xl sm:rounded-3xl border border-gray-100 flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
                             <p class="text-xs sm:text-sm font-medium text-gray-500 flex items-center gap-1.5"><i
-                                    class="ph-fill ph-info text-indigo-400 text-sm"></i> Listado histórico de todos los períodos académicos registrados.</p>
+                                    class="ph-fill ph-info text-indigo-400 text-sm"></i> Listado histórico de todos los
+                                períodos académicos registrados.</p>
 
                             <div
                                 class="text-xs sm:text-sm font-semibold text-gray-600 bg-white px-3 sm:px-5 py-2.5 sm:py-3 rounded-xl border border-gray-200 shadow-sm flex items-center justify-center sm:justify-start gap-2 w-full sm:w-auto">
@@ -1251,8 +1274,10 @@
                                     <i class="ph-bold ph-arrows-counter-clockwise text-2xl sm:text-3xl text-white"></i>
                                 </div>
                                 <div>
-                                    <h2 class="text-2xl sm:text-3xl font-black text-gray-800 tracking-tight">Promoción de Alumnos</h2>
-                                    <p class="text-xs sm:text-sm text-gray-500 font-medium mt-1">Procesa un aula a la vez: elige, revisa y confirma.</p>
+                                    <h2 class="text-2xl sm:text-3xl font-black text-gray-800 tracking-tight">Promoción
+                                        de Alumnos</h2>
+                                    <p class="text-xs sm:text-sm text-gray-500 font-medium mt-1">Procesa un aula a la
+                                        vez: elige, revisa y confirma.</p>
                                 </div>
                             </div>
                         </div>
@@ -1314,8 +1339,11 @@
                             class="hidden mb-6 p-4 bg-amber-50 border border-amber-200 rounded-2xl flex items-start gap-3">
                             <i class="ph-fill ph-warning text-amber-500 text-xl flex-shrink-0 mt-0.5"></i>
                             <div>
-                                <p class="text-sm font-bold text-amber-800">No hay un período en planificación creado.</p>
-                                <p class="text-xs text-amber-700 mt-0.5">Para poder promover alumnos, primero debes crear el período académico destino en la sección <strong>Períodos Académicos</strong> con estado <em>Planificación</em>.</p>
+                                <p class="text-sm font-bold text-amber-800">No hay un período en planificación creado.
+                                </p>
+                                <p class="text-xs text-amber-700 mt-0.5">Para poder promover alumnos, primero debes
+                                    crear el período académico destino en la sección <strong>Períodos
+                                        Académicos</strong> con estado <em>Planificación</em>.</p>
                             </div>
                         </div>
 
@@ -1331,7 +1359,7 @@
                                 <select id="prom-bulk-accion"
                                     class="px-3 py-2 border border-blue-200 rounded-xl focus:ring-2 focus:ring-blue-200 outline-none text-sm font-bold bg-white text-gray-700">
                                     <option value="promover" class="text-emerald-700">✅ Promovidos</option>
-                                    <option value="repetir"  class="text-amber-700">⚠️ Repetidores</option>
+                                    <option value="repetir" class="text-amber-700">⚠️ Repetidores</option>
                                 </select>
                                 <span class="text-sm font-bold text-blue-700">a la sección:</span>
                                 <select id="prom-bulk-seccion"
@@ -1594,8 +1622,10 @@
                                     <i class="ph-bold ph-chart-pie-slice text-2xl sm:text-3xl text-white"></i>
                                 </div>
                                 <div>
-                                    <h2 class="text-2xl sm:text-3xl font-black text-gray-800 tracking-tight">Estadísticas y Reportes</h2>
-                                    <p class="text-xs sm:text-sm text-gray-500 font-medium mt-1">Analítica de asistencia y generación de documentos oficiales.</p>
+                                    <h2 class="text-2xl sm:text-3xl font-black text-gray-800 tracking-tight">
+                                        Estadísticas y Reportes</h2>
+                                    <p class="text-xs sm:text-sm text-gray-500 font-medium mt-1">Analítica de asistencia
+                                        y generación de documentos oficiales.</p>
                                 </div>
                             </div>
 
@@ -3605,8 +3635,7 @@
                 </div>
                 <div class="mt-10 flex justify-between items-center gap-4">
                     <!-- Botón eliminar (oculto hasta que se cargue un estudiante) -->
-                    <button id="btn-eliminar-alumno-modal"
-                        class="hidden px-5 py-3.5 bg-red-50 text-red-600 border border-red-200 rounded-2xl font-bold
+                    <button id="btn-eliminar-alumno-modal" class="hidden px-5 py-3.5 bg-red-50 text-red-600 border border-red-200 rounded-2xl font-bold
                                hover:bg-red-100 hover:border-red-400 transition-all text-sm flex items-center gap-2"
                         title="Eliminar el registro completo de este estudiante de la base de datos">
                         <i class="ph-bold ph-trash text-lg"></i>
@@ -3951,10 +3980,13 @@
                             <!-- Boletines de Evaluación (columna izquierda, espacio vacío) -->
                             <div class="bg-indigo-50/30 rounded-[2rem] p-6 border border-indigo-100/50 shadow-sm">
                                 <div class="flex items-center justify-between mb-3">
-                                    <h4 class="text-[11px] font-black text-indigo-600 uppercase tracking-[0.2em] flex items-center gap-2">
-                                        <i class="ph-bold ph-clipboard-text text-base text-indigo-500"></i> Boletines de Evaluación
+                                    <h4
+                                        class="text-[11px] font-black text-indigo-600 uppercase tracking-[0.2em] flex items-center gap-2">
+                                        <i class="ph-bold ph-clipboard-text text-base text-indigo-500"></i> Boletines de
+                                        Evaluación
                                     </h4>
-                                    <p id="ficha-boletines-periodo" class="text-[10px] text-indigo-400 font-bold tracking-widest">Cargando...</p>
+                                    <p id="ficha-boletines-periodo"
+                                        class="text-[10px] text-indigo-400 font-bold tracking-widest">Cargando...</p>
                                 </div>
                                 <div class="grid grid-cols-3 gap-3" id="ficha-boletines-container">
                                     <div class="col-span-3 flex items-center justify-center py-4">
@@ -4056,7 +4088,7 @@
                             </div>
 
                             <!-- (boletines movidos a la columna izquierda) -->
-                            </div>
+                        </div>
                     </div>
                 </form>
             </div>
