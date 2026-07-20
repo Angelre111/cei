@@ -5139,8 +5139,10 @@ def descargar_ficha_inscripcion(hijo_id):
         fue_cesarea = "Sí" if inscripcion.get('fue_cesarea') else "No"
         es_prematuro = "Sí" if inscripcion.get('es_prematuro') else "No"
         es_alergico = "Sí" if inscripcion.get('es_alergico') else "No"
-        peso_nacer = str(inscripcion.get('peso_nacer', '-')) or '-'
-        talla_nacer = str(inscripcion.get('talla_nacer', '-')) or '-'
+        peso_val = inscripcion.get('peso_nacer')
+        peso_nacer = str(peso_val) if peso_val is not None else '-'
+        talla_val = inscripcion.get('talla_nacer')
+        talla_nacer = str(talla_val) if talla_val is not None else '-'
         enf_cronica = inscripcion.get('enfermedad_cronica', '-') or '-'
         med_fiebre = inscripcion.get('medicamento_fiebre', '-') or '-'
         come_solo = "Sí" if inscripcion.get('come_solo') else "No"
